@@ -48,6 +48,13 @@ group.add_option("-p", "--port", dest="port",
                   default=None, type=int,
                   help="listening port")
 
+group.add_option("-t", "--threads", dest="threads",
+                  default=None, type=int,
+                  help="listening thread count")
+
+group.add_option("-q", "--queuesize", dest="queue_size",
+                  default=None, type=int,
+                  help="socket queue size")
 
 group.add_option("-A", "--app", dest="app",
                   action="store_true",
@@ -136,6 +143,7 @@ if options.init:
 # Loading config file
 spec = importlib.util.spec_from_file_location("pgmanage_settings", config_file)
 module = importlib.util.module_from_spec(spec)
+sys.modules['pgmanage_settings'] = module
 spec.loader.exec_module(module)
 pgmanage_settings = module
 
@@ -157,6 +165,22 @@ else:
             listening_port = pgmanage_settings.LISTENING_PORT
         else:
             listening_port = 8000
+
+if options.queue_size!=None:
+    queue_size = options.queue_size
+else:
+    if hasattr(pgmanage_settings,'QUEUE_SIZE'):
+        queue_size = pgmanage_settings.QUEUE_SIZE
+    else:
+        queue_size = 5
+
+if options.threads!=None:
+    threads = options.threads
+else:
+    if hasattr(pgmanage_settings,'THREADS'):
+        threads = pgmanage_settings.THREADS
+    else:
+        threads = 10
 
 if options.path!='':
     pgmanage.custom_settings.PATH = options.path
@@ -482,6 +506,8 @@ class DjangoApplication(object):
             v_cherrypy_config = {
                 'server.socket_host': parameters['listening_address'],
                 'server.socket_port': port,
+                'server.socket_queue_size': parameters['queue_size'],
+                'server.thread_pool': parameters['threads'],
                 'engine.autoreload_on': False,
                 'log.screen': False,
                 'log.access_file': '',
@@ -506,7 +532,6 @@ class DjangoApplication(object):
             })
 
             cherrypy.config.update(v_cherrypy_config)
-
 
             print ("Starting server {0} at {1}:{2}{3}.".format(pgmanage.settings.PGMANAGE_VERSION,parameters['listening_address'],str(port),pgmanage.settings.PATH),flush=True)
             logger.info("Starting server {0} at {1}:{2}.".format(pgmanage.settings.PGMANAGE_VERSION,parameters['listening_address'],str(port)))
@@ -543,7 +568,9 @@ try:
             'listening_port'      : listening_port,
             'is_ssl'              : is_ssl,
             'ssl_certificate_file': ssl_certificate_file,
-            'ssl_key_file'        : ssl_key_file
+            'ssl_key_file'        : ssl_key_file,
+            'queue_size'          : queue_size,
+            'threads'             : threads
         }
     )
 except KeyboardInterrupt:
