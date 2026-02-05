@@ -42,7 +42,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('theme', models.CharField(default='light', max_length=50)),
-                ('font_size', models.IntegerField(default=12)),
+                ('font_size', models.IntegerField(default=16)),
                 ('csv_encoding', models.CharField(default='utf-8', max_length=50)),
                 ('csv_delimiter', models.CharField(default=';', max_length=10)),
                 ('welcome_closed', models.BooleanField(default=False)),
