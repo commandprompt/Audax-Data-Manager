@@ -13,7 +13,7 @@ class Technology(models.Model):
 class UserDetails(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     theme = models.CharField(max_length=50, blank=False,default='light')
-    font_size = models.IntegerField(blank=False,default=12)
+    font_size = models.IntegerField(blank=False,default=16)
     csv_encoding = models.CharField(max_length=50, blank=False, default='utf-8')
     csv_delimiter = models.CharField(max_length=10, blank=False, default=',')
     masterpass_check = models.CharField(max_length=256, default='')
