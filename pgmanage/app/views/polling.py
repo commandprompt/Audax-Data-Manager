@@ -144,6 +144,7 @@ def log_history(
             query_db.start_time = start
             query_db.end_time = end
             query_db.duration = duration
+            query_db.status = status
             query_db.save()
         else:
             query_object = QueryHistory(
