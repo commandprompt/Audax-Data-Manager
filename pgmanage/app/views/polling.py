@@ -137,10 +137,9 @@ def log_history(
         query_db = QueryHistory.objects.filter(
             user=User.objects.get(id=user_id),
             connection=Connection.objects.get(id=conn_id),
-            snippet=sql,
             database=database,
         ).last()
-        if query_db:
+        if query_db.snippet == sql:
             query_db.start_time = start
             query_db.end_time = end
             query_db.duration = duration
@@ -1468,10 +1467,9 @@ def thread_console(self, args) -> None:
             query_db = ConsoleHistory.objects.filter(
                 user=User.objects.get(id=session.user_id),
                 connection=Connection.objects.get(id=database.conn_id),
-                snippet=sql_cmd.replace("'", "''"),
                 database=database.active_service,
             ).last()
-            if query_db:
+            if query_db.snippet == sql_cmd.replace("'", "''"):
                 query_db.start_time = datetime.now(timezone.utc)
                 query_db.save()
             else:
