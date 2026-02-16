@@ -135,7 +135,7 @@ export default {
       this.saveSettings()
     },
     toggleTheme() {
-      settingsStore.theme = settingsStore.theme == 'light' ? 'dark' : 'light'
+      settingsStore.setTheme(settingsStore.theme == 'light' ? 'dark' : 'light');
       this.saveSettings()
     },
     saveSettings: debounce(() => settingsStore.saveSettings(true), 1000),
