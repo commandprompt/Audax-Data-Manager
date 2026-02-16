@@ -139,7 +139,7 @@ def log_history(
             connection=Connection.objects.get(id=conn_id),
             database=database,
         ).last()
-        if query_db.snippet == sql:
+        if query_db and query_db.snippet == sql:
             query_db.start_time = start
             query_db.end_time = end
             query_db.duration = duration
@@ -1469,7 +1469,7 @@ def thread_console(self, args) -> None:
                 connection=Connection.objects.get(id=database.conn_id),
                 database=database.active_service,
             ).last()
-            if query_db.snippet == sql_cmd.replace("'", "''"):
+            if query_db and query_db.snippet == sql_cmd.replace("'", "''"):
                 query_db.start_time = datetime.now(timezone.utc)
                 query_db.save()
             else:
