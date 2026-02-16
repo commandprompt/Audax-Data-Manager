@@ -134,18 +134,29 @@ def log_history(
 ) -> None:
 
     try:
-
-        query_object = QueryHistory(
+        query_db = QueryHistory.objects.filter(
             user=User.objects.get(id=user_id),
             connection=Connection.objects.get(id=conn_id),
-            start_time=start,
-            end_time=end,
-            duration=duration,
-            status=status,
-            snippet=sql,
             database=database,
-        )
-        query_object.save()
+        ).last()
+        if query_db and query_db.snippet == sql:
+            query_db.start_time = start
+            query_db.end_time = end
+            query_db.duration = duration
+            query_db.status = status
+            query_db.save()
+        else:
+            query_object = QueryHistory(
+                user=User.objects.get(id=user_id),
+                connection=Connection.objects.get(id=conn_id),
+                start_time=start,
+                end_time=end,
+                duration=duration,
+                status=status,
+                snippet=sql,
+                database=database,
+            )
+            query_object.save()
     except Exception as exc:
         logger.error("""*** Exception ***\n{0}""".format(traceback.format_exc()))
 
@@ -1453,16 +1464,25 @@ def thread_console(self, args) -> None:
                 queue_response(client_object, response_data)
 
         if mode == ConsoleModes.DATA_OPERATION:
-            # logging to console history
-            query_object = ConsoleHistory(
+            query_db = ConsoleHistory.objects.filter(
                 user=User.objects.get(id=session.user_id),
                 connection=Connection.objects.get(id=database.conn_id),
-                start_time=datetime.now(timezone.utc),
-                snippet=sql_cmd.replace("'", "''"),
                 database=database.active_service,
-            )
+            ).last()
+            if query_db and query_db.snippet == sql_cmd.replace("'", "''"):
+                query_db.start_time = datetime.now(timezone.utc)
+                query_db.save()
+            else:
+                # logging to console history
+                query_object = ConsoleHistory(
+                    user=User.objects.get(id=session.user_id),
+                    connection=Connection.objects.get(id=database.conn_id),
+                    start_time=datetime.now(timezone.utc),
+                    snippet=sql_cmd.replace("'", "''"),
+                    database=database.active_service,
+                )
 
-            query_object.save()
+                query_object.save()
 
     except Exception as exc:
         logger.error("""*** Exception ***\n{0}""".format(traceback.format_exc()))
