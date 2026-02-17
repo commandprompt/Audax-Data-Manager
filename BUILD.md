@@ -19,7 +19,16 @@ Here is the list of steps involved in the build process:
 
 cd ./deploy/linux
 run ./build_images.sh to produce the Docker container which will be used as a build environment
-once build_images.sh completes run ./deploy.sh script. This will will start the build process inside of a Docker container.
+once build_images.sh completes run ./deploy.sh script.
+```
+./deploy.sh [pgmanage_version] [branch_name] [debug_mode]
+```
+- `pgmanage_version`(*optional*): The version number that will be added to bundle.
+If not provided, the script defaults to the last version tag from Git repository.
+- `branch_name`(*optional*): The Git branch to build from.If not provided, the script defaults to the `dev` branch.
+- `debug_mode`(*optional*): If debug `true`, then nwjs-sdk will be used. Defaults to `false`.
+
+This will will start the build process inside of a Docker container.
 
 **Note:** it is not necessary to run build_images.sh each time. This script should be re-run however if changes are made to the app build scripts themselves (entrypoint.sh etc).
 
