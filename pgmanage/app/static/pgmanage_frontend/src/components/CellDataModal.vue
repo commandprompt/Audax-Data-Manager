@@ -15,7 +15,6 @@
             <button
               type="button"
               class="btn-close"
-              data-dismiss="modal"
               aria-label="Close"
               @click="store.hideModal()"
             ></button>
@@ -81,14 +80,32 @@
               </div>
             </div>
             <button
+              v-if="readOnly"
               data-testid="close-modal-button"
               type="button"
               class="btn btn-secondary"
-              data-dismiss="modal"
               @click="store.hideModal()"
             >
               Close
             </button>
+            <template v-else>
+              <button
+                data-testid="cancel-modal-button"
+                type="button"
+                class="btn btn-secondary"
+                @click="store.hideModal()"
+              >
+                Cancel
+              </button>
+              <button
+                data-testid="apply-modal-button"
+                type="button"
+                class="btn btn-success"
+                @click="onApply"
+              >
+                Apply
+              </button>
+            </template>
           </div>
         </div>
       </div>
@@ -121,11 +138,15 @@ export default {
       contentMode: "ace/mode/plain_text",
       autoFormat: true,
       showLoading: true,
+      loadedEndIndex: 0,
     };
   },
   computed: {
     store() {
       return cellDataModalStore;
+    },
+    readOnly() {
+      return this.store.readOnly;
     },
   },
   mounted() {
@@ -140,6 +161,7 @@ export default {
 
     this.$refs.cellDataModal.addEventListener("hidden.bs.modal", () => {
       this.cleanupEditor();
+      this.loadedEndIndex = 0;
     });
 
     cellDataModalStore.$onAction((action) => {
@@ -171,7 +193,7 @@ export default {
       this.editor.setTheme(`ace/theme/${settingsStore.editorTheme}`);
       this.editor.setFontSize(settingsStore.fontSize);
       this.editor.setShowPrintMargin(false);
-      this.editor.setReadOnly(true);
+      this.editor.setReadOnly(this.readOnly);
 
       this.editor.commands.bindKey("Cmd-,", null);
       this.editor.commands.bindKey("Ctrl-,", null);
@@ -195,8 +217,9 @@ export default {
         return;
 
       let cellContent = this.store.cellContent;
-      const nextChunk = cellContent.slice(0, chunkSize);
-      this.store.cellContent = cellContent.slice(chunkSize);
+
+      const nextChunk = cellContent.slice(this.loadedEndIndex, this.loadedEndIndex + chunkSize);
+      this.loadedEndIndex += nextChunk.length;
 
       if (nextChunk) {
         const currentLength = this.editor.session.getLength();
@@ -212,9 +235,10 @@ export default {
       let cellContent = this.store.cellContent || "";
       if (cellContent) cellContent = this.store.cellContent.toString();
       const cellType = this.store.cellType || "default";
+      const cellContentToAdd = cellContent.slice(0, chunkSize);
+      this.loadedEndIndex = cellContentToAdd.length;
+      this.editor.setValue(cellContentToAdd);
 
-      this.editor.setValue(cellContent.slice(0, chunkSize));
-      this.store.cellContent = cellContent.slice(chunkSize);
       this.contentMode = this.getAceMode(cellType);
       this.editor.clearSelection();
       this.showLoading = false;
@@ -246,6 +270,12 @@ export default {
       // erase leftover css classes left after editor destruction
       this.$refs.editor.classList.remove("ace-omnidb", "ace-omnidb_dark");
       this.editor.destroy();
+    },
+    onApply() {
+      const currentEditorValue = this.editor.getValue();
+      const newValue = currentEditorValue + (this.store.cellContent?.slice(this.loadedEndIndex) ?? "");
+      this.store.applyFunc(newValue);
+      this.store.hideModal();
     },
   },
 };

@@ -65,7 +65,7 @@ import { queryRequestCodes, requestState, knexDialectMap } from '../constants'
 import { createRequest } from '../long_polling'
 import { TabulatorFull as Tabulator} from 'tabulator-tables'
 import { emitter } from '../emitter';
-import { settingsStore, tabsStore, messageModalStore } from '../stores/stores_initializer';
+import { settingsStore, tabsStore, messageModalStore, cellDataModalStore } from '../stores/stores_initializer';
 import DataEditorTabFilterList from './DataEditorTabFilterList.vue'
 import { dataEditorFilterModes } from '../constants';
 import { handleError } from '../logging/utils';
@@ -348,7 +348,25 @@ export default {
           }
 
           let cellContextMenu = (e, cellComponent) => {
+            const selectedRange = cellComponent.getTable().getRanges()[0];
+            const isOneCellSelected =
+              selectedRange.getBottomEdge() === selectedRange.getTopEdge() &&
+              selectedRange.getRightEdge() === selectedRange.getLeftEdge();
             return [
+              {
+                label: '<i class="fas fa-edit"></i><span>Edit in modal</span>',
+                action: (e, cell) => {
+                  const colType = this.tableColumns[cell.getField()]?.data_type;
+                  let cellValue = cell.getValue();
+                  cellDataModalStore.showModal(cellValue, colType, false, false, (newValue) => {
+                    cell.setValue(newValue);
+                  });
+                },
+                disabled: !isOneCellSelected,
+              },
+              {
+                separator:true,
+              },
               {
                 label: '<i class="fas fa-copy"></i><span>Copy</span>',
                 action: function (e, cell) {
