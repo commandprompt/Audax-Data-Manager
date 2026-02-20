@@ -946,7 +946,9 @@ export default {
         e.preventDefault();
       });
     },
-    clearSelectedData() {
+    clearSelectedData(event) {
+      if (event.key === 'Backspace') return
+
       const range = last(this.tabulator.getRanges());
       if (!range) return;
 
