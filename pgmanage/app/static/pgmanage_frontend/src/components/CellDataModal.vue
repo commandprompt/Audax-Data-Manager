@@ -58,7 +58,7 @@
                   </option>
                 </select>
               </div>
-              <div class="col-auto form-check align-content-center">
+              <div v-if="readOnly" class="col-auto form-check align-content-center">
                 <input
                   id="cell_data_modal_autoformat"
                   type="checkbox"
@@ -88,11 +88,11 @@
             >
               Close
             </button>
-            <template v-else>
+            <div v-else>
               <button
                 data-testid="cancel-modal-button"
                 type="button"
-                class="btn btn-secondary"
+                class="btn btn-secondary me-1"
                 @click="store.hideModal()"
               >
                 Cancel
@@ -105,7 +105,7 @@
               >
                 Apply
               </button>
-            </template>
+            </div>
           </div>
         </div>
       </div>
@@ -168,6 +168,7 @@ export default {
       if (action.name === "showModal") {
         action.after(() => {
           this.showLoading = true;
+          if (!this.readOnly) this.autoFormat = false;
           this.modalInstance.show();
         });
       }

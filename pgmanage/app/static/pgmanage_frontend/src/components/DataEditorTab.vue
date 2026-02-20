@@ -82,6 +82,19 @@ function escapeColumnName(name) {
     : `"${name.replace(/"/g, '""')}"`;
 }
 
+const nonEditableDataTypes = [
+  "bytea",
+  "binary",
+  "varbinary",
+  "tinyblob",
+  "mediumblob",
+  "longblob",
+  "image",
+  "raw",
+  "long raw",
+  "blob",
+];
+
 const contextEdits = new WeakSet();
 
 export default {
@@ -352,17 +365,18 @@ export default {
             const isOneCellSelected =
               selectedRange.getBottomEdge() === selectedRange.getTopEdge() &&
               selectedRange.getRightEdge() === selectedRange.getLeftEdge();
-            return [
-              {
-                label: '<i class="fas fa-edit"></i><span>Edit in modal</span>',
-                action: (e, cell) => {
-                  const colType = this.tableColumns[cell.getField()]?.data_type;
-                  let cellValue = cell.getValue();
-                  cellDataModalStore.showModal(cellValue, colType, false, false, (newValue) => {
-                    cell.setValue(newValue);
-                  });
+            const colType = this.tableColumns[cellComponent.getField()]?.data_type;
+            const nonEditable = nonEditableDataTypes.includes(colType)
+              return [
+                {
+                  label: '<i class="fas fa-edit"></i><span>Edit in modal</span>',
+                  action: (e, cell) => {
+                    let cellValue = cell.getValue();
+                    cellDataModalStore.showModal(cellValue, colType, true, false, (newValue) => {
+                      cell.setValue(newValue);
+                    });
                 },
-                disabled: !isOneCellSelected,
+                disabled: !isOneCellSelected || nonEditable,
               },
               {
                 separator:true,
@@ -449,7 +463,7 @@ export default {
             return {
               field: (idx).toString(),
               title: title,
-              editor: "input",
+              editor: nonEditableDataTypes.includes(col.data_type) ? false : "input",
               headerSort: true,
               contextMenu: cellContextMenu,
               headerDblClick: (e, column) => {
