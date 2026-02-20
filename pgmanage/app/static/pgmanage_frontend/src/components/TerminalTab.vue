@@ -13,7 +13,7 @@
 <script>
 import { Terminal } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
-import { CanvasAddon } from '@xterm/addon-canvas';
+import { WebglAddon } from '@xterm/addon-webgl';
 import { settingsStore, tabsStore } from "../stores/stores_initializer";
 import { createRequest, createContext } from "../long_polling";
 import { queryRequestCodes, requestState } from "../constants";
@@ -61,7 +61,7 @@ export default {
       });
 
       this.term.open(this.$refs.console);
-      this.term.loadAddon(new CanvasAddon());
+      this.term.loadAddon(new WebglAddon());
       this.term.onData((data) => {
         this.terminalRun(false, data);
       });
