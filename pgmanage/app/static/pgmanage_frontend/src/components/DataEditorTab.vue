@@ -82,19 +82,6 @@ function escapeColumnName(name) {
     : `"${name.replace(/"/g, '""')}"`;
 }
 
-const nonEditableDataTypes = [
-  "bytea",
-  "binary",
-  "varbinary",
-  "tinyblob",
-  "mediumblob",
-  "longblob",
-  "image",
-  "raw",
-  "long raw",
-  "blob",
-];
-
 const contextEdits = new WeakSet();
 
 export default {
@@ -166,7 +153,10 @@ export default {
     },
     dialectOperators() {
       return this.dialectData?.operators ?? [];
-    }
+    },
+    nonEditableDataTypes() {
+      return this.dialectData?.nonEditableDataTypes ?? [];
+    },
   },
   mounted() {
     let mappedDialect = knexDialectMap[this.dialect] || this.dialect;
@@ -366,7 +356,7 @@ export default {
               selectedRange.getBottomEdge() === selectedRange.getTopEdge() &&
               selectedRange.getRightEdge() === selectedRange.getLeftEdge();
             const colType = this.tableColumns[cellComponent.getField()]?.data_type;
-            const nonEditable = nonEditableDataTypes.includes(colType)
+            const nonEditable = this.nonEditableDataTypes.includes(colType)
               return [
                 {
                   label: '<i class="fas fa-edit"></i><span>Edit in modal</span>',
@@ -463,7 +453,7 @@ export default {
             return {
               field: (idx).toString(),
               title: title,
-              editor: nonEditableDataTypes.includes(col.data_type) ? false : "input",
+              editor: this.nonEditableDataTypes.includes(col.data_type) ? false : "input",
               headerSort: true,
               contextMenu: cellContextMenu,
               headerDblClick: (e, column) => {

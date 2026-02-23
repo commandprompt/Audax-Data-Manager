@@ -31,6 +31,7 @@ export default Object.freeze({
           'macaddr', 'tsvector', 'tsquery', 'uuid', 'xml', 'json', 'jsonb', 'int4range', 'int8range', 'numrange',
           'tsrange', 'tstzrange', 'daterange', 'geometry', 'geography', 'cube', 'ltree'
         ],
+        nonEditableDataTypes: ["bytea", "bit", "varbit", "bit varying"],
         numericTypes: [
           'smallint', 'integer', 'bigint', 'decimal', 'numeric', 'real', 'double precision', 'serial', 'bigserial'
         ],
@@ -65,6 +66,7 @@ export default Object.freeze({
             'float', 'double', 'real', 'double precision', 'datetime', 'varying character', 'character','native character',
             'varchar', 'nchar', 'nvarchar2', 'unsigned big int', 'boolean', 'blob', 'text', 'clob', 'date'
         ],
+        nonEditableDataTypes: ["blob"],
         numericTypes: [
           // none yet, to be added later once we are able to resolve column data types in sqlite3
         ],
@@ -112,6 +114,7 @@ export default Object.freeze({
           'mediumblob', 'longblob', 'enum', 'set', 'json', 'binary', 'varbinary', 'geometry', 'point',
           'linestring', 'polygon', 'multipoint', 'multilinestring', 'multipolygon', 'geometrycollection',
         ],
+        nonEditableDataTypes: ["binary", "varbinary", "tinyblob", "mediumblob", "longblob", "blob"],
         numericTypes: [
           // these values are not taken from dataTypes, they match with pymysql type mapping
           'decimal', 'tiny', 'short', 'long', 'float', 'double', 'int24', 'longlong', 'newdecimal'
@@ -166,6 +169,7 @@ export default Object.freeze({
         'text', 'time', 'timestamp', 'tinyint', 'uniqueidentifier', 'varbinary', 'varchar', 'xml',
         'sql_variant', 'hierarchyid', 'geography', 'geometry', 'rowversion', 'money', 'image', 'nchar'
       ],
+      nonEditableDataTypes: ["binary", "varbinary", "image"],
       numericTypes: [
         'bigint', 'int', 'smallint', 'tinyint', 'decimal', 'numeric', 'float', 'real', 'money', 'smallmoney'
       ],
@@ -232,4 +236,7 @@ export default Object.freeze({
         },
       ],
   },
+  'oracle':{
+    nonEditableDataTypes: ["raw", "long raw", "blob", "bfile"],
+  }
 });
