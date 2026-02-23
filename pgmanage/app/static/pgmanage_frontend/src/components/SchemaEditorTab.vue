@@ -393,7 +393,7 @@ export default {
             omit(originalIndexes[idx], ['is_dirty']),
           )
 
-          if(index.index_name !== originalIndexes[idx].index_name) indexChanges.renames.push({'oldName': originalIndexes[idx].index_name, 'newName': index.index_name})
+          if(index.index_name !== originalIndexes[idx].index_name) indexChanges.renames.push({'oldName': originalIndexes[idx].index_name, 'newName': index.index_name, indexDef: index})
         })
 
         let originalForeignKeys = this.initialForeignKeys
@@ -494,9 +494,8 @@ export default {
             table.dropIndex(null, indexName)
           })
 
-          // TODO: add renameIndex support on other database dialects
           indexChanges.renames.forEach((rename) => {
-            table.renameIndex(rename.oldName, rename.newName)
+            table.renameIndex(rename.oldName, rename.newName, rename.indexDef)
           })
 
           foreignKeyChanges.drops.forEach((constraintName) => {

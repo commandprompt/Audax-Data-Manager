@@ -10,11 +10,11 @@ import flatten from 'lodash/flatten';
 
 knex.TableBuilder.extend(
   "renameIndex",
-  function (oldIndexName, newIndexName) {
+  function (oldIndexName, newIndexName, indexDef) {
     this._statements.push({
       grouping: "alterTable",
       method: "renameIndex",
-      args: [oldIndexName, newIndexName],
+      args: [oldIndexName, newIndexName, indexDef],
     });
   }
 );
@@ -82,7 +82,6 @@ export default Object.freeze({
             alterColumn: true,
             multiStatement: true,
             multiPrimaryKeys: true,
-            renameIndex: true,
             indexMethod: true,
             addForeignKey: true,
             dropForeignKey: true,
@@ -101,6 +100,28 @@ export default Object.freeze({
                       });
                     })
                 }
+            },
+            () => {
+                TableCompiler_SQLite3.prototype.renameIndex = function (from, to, indexDef) {
+                  this.dropIndex(null, from);
+
+                  const qb = knex({ client: this.client.dialect });
+                 
+                  if (indexDef.type === "unique") {
+                    this.unique(indexDef.columns, {
+                      indexName: indexDef.index_name,
+                      useConstraint: false,
+                      predicate: qb.where(qb.raw(indexDef.predicate)),
+                    })
+                  } else {
+                    this.index(indexDef.columns, indexDef.index_name, {
+                      indexType: indexDef.type === 'non-unique' ? '' : indexDef.type,
+                      storageEngineIndexType: null,
+                      predicate: qb.where(qb.raw(indexDef.predicate)),
+                    }
+                  )
+                  }
+                };
             },
         ],
     },
@@ -131,7 +152,6 @@ export default Object.freeze({
         disabledFeatures: {
           indexPredicate: true,
           indexMethod: true,
-          renameIndex: true,
         },
         overrides: [
           () => {
@@ -160,6 +180,17 @@ export default Object.freeze({
               });
               };
           },
+          () => {
+              TableCompiler_MySQL.prototype.renameIndex = function (from, to) {
+                const table = this.tableName();
+                const sql = `ALTER TABLE ${table} RENAME INDEX ${this.formatter.wrap(
+                  from
+                )} TO ${this.formatter.wrap(to)}`;
+                this.pushQuery({
+                  sql: sql,
+                });
+              };
+          },
         ],
     },
     'mssql': {
@@ -185,7 +216,6 @@ export default Object.freeze({
       },
       disabledFeatures: {
         indexMethod: true,
-        renameIndex: true,
       },
       overrides: [
         () => {
@@ -232,6 +262,13 @@ export default Object.freeze({
                 bindings: columns.bindings,
               });
             });
+          }
+        },
+        () => {
+          TableCompiler_MSSQL.prototype.renameIndex = function(from, to) {
+          const indexNameFrom = `${this.tableName()}.${this.formatter.wrap(from)}`
+          const sql = `EXEC sp_rename '${indexNameFrom}', '${to}', 'INDEX'`
+          this.pushQuery(sql);
           }
         },
       ],
