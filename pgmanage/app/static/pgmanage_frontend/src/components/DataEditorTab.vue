@@ -65,7 +65,7 @@ import { queryRequestCodes, requestState, knexDialectMap } from '../constants'
 import { createRequest } from '../long_polling'
 import { TabulatorFull as Tabulator} from 'tabulator-tables'
 import { emitter } from '../emitter';
-import { settingsStore, tabsStore, messageModalStore } from '../stores/stores_initializer';
+import { settingsStore, tabsStore, messageModalStore, cellDataModalStore } from '../stores/stores_initializer';
 import DataEditorTabFilterList from './DataEditorTabFilterList.vue'
 import { dataEditorFilterModes } from '../constants';
 import { handleError } from '../logging/utils';
@@ -153,7 +153,10 @@ export default {
     },
     dialectOperators() {
       return this.dialectData?.operators ?? [];
-    }
+    },
+    nonEditableDataTypes() {
+      return this.dialectData?.nonEditableDataTypes ?? [];
+    },
   },
   mounted() {
     let mappedDialect = knexDialectMap[this.dialect] || this.dialect;
@@ -348,7 +351,26 @@ export default {
           }
 
           let cellContextMenu = (e, cellComponent) => {
-            return [
+            const selectedRange = cellComponent.getTable().getRanges()[0];
+            const isOneCellSelected =
+              selectedRange.getBottomEdge() === selectedRange.getTopEdge() &&
+              selectedRange.getRightEdge() === selectedRange.getLeftEdge();
+            const colType = this.tableColumns[cellComponent.getField()]?.data_type;
+            const nonEditable = this.nonEditableDataTypes.includes(colType)
+              return [
+                {
+                  label: '<i class="fas fa-edit"></i><span>Edit in modal</span>',
+                  action: (e, cell) => {
+                    let cellValue = cell.getValue();
+                    cellDataModalStore.showModal(cellValue, colType, true, false, (newValue) => {
+                      cell.setValue(newValue);
+                    });
+                },
+                disabled: !isOneCellSelected || nonEditable,
+              },
+              {
+                separator:true,
+              },
               {
                 label: '<i class="fas fa-copy"></i><span>Copy</span>',
                 action: function (e, cell) {
@@ -431,7 +453,7 @@ export default {
             return {
               field: (idx).toString(),
               title: title,
-              editor: "input",
+              editor: this.nonEditableDataTypes.includes(col.data_type) ? false : "input",
               headerSort: true,
               contextMenu: cellContextMenu,
               headerDblClick: (e, column) => {

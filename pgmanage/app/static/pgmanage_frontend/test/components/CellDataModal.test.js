@@ -155,7 +155,7 @@ describe("CellDataModal.vue", () => {
       .mockImplementation(() => {});
 
     await wrapper.vm.$refs.cellDataModal.dispatchEvent(
-      new Event("shown.bs.modal")
+      new Event("shown.bs.modal"),
     );
 
     expect(setupEditorSpy).toHaveBeenCalled();
@@ -166,7 +166,7 @@ describe("CellDataModal.vue", () => {
     const cleanupEditorSpy = vi.spyOn(wrapper.vm, "cleanupEditor");
 
     await wrapper.vm.$refs.cellDataModal.dispatchEvent(
-      new Event("hidden.bs.modal")
+      new Event("hidden.bs.modal"),
     );
     expect(cleanupEditorSpy).toHaveBeenCalled();
   });
@@ -183,7 +183,7 @@ describe("CellDataModal.vue", () => {
     await flushPromises();
 
     expect(wrapper.vm.editor.session.setMode).toHaveBeenCalledWith(
-      "ace/mode/json"
+      "ace/mode/json",
     );
     expect(formatContentSpy).toHaveBeenCalled();
   });
@@ -210,5 +210,73 @@ describe("CellDataModal.vue", () => {
     expect(wrapper.vm.getAceMode("unknown_type")).toBe("ace/mode/plain_text");
     expect(wrapper.vm.getAceMode("")).toBe("ace/mode/plain_text");
     expect(wrapper.vm.getAceMode(null)).toBe("ace/mode/plain_text");
+  });
+
+  test("shows Close button in readOnly mode and hides Apply/Cancel", async () => {
+    cellDataModalStore.readOnly = true;
+    await flushPromises();
+
+    expect(wrapper.find('[data-testid="close-modal-button"]').exists()).toBe(
+      true,
+    );
+    expect(wrapper.find('[data-testid="cancel-modal-button"]').exists()).toBe(
+      false,
+    );
+    expect(wrapper.find('[data-testid="apply-modal-button"]').exists()).toBe(
+      false,
+    );
+  });
+
+  test("shows Apply/Cancel buttons in edit mode and hides Close", async () => {
+    cellDataModalStore.readOnly = false;
+    await flushPromises();
+
+    expect(wrapper.find('[data-testid="close-modal-button"]').exists()).toBe(
+      false,
+    );
+    expect(wrapper.find('[data-testid="cancel-modal-button"]').exists()).toBe(
+      true,
+    );
+    expect(wrapper.find('[data-testid="apply-modal-button"]').exists()).toBe(
+      true,
+    );
+  });
+
+  test("clicking Cancel calls store.hideModal in edit mode", async () => {
+    cellDataModalStore.readOnly = false;
+    await flushPromises();
+
+    const spy = vi.spyOn(cellDataModalStore, "hideModal");
+    await wrapper.find('[data-testid="cancel-modal-button"]').trigger("click");
+    expect(spy).toHaveBeenCalled();
+  });
+
+  test("clicking Apply calls applyFunc with concatenated value and hides modal", async () => {
+    cellDataModalStore.readOnly = false;
+    cellDataModalStore.cellContent = "AAAA_BBBB";
+    await flushPromises();
+
+    wrapper.vm.loadedEndIndex = 4; // slice(4) => "_BBBB"
+    wrapper.vm.editor.getValue = vi.fn(() => "ZZ");
+
+    const applyFunc = vi.fn();
+    cellDataModalStore.applyFunc = applyFunc;
+
+    const hideSpy = vi.spyOn(cellDataModalStore, "hideModal");
+
+    await wrapper.find('[data-testid="apply-modal-button"]').trigger("click");
+
+    expect(applyFunc).toHaveBeenCalledWith("ZZ_BBBB");
+    expect(hideSpy).toHaveBeenCalled();
+  });
+
+  test("resets loadedEndIndex to 0 when modal is hidden", async () => {
+    wrapper.vm.loadedEndIndex = 123;
+
+    await wrapper.vm.$refs.cellDataModal.dispatchEvent(
+      new Event("hidden.bs.modal"),
+    );
+
+    expect(wrapper.vm.loadedEndIndex).toBe(0);
   });
 });
