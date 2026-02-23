@@ -1695,8 +1695,11 @@ class PostgreSQL(Generic):
                 if alltypesstr:
                     for i in range(0, len(table.Rows)):
                         for j in range(0, len(table.Columns)):
-                            if table.Rows[i][j] != None:
-                                table.Rows[i][j] = self.String(table.Rows[i][j])
+                            if table.Rows[i][j] is not None:
+                                if isinstance(table.Rows[i][j], memoryview):
+                                    table.Rows[i][j] = "\\x" + table.Rows[i][j].tobytes().hex()
+                                else:
+                                    table.Rows[i][j] = self.String(table.Rows[i][j])
                             else:
                                 table.Rows[i][j] = ""
             return table
@@ -2080,7 +2083,10 @@ class PostgreSQL(Generic):
                         for i in range(0, len(table.Rows)):
                             for j in range(0, len(table.Columns)):
                                 if table.Rows[i][j] != None:
-                                    table.Rows[i][j] = self.String(table.Rows[i][j])
+                                    if isinstance(table.Rows[i][j], memoryview):
+                                        table.Rows[i][j] = "\\x" + table.Rows[i][j].tobytes().hex()
+                                    else:
+                                        table.Rows[i][j] = self.String(table.Rows[i][j])
 
                 if self.start:
                     self.start = False

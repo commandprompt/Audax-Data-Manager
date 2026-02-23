@@ -1638,7 +1638,7 @@ class PostgreSQL:
                 table_name,
                 query_filter,
                 limit
-            ), False
+            ), True
         )
 
     @lock_required
