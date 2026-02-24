@@ -86,7 +86,7 @@
 <script>
 import { Terminal } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
-import { WebglAddon } from '@xterm/addon-webgl';
+import { CanvasAddon } from '@xterm/addon-canvas';
 import { Splitpanes, Pane } from "splitpanes";
 import { emitter } from "../emitter";
 import { showToast } from "../notification_control";
@@ -210,7 +210,7 @@ export default {
       });
 
       this.terminal.open(this.$refs.console);
-      this.terminal.loadAddon(new WebglAddon());
+      this.terminal.loadAddon(new CanvasAddon());
       this.terminal.write(this.consoleHelp);
 
       this.fitAddon = new FitAddon();
