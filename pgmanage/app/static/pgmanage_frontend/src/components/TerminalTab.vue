@@ -3,7 +3,7 @@
     <div class="row">
       <div class="col">
         <div class="omnidb__txt-console">
-          <div ref="console" class="custom-console"></div>
+          <div ref="console" @contextmenu.stop.prevent="contextMenu" class="custom-console"></div>
         </div>
       </div>
     </div>
@@ -19,6 +19,7 @@ import { createRequest, createContext } from "../long_polling";
 import { queryRequestCodes, requestState } from "../constants";
 import { emitter } from "../emitter";
 import TabTitleUpdateMixin from "../mixins/sidebar_title_update_mixin";
+import ContextMenu from "@imengyu/vue3-context-menu";
 
 export default {
   name: "TerminalTab",
@@ -104,6 +105,40 @@ export default {
       emitter.on(`${this.workspaceId}_adjust_terminal_dimensions`, () => {
         this.adjustTermninalDimensions();
         this.term.focus();
+      });
+    },
+    contextMenu(event) {
+      let option_list = [
+        {
+          label: "Copy",
+          icon: "fas fa-copy",
+          disabled: !this.term.hasSelection(),
+          onClick: () => {
+            document.execCommand("copy");
+          },
+        },
+        {
+          label: "Paste",
+          icon: "fas fa-paste",
+          onClick: () => {
+            try {
+              navigator.clipboard.readText().then((text) => {
+                this.terminalRun(false, text);
+              })
+            } catch (error) {
+              // may throw NotAllowedError in some cases
+            }
+          },
+        },
+      ];
+
+      ContextMenu.showContextMenu({
+        theme: "pgmanage",
+        x: event.x,
+        y: event.y,
+        zIndex: 1000,
+        minWidth: 230,
+        items: option_list,
       });
     },
     clearEvents() {

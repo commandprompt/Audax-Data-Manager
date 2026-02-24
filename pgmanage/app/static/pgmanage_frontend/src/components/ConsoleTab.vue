@@ -2,7 +2,7 @@
   <div>
   <splitpanes class="default-theme console-body" horizontal @resized="onResize">
     <pane size="80">
-      <div ref="console" :id="`txt_console_${tabId}`" class="omnidb__txt-console me-2 h-100"></div>
+      <div ref="console" @contextmenu.stop.prevent="contextMenu" :id="`txt_console_${tabId}`" class="omnidb__txt-console me-2 h-100"></div>
     </pane>
 
     <pane size="20" class="ps-2 border-top">
@@ -99,6 +99,7 @@ import CancelButton from "./CancelSQLButton.vue";
 import { tabStatusMap, requestState, queryRequestCodes, consoleModes } from "../constants";
 import FileInputChangeMixin from '../mixins/file_input_mixin'
 import BlockSizeSelector from "./BlockSizeSelector.vue";
+import ContextMenu from "@imengyu/vue3-context-menu";
 
 export default {
   name: "ConsoleTab",
@@ -368,6 +369,27 @@ export default {
             emitter.emit(`refreshTreeRecursive_${this.workspaceId}`, node_type);
         }
       }
+    },
+    contextMenu(event) {
+      let option_list = [
+        {
+          label: "Copy",
+          icon: "fas fa-copy",
+          disabled: !this.terminal.hasSelection(),
+          onClick: () => {
+            document.execCommand("copy");
+          },
+        },
+      ];
+
+      ContextMenu.showContextMenu({
+        theme: "pgmanage",
+        x: event.x,
+        y: event.y,
+        zIndex: 1000,
+        minWidth: 230,
+        items: option_list,
+      });
     },
     clearConsole() {
       this.terminal.clear();
