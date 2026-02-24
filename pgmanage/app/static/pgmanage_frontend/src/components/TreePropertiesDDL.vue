@@ -21,7 +21,7 @@
       class="btn btn-icon btn-icon-secondary omnidb__tree-tabs__toggler me-2"
       @click="$emit('toggleTreeTabs')"
     >
-      <i class="fas fa-arrows-alt-v"></i>
+      <i class="fas fa-arrows-alt-v px-2"></i>
     </button>
     <div
       class="omnidb__tree-tabs__container omnidb__tab-menu--container h-100 position-relative"

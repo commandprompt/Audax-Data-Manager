@@ -17,7 +17,7 @@
                   
                   <div class="d-flex align-items-center">
                     <button class="btn btn-icon btn-icon-primary me-2" title="Quick Search" @click="showQuickSearch">
-                      <i class="fa-solid fa-magnifying-glass"></i>
+                      <i class="fa-solid fa-magnifying-glass px-2"></i>
                     </button>
                     <div
                       :id="`${workspaceId}_switch`"
