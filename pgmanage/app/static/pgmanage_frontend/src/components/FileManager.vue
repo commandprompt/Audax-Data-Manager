@@ -444,28 +444,12 @@ export default {
       inputEl.dispatchEvent(new MouseEvent("click"));
     },
     onDownload() {
-      axios
-        .post(
-          "/file_manager/download/",
-          { path: this.selectedFile.path },
-          { responseType: "blob" }
-        )
-        .then((resp) => {
-          const url = window.URL.createObjectURL(new Blob([resp.data]));
-          const link = document.createElement("a");
-          link.href = url;
-          link.setAttribute(
-            "download",
-            this.selectedFile.path.split("/").pop()
-          );
-          document.body.appendChild(link);
-          link.click();
-          link.remove();
-          window.URL.revokeObjectURL(url);
-        })
-        .catch((error) => {
-          handleError(error);
-        });
+      const link = document.createElement("a");
+      link.href = `/file_manager/download/?path=${encodeURIComponent(this.selectedFile.path)}`;;
+      link.setAttribute("download", "");
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
     },
     async onUploadProgress(event) {
       const file = event.target.files[0];

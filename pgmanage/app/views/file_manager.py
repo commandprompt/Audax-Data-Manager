@@ -3,7 +3,7 @@ import os
 from app.file_manager.file_manager import FileManager
 from app.utils.decorators import user_authenticated
 from django.http import FileResponse, HttpResponse, JsonResponse
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_GET
 from django.conf import settings
 
 
@@ -59,15 +59,12 @@ def delete(request):
         return JsonResponse({"data": str(exc)}, status=400)
 
 
-@require_POST
+@require_GET
 @user_authenticated
 def download(request):
     file_manager = FileManager(request.user)
-
-    data = request.data
-
     try:
-        rel_path = data.get("path")
+        rel_path = request.GET.get("path")
 
         if not rel_path:
             return JsonResponse({"data": "File path is required."}, status=400)
