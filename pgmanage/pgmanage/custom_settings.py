@@ -9,7 +9,7 @@ APP_TOKEN = None
 PATH = ''
 HOME_DIR = Path(__file__).resolve().parent.parent
 BASE_DIR = Path(__file__).resolve().parent.parent
-MAX_UPLOAD_SIZE = 1024**2 * 500
+MAX_UPLOAD_SIZE = 1024**2 * 10000
 
 # Django settings
 SESSION_COOKIE_SECURE = False

@@ -464,23 +464,33 @@ export default {
         return;
       }
 
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("path", this.currentPath);
+      const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB
+      const TOTAL_CHUNKS = Math.ceil(file.size / CHUNK_SIZE);
 
       try {
         this.showLoading = true;
         this.uploadingFile = file.name;
         this.controller = new AbortController();
-        const response = await axios.post("/file_manager/upload/", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-          onUploadProgress: (progressEvent) => {
-            this.uploadProgress = Math.round(progressEvent.progress * 100);
-          },
-          signal: this.controller.signal,
-        });
+
+        for (let i = 0; i < TOTAL_CHUNKS; i++) {
+          const start = i * CHUNK_SIZE;
+          const end = Math.min(start + CHUNK_SIZE, file.size);
+          const chunk = file.slice(start, end);
+
+          const formData = new FormData();
+          formData.append("file", chunk, file.name);
+          formData.append("total_size", file.size);
+          formData.append("path", this.currentPath);
+          formData.append('offset', start);
+          const response = await axios.post("/file_manager/upload/", formData, {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+            signal: this.controller.signal,
+          });
+          this.uploadProgress = response.data.progress;
+        }
+
         this.showLoading = false;
         this.uploadProgress = null;
         this.uploadingFile = null;
@@ -496,6 +506,7 @@ export default {
         this.controller = null;
         if (axios.isCancel(error)) {
           showToast("info", `Upload of file "${file.name}"" was cancelled.`);
+          this.refreshManager()
         } else {
           handleError(error);
         }
