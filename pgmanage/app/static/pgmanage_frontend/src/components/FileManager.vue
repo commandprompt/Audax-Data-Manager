@@ -186,10 +186,7 @@
                         'fas',
                         'fa-2xl',
                         'me-2',
-                        {
-                          'fa-folder': file.is_directory,
-                          'fa-file': !file.is_directory,
-                        },
+                        fileIconClass(file)
                       ]"
                       :style="{
                         color: file.is_directory ? '#0ea5e9' : 'rgb(105 114 118)',
@@ -228,10 +225,7 @@
                           :class="[
                             'fas',
                             'fa-2xl',
-                            {
-                              'fa-folder': file.is_directory,
-                              'fa-file': !file.is_directory,
-                            },
+                            fileIconClass(file)
                           ]"
                           :style="{
                             color: file.is_directory
@@ -364,6 +358,13 @@ export default {
     window.removeEventListener("beforeunload", this.preventNavigation);
   },
   methods: {
+    fileIconClass(f) {
+      if(f.is_directory) {
+        return 'fa-folder'
+      } else {
+        return f.file_name.endsWith('.incomplete') ? 'fa-file-half-dashed' : 'fa-file'
+      }
+    },
     preventNavigation(event) {
       if (this.uploadingFile) {
         event.preventDefault();
