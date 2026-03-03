@@ -6,12 +6,14 @@ import axios from "axios";
 const mockFiles = [
   {
     file_name: "test_file.txt",
+    path: "./test_file.txt",
     is_directory: false,
     file_size: "10 KB",
     modified: "2024-02-01",
   },
   {
     file_name: "test_folder",
+    path: "./test_folder",
     is_directory: true,
     dir_size: 2,
     modified: "2024-02-01",
@@ -33,7 +35,7 @@ describe("FileManager.vue", () => {
     });
   });
   it("renders correctly", async () => {
-    expect(wrapper.find(".modal-title").text()).toBe("File manager");
+    expect(wrapper.find(".modal-title").text()).toBe("File Manager");
   });
 
   it("fetches directory content on mount", async () => {
@@ -61,17 +63,30 @@ describe("FileManager.vue", () => {
   });
 
   it("triggers file download", async () => {
-    global.URL.createObjectURL = vi.fn();
-    document.body.appendChild = vi.fn();
+    await wrapper.setData({ files: mockFiles });
+    await wrapper.vm.selectFileOrDir("test_file.txt");
 
-    axios.post.mockResolvedValue({ data: new Blob(["test"]) });
+    const originalAppend = document.body.appendChild.bind(document.body);
+    let capturedLink = null;
+
+    const appendSpy = vi.spyOn(document.body, "appendChild").mockImplementation((node) => {
+      if (node.tagName === "A") {
+        capturedLink = node;
+        vi.spyOn(node, "click").mockImplementation(() => {});
+        vi.spyOn(node, "remove").mockImplementation(() => {});
+      }
+      return originalAppend(node);
+    });
 
     await wrapper.vm.onDownload();
-    expect(axios.post).toHaveBeenCalledWith(
-      "/file_manager/download/",
-      { path: "/home/user/test_file.txt" },
-      { responseType: "blob" }
-    );
+
+    const expectedPath = `/file_manager/download/?path=${encodeURIComponent(wrapper.vm.selectedFile.path)}`;
+
+    expect(capturedLink).not.toBeNull();
+    expect(capturedLink.href).toContain(expectedPath);
+    expect(capturedLink.click).toHaveBeenCalled();
+    expect(capturedLink.remove).toHaveBeenCalled();
+    appendSpy.mockRestore();
   });
 
   it('calls openActionsModal with "addFile" when the add file button is clicked', async () => {
