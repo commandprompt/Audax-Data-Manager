@@ -3,7 +3,7 @@ import os
 from app.file_manager.file_manager import FileManager
 from app.utils.decorators import user_authenticated
 from django.http import FileResponse, HttpResponse, JsonResponse
-from django.views.decorators.http import require_POST, require_GET
+from django.views.decorators.http import require_GET
 from django.conf import settings
 
 
@@ -93,6 +93,9 @@ def upload(request):
     total_size = int(request.POST.get("total_size", 0))
 
     TMP_SUFFIX = '.incomplete'
+
+    if total_size == 0:
+        return JsonResponse({"data": "Cant upload files with zero size."}, status=400)
 
     if not upload_file:
         return JsonResponse({"data": "No file provided."}, status=400)

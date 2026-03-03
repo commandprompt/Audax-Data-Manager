@@ -1,4 +1,5 @@
 import os
+import io
 from unittest.mock import mock_open, patch
 
 from app.views.file_manager import (
@@ -14,7 +15,7 @@ from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
 from django.urls import resolve, reverse
-
+from django.test import override_settings
 
 class FileManagerViewsTests(TestCase):
     def setUp(self):
@@ -163,7 +164,7 @@ class FileManagerViewsTests(TestCase):
         mock_resolve_path.return_value = abs_path
 
         data = {"path": rel_path}
-        response = self.client.post(
+        response = self.client.get(
             reverse("download_file"), data, content_type="application/json"
         )
 
@@ -180,7 +181,7 @@ class FileManagerViewsTests(TestCase):
         self,
     ):
         data = {"invalid_arg": "test_dir/test_file.txt"}
-        response = self.client.post(
+        response = self.client.get(
             reverse("download_file"), data, content_type="application/json"
         )
 
@@ -191,7 +192,7 @@ class FileManagerViewsTests(TestCase):
     def test_download_raises_error(self, mock_resolve_path):
         mock_resolve_path.side_effect = Exception("Test error")
         data = {"path": "test_dir/test_file.txt"}
-        response = self.client.post(
+        response = self.client.get(
             reverse("download_file"), data, content_type="application/json"
         )
 
@@ -203,29 +204,62 @@ class FileManagerViewsTests(TestCase):
 
         self.assertEqual(view.func.__name__, download.__name__)
 
+    def _setup_mock_file(self, mock_open, initial_data=b""):
+        """returns custom mock file that supports file pointer operations like seek and tell"""
+        real_buffer = io.BytesIO(initial_data)
+
+        mock_f = mock_open.return_value.__enter__.return_value
+        mock_f.tell.side_effect = real_buffer.tell
+        mock_f.seek.side_effect = real_buffer.seek
+        mock_f.write.side_effect = real_buffer.write
+
+        return real_buffer
+
+    @patch("os.rename")
     @patch("app.file_manager.file_manager.FileManager.check_access_permission")
-    @patch("builtins.open", new_callable=mock_open, read_data="file content")
     @patch("os.path.abspath")
-    def test_upload_file(self, mock_abspath, mock_open_file, mock_check_permission):
-        file_content = b"Test file content"
-        test_file = SimpleUploadedFile(
-            "test.txt", file_content, content_type="text/plain"
-        )
+    @patch("builtins.open")
+    def test_upload_first_chunk(self, mock_open, mock_abspath, mock_check_permission, mock_rename):
         mock_abspath.return_value = self.storage_path
-        response = self.client.post(
-            reverse("upload_file"),
-            {"file": test_file, "path": "."},
-        )
+        self._setup_mock_file(mock_open) # Start empty
+
+        test_file = SimpleUploadedFile("test.txt", b"part1")
+
+        response = self.client.post(reverse("upload_file"), {"file": test_file, "path": ".", "offset": 0, "total_size": 10})
+
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(response.json()["data"], "File uploaded successfully.")
+        self.assertEqual(response.json()["status"], "in_progress")
+        self.assertEqual(response.json()["progress"], 50)
 
-        new_file_name = os.path.join(self.storage_path, test_file.name)
+        expected_path = os.path.join(self.storage_path, "test.txt.incomplete")
+        mock_check_permission.assert_called_once_with(expected_path)
+        mock_open.assert_called_once_with(expected_path, "wb+")
 
-        mock_open_file.assert_called_once_with(new_file_name, "wb+")
-        mock_check_permission.assert_called_once_with(new_file_name)
+    @patch("os.rename")
+    @patch("app.file_manager.file_manager.FileManager.check_access_permission")
+    @patch("os.path.abspath")
+    @patch("builtins.open")
+    def test_upload_final_chunk(self, mock_open, mock_abspath, mock_check_permission, mock_rename):
+        mock_abspath.return_value = self.storage_path
+        # fill the content of the first chunk, so it looks like we continue our upload
+        self._setup_mock_file(mock_open, initial_data=b"part1")
+
+        test_file = SimpleUploadedFile("test.txt", b"part2")
+        response = self.client.post(reverse("upload_file"), {"file": test_file, "path": ".", "offset": 5, "total_size": 10})
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json()["status"], "complete")
+        self.assertEqual(response.json()["progress"], 100)
+
+        expected_path = os.path.join(self.storage_path, "test.txt.incomplete")
+        final_path = os.path.join(self.storage_path, "test.txt")
+
+        mock_check_permission.assert_called_once_with(expected_path)
+        mock_open.assert_called_with(expected_path, "rb+")
+        mock_rename.assert_called_once_with(expected_path, final_path)
 
     def test_upload_no_file(self):
-        response = self.client.post(reverse("upload_file"), {"path": "."})
+        response = self.client.post(reverse("upload_file"), {"path": ".", "total_size": 1})
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()["data"], "No file provided.")
 
@@ -249,6 +283,7 @@ class FileManagerViewsTests(TestCase):
 
         self.assertEqual(view.func.__name__, upload.__name__)
 
+    @override_settings(MAX_UPLOAD_SIZE=10)
     def test_upload_exceeds_size_limit(self):
         large_file_content = b"A" * (settings.MAX_UPLOAD_SIZE + 1)
         large_file = SimpleUploadedFile(
@@ -256,7 +291,7 @@ class FileManagerViewsTests(TestCase):
         )
 
         response = self.client.post(
-            reverse("upload_file"), {"file": large_file, "path": "."}
+            reverse("upload_file"), {"file": large_file, "path": ".", "offset": 0, "total_size": len(large_file_content)}
         )
 
         self.assertEqual(response.status_code, 400)
