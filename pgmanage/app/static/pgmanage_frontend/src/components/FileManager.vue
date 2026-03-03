@@ -20,80 +20,6 @@
           </div>
           <div class="modal-body p-0" style="height: 60vh">
             <div
-              id="actions-tab"
-              class="d-flex justify-content-between border-bottom px-4 py-3"
-            >
-              <div class="btn-group">
-                <a
-                  data-testid="add-file-button"
-                  class="btn btn-outline-secondary btn-sm"
-                  title="Add File"
-                  @click="openActionsModal('addFile')"
-                  ><i class="fas fa-file-circle-plus fa-xl"></i
-                ></a>
-                <a
-                  data-testid="add-folder-button"
-                  class="btn btn-outline-secondary btn-sm"
-                  title="Add Folder"
-                  @click="openActionsModal('addFolder')"
-                  ><i class="fas fa-folder-plus fa-xl"></i
-                ></a>
-                <a
-                  data-testid="rename-button"
-                  :class="[
-                    'btn',
-                    'btn-outline-secondary',
-                    'btn-sm',
-                    { disabled: !Object.keys(selectedFile).length },
-                  ]"
-                  title="Rename Folder/File"
-                  @click="openActionsModal('rename')"
-                  ><i class="fas fa-thin fa-file-pen fa-xl"></i
-                ></a>
-              </div>
-              <div>
-                <div class="btn-group me-2">
-                  <a
-                    data-testid="download-button"
-                    class="btn btn-outline-secondary btn-sm"
-                    :class="{
-                      disabled:
-                        !Object.keys(selectedFile).length ||
-                        selectedFile.is_directory,
-                    }"
-                    title="Download"
-                    @click="onDownload"
-                  >
-                    <i class="fas fa-download"></i
-                  ></a>
-                  <a
-                    data-testid="upload-button"
-                    class="btn btn-outline-secondary btn-sm"
-                    :class="{ disabled: !!uploadingFile }"
-                    title="Upload"
-                    @click="onUpload"
-                  >
-                    <i class="fas fa-upload"></i
-                  ></a>
-                </div>
-                <div class="btn-group">
-                  <a
-                    data-testid="delete-file-button"
-                    :class="[
-                      'btn',
-                      'btn-outline-secondary',
-                      'btn-sm',
-                      { disabled: !Object.keys(selectedFile).length },
-                    ]"
-                    title="Delete"
-                    @click="openActionsModal('delete')"
-                    ><i class="fas fa-trash fa-xl"></i
-                  ></a>
-                </div>
-              </div>
-            </div>
-
-            <div
               class="d-flex justify-content-between align-items-center border-bottom px-4 py-3"
             >
               <div class="btn-group">
@@ -129,7 +55,7 @@
                   ><i class="fas fa-house fa-xl"></i
                 ></a>
               </div>
-              <div class="form-group w-75 mb-0">
+              <div class="form-group w-75 mb-0 mx-1">
                 <input
                 class="form-control"
                 type="text"
@@ -151,6 +77,79 @@
                 @click="changeView"
                 title="Change View"
                 ><i class="fas fa-grip-horizontal fa-xl"></i
+              ></a>
+            </div>
+
+            <div
+              id="actions-tab"
+              class="d-flex justify-content-between border-bottom px-4 py-3"
+            >
+              <div>
+                <div class="btn-group">
+                  <a
+                    data-testid="add-file-button"
+                    class="btn btn-outline-secondary btn-sm"
+                    title="Add File"
+                    @click="openActionsModal('addFile')"
+                    ><i class="fas fa-file-circle-plus fa-xl"></i
+                  ></a>
+                  <a
+                    data-testid="add-folder-button"
+                    class="btn btn-outline-secondary btn-sm"
+                    title="Add Folder"
+                    @click="openActionsModal('addFolder')"
+                    ><i class="fas fa-folder-plus fa-xl"></i
+                  ></a>
+                  <a
+                    data-testid="rename-button"
+                    :class="[
+                      'btn',
+                      'btn-outline-secondary',
+                      'btn-sm',
+                      { disabled: !Object.keys(selectedFile).length },
+                    ]"
+                    title="Rename Folder/File"
+                    @click="openActionsModal('rename')"
+                    ><i class="fas fa-thin fa-file-pen fa-xl"></i
+                  ></a>
+                </div>
+                <div class="btn-group ms-2">
+                  <a
+                    data-testid="download-button"
+                    class="btn btn-outline-secondary btn-sm"
+                    :class="{
+                      disabled:
+                        !Object.keys(selectedFile).length ||
+                        selectedFile.is_directory,
+                    }"
+                    title="Download"
+                    @click="onDownload"
+                  >
+                    <i class="fas fa-download"></i
+                  ></a>
+                  <a
+                    data-testid="upload-button"
+                    class="btn btn-outline-secondary btn-sm"
+                    :class="{ disabled: !!uploadingFile }"
+                    title="Upload"
+                    @click="onUpload"
+                  >
+                    <i class="fas fa-upload"></i
+                  ></a>
+                </div>
+              </div>
+
+              <a
+                data-testid="delete-file-button"
+                :class="[
+                  'btn',
+                  'btn-outline-danger',
+                  'btn-sm',
+                  { disabled: !Object.keys(selectedFile).length },
+                ]"
+                title="Delete"
+                @click="openActionsModal('delete')"
+                ><i class="fas fa-trash"></i
               ></a>
             </div>
 
@@ -199,7 +198,7 @@
   
               <!-- Table format for files and folders-->
               <div v-else class="file-table">
-                <div class="p-0">
+                <div class="p-2">
                   <ul class="list-group list-group-flush form-group">
                     <li
                       class="list-group-item d-flex row g-0 fw-bold mb-1 border-0 file-table-header bg-transparent"
@@ -278,14 +277,14 @@
             <a
               :class="[
                 'btn',
-                'btn-secondary',
+                'btn-primary',
                 'btn-sm',
                 'm-0',
                 { disabled: !Object.keys(selectedFile).length },
               ]"
               @click="confirmSelection"
             >
-              Select</a
+              Confirm</a
             >
           </div>
         </div>
