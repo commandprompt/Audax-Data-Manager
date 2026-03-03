@@ -120,19 +120,45 @@
 
               <div class="row">
                 <div class="form-group col-12">
-                  <label for="binary_path" class="fw-bold mb-2">PostgreSQL Binary Path</label>
-                  <div class="d-flex">
-                    <div class="input-group">
-                      <input id="binary_path" type="text" class="form-control" v-model="binaryPath"
-                        :placeholder="`${action} binary path..`" autocomplete="off">
-                      <label v-if="desktopMode" class="btn btn-outline-secondary mb-0" type="button">
-                        Select
-                        <input type="file" @change="setPostgresqlPath" nwdirectory hidden>
-                      </label>
+                  <label class="fw-bold mb-2">PostgreSQL Binaries</label>
+
+                  <div class="d-flex align-items-center mb-3 ps-3">
+                    <div class="fw-bold">Default:</div>
+
+                    <select class="form-select ms-2" v-model="binaryPathsDefault">
+                      <option v-for="k in pgKeys" :key="k" :value="k">
+                        {{ k }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <div v-for="k in pgKeys" :key="k" class="mb-2 ps-3">
+                    <div class="d-flex align-items-center">
+                      <div class="fw-bold w-25">{{ k }}</div>
+
+                      <div class="input-group">
+                        <input
+                          :id="`binary_path_${k}`"
+                          type="text"
+                          class="form-control"
+                          :value="binaryPaths[k] || ''"
+                          @input="setBinaryPathForVersion(k, $event.target.value)"
+                          :placeholder="`${action} binary path..`"
+                          autocomplete="off"
+                        />
+
+                        <label v-if="desktopMode" class="btn btn-outline-secondary mb-0" type="button">
+                          Select
+                          <input type="file" @change="setPostgresqlPathForVersion($event, k)" nwdirectory hidden>
+                        </label>
+                      </div>
+
+                      <a class="btn btn-outline-primary ms-2"
+                        @click="validateBinaryPath(binaryPaths[k], ['pg_dump', 'pg_dumpall', 'pg_restore', 'psql'])"
+                        title="Validate">
+                        Validate
+                      </a>
                     </div>
-                    <a data-testid="validate-binary-path-button" class="btn btn-outline-primary ms-2" @click="validateBinaryPath(binaryPath, ['pg_dump', 'pg_dumpall', 'pg_restore', 'psql'])" title="Validate">
-                      Validate
-                    </a>
                   </div>
                 </div>
               </div>
@@ -320,14 +346,6 @@ export default {
         settingsStore.setCSVDelimiter(value)
       }
     },
-    binaryPath: {
-      get() {
-        return settingsStore.binaryPath
-      },
-      set(value) {
-        settingsStore.setBinaryPath(value)
-      }
-    },
     pigzPath: {
       get() {
         return settingsStore.pigzPath
@@ -365,7 +383,22 @@ export default {
     },
     desktopMode() {
       return settingsStore.desktopMode
-    }
+    },
+    binaryPaths() {
+      return settingsStore.binaryPaths;
+    },
+    binaryPathsDefault: {
+      get() {
+         return settingsStore.binaryPaths?.default || null;
+      },
+      set(value) {
+         settingsStore.setBinaryPathsDefault(value);
+      },
+    },
+    pgKeys() {
+      const keys = Object.keys(this.binaryPaths || {}).filter(k => k !== "default");
+      return keys.sort((a,b) => parseInt(a.split("-")[1]) - parseInt(b.split("-")[1]));
+    },
   },
   watch: {
     fontSize(newValue, oldValue) {
@@ -793,10 +826,6 @@ export default {
           handleError(error);
         })
     },
-    setPostgresqlPath(e) {
-      const [file] = e.target.files
-      this.binaryPath = file?.path
-    },
     setPigzPath(e) {
       const [file] = e.target.files
       this.pigzPath = file?.path
@@ -846,7 +875,15 @@ export default {
       }
 
       return false;
-    }
+    },
+    setPostgresqlPathForVersion(e, versionKey) {
+      const [file] = e.target.files;
+      const path = file?.path || "";
+      settingsStore.setBinaryPathForVersion(versionKey, path);
+    },
+    setBinaryPathForVersion(versionKey, value) {
+      settingsStore.setBinaryPathForVersion(versionKey, value);
+    },
   }
 }
 </script>

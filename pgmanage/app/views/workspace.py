@@ -83,12 +83,12 @@ class SettingsView(View):
                 exclude=[
                     "id",
                     "user",
-                    "binary_path",
+                    "binary_paths",
                     "pigz_path",
                     "masterpass_check",
                 ],
             ),
-            "binary_path": user_details.get_binary_path(),
+            "binary_paths": user_details.get_binary_paths(),
             "pigz_path": user_details.get_pigz_path(),
             "editor_theme": user_details.get_editor_theme(),
             "max_upload_size": settings.MAX_UPLOAD_SIZE,
@@ -610,7 +610,7 @@ def validate_binary_path(request):
 
     for utility in utilities:
         full_path = os.path.join(
-            binary_path, utility if os.name != "nt" else (utility + ".exe")
+            binary_path or '', utility if os.name != "nt" else (utility + ".exe")
         )
 
         if not os.path.exists(full_path):

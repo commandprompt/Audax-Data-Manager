@@ -1,9 +1,11 @@
 import os
 import shutil
 
+from pathlib import Path
 from app.utils.crypto import decrypt, encrypt
 from django.contrib.auth.models import User
 from django.db import models, transaction, DatabaseError
+from django.conf import settings
 
 
 class Technology(models.Model):
@@ -17,7 +19,7 @@ class UserDetails(models.Model):
     csv_encoding = models.CharField(max_length=50, blank=False, default='utf-8')
     csv_delimiter = models.CharField(max_length=10, blank=False, default=',')
     masterpass_check = models.CharField(max_length=256, default='')
-    binary_path = models.CharField(max_length=256, null=True)
+    binary_paths = models.JSONField(default=dict)
     date_format = models.CharField(max_length=200, null=True)
     pigz_path = models.CharField(max_length=256, null=True)
     restore_tabs = models.BooleanField(default=True)
@@ -33,15 +35,74 @@ class UserDetails(models.Model):
             )
         return pigz_path
 
-    def get_binary_path(self):
+    def get_binary_paths(self):
+        from app.utils.postgresql_utilities import get_pg_version_from_psql_bin
 
-        if self.binary_path:
-            binary_path = self.binary_path
-        else:
-            binary_path = (
-                os.path.dirname(shutil.which("psql")) if shutil.which("psql") else ""
-            )
-        return binary_path
+        supported = settings.SUPPORTED_POSTGRES_VERSIONS
+        bp = self.binary_paths or {}
+
+        save = False
+        if "default" not in bp:
+            default_binaries = os.path.dirname(shutil.which("psql")) if shutil.which("psql") else ""
+            if default_binaries:
+                pg_version = get_pg_version_from_psql_bin(default_binaries)
+                if pg_version and pg_version in supported:
+                    key = f"pg-{pg_version}"
+                    bp["default"] = key
+                    if key not in bp or not bp.get(key):
+                        bp[key] = default_binaries
+                else:
+                    bp["default"] = None
+            else:
+                bp["default"] = None
+            save = True
+
+        for v in supported:
+            key = f"pg-{v}"
+            if key not in bp:
+                bin_dir = f"/usr/lib/postgresql/{v}/bin"
+                if Path(bin_dir).exists():
+                    bp[key] = bin_dir
+                    if not bp.get("default"):
+                        bp["default"] = key
+                else:
+                    bp[key] = None
+                save = True
+
+        self.binary_paths = bp
+
+        if save:
+            self.save(update_fields=["binary_paths"])
+
+        return bp
+
+    def get_pg_bin(self, version: int = None) -> str:
+        bp = self.get_binary_paths()
+
+        key = f"pg-{version}" if version else bp.get("default")
+
+        binary_path = bp.get(key)
+
+        if binary_path:
+            return binary_path
+
+        psql = shutil.which("psql")
+        return os.path.dirname(psql) if psql else ""
+
+    def set_pg_bin(self, version: int, path: str, save=True):
+        bp = self.get_binary_paths()
+
+        key = f"pg-{version}"
+
+        if key not in bp:
+            raise ValueError("Unsupported PostgreSQL version")
+
+        bp[key] = path
+
+        self.binary_paths = bp
+
+        if save:
+            self.save(update_fields=["binary_paths"])
 
     def get_editor_theme(self):
         if self.theme == "light":
