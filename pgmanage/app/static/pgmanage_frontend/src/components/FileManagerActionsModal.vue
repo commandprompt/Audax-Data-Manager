@@ -6,12 +6,7 @@
           <h2 class="modal-title w-100">{{ modalTitle }}</h2>
         </div>
         <div class="modal-body form-group">
-          <p v-if="action === 'rename'">
-            <i :class="['fas', 'fa-2xl', { 'fa-folder': file.is_directory, 'fa-file': !file.is_directory }]"
-              :style="{ 'color': file.is_directory ? '#0ea5e9' : 'rgb(105 114 118)', }"></i>
-            <span class="ms-1">{{ file.file_name }}</span>
-          </p>
-          <input v-if="action !== 'delete'" type="text" class="form-control" v-model="name">
+          <input v-if="action !== 'delete'" ref="nameInput" type="text" class="form-control" v-model="name" >
           <div v-if="action === 'delete'">
             <div class="row align-items-center">
               <div class="col-9">
@@ -98,6 +93,15 @@ export default {
   mounted() {
     this.$refs.fileManagerActionsModal.addEventListener('hidden.bs.modal', () => {
       this.name = ''
+    })
+    
+    this.$refs.fileManagerActionsModal.addEventListener('shown.bs.modal', () => {
+      if (this.action === 'rename') {
+        this.name = this.file?.file_name ?? '';
+        if (this.$refs.nameInput) {
+          this.$refs.nameInput.focus();
+        }
+      } 
     })
   },
   methods: {
