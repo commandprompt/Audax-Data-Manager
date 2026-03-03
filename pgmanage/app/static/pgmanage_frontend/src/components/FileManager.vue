@@ -10,7 +10,7 @@
       <div class="modal-dialog modal-xl modal-file-manager">
         <div class="modal-content">
           <div class="modal-header align-items-center">
-            <h2 class="modal-title">File manager</h2>
+            <h2 class="modal-title">{{ this.dialogTitle }}</h2>
             <button
               type="button"
               class="btn-close"
@@ -327,6 +327,7 @@ export default {
       uploadProgress: null,
       uploadingFile: "",
       controller: null,
+      dialogTitle: 'File Manager'
     };
   },
   computed: {
@@ -344,6 +345,7 @@ export default {
     fileManagerStore.$onAction(({ name, store, after }) => {
       if (name === "showModal") {
         after(() => {
+          this.dialogTitle = store.title;
           this.show(store.desktopMode, store.onChange, store.dialogType);
         });
       }

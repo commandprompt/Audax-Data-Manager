@@ -425,7 +425,7 @@ export default {
       this.restoreOptions.fileName = filePath;
     },
     openFileManagerModal() {
-      fileManagerStore.showModal(settingsStore.desktopMode, this.onFile, this.dialogType);
+      fileManagerStore.showModal(settingsStore.desktopMode, this.onFile, this.dialogType, "Choose a backup to restore");
     },
     resetToDefault() {
       this.restoreOptions = { ...this.restoreOptionsDefault }

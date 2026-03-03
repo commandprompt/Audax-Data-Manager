@@ -7,13 +7,15 @@ const useFileManagerStore = defineStore("fileManager", {
     file: null,
     visible: false,
     desktopMode: null,
+    title: 'File Manager'
   }),
   actions: {
-    showModal(desktopMode, onChange, dialogType) {
+    showModal(desktopMode, onChange, dialogType, title) {
       this.visible = true;
       this.desktopMode = desktopMode;
       this.onChange = onChange;
       this.dialogType = dialogType;
+      this.title = title;
     },
     changeFile(file) {
       this.file = file;
@@ -27,6 +29,7 @@ const useFileManagerStore = defineStore("fileManager", {
       this.dialogType = null;
       this.file = null;
       this.desktopMode = null;
+      this.title = 'File Manager'
     },
   },
 });

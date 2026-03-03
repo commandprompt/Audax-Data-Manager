@@ -549,7 +549,7 @@ export default {
       this.backupOptions.fileName = filePath;
     },
     openFileManagerModal() {
-      fileManagerStore.showModal(settingsStore.desktopMode, this.onFile, this.dialogType);
+      fileManagerStore.showModal(settingsStore.desktopMode, this.onFile, this.dialogType, 'Choose a backup destination');
     },
     resetToDefault() {
       this.backupOptions = { ...this.backupOptionsDefault }
