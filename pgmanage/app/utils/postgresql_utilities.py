@@ -19,13 +19,13 @@ def check_utility_path(
     return path
 
 
-def get_utility_path(utility: str, current_user: User) -> os.PathLike:
+def get_utility_path(utility: str, current_user: User, pg_version: int | None = None) -> os.PathLike:
     user_details = UserDetails.objects.get(user=current_user)
 
     if utility == "pigz":
         binary_path = user_details.pigz_path
     else:
-        binary_path = user_details.get_pg_bin()
+        binary_path = user_details.get_pg_bin(pg_version)
 
     utility_path = check_utility_path(utility=utility, binary_path=binary_path)
 

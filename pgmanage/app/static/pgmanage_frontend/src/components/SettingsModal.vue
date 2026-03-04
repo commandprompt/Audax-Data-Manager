@@ -14,7 +14,11 @@
             </li>
             <li class="nav-item">
               <a class="nav-link" id="settings_options-tab" data-bs-toggle="tab" href="#settings_options" role="tab"
-                aria-controls="settings_options" aria-selected="false">Options</a>
+              aria-controls="settings_options" aria-selected="false">Options</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="settings-paths-tab" data-bs-toggle="tab" href="#settings_paths" role="tab"
+                aria-controls="settings_paths" aria-selected="false">Paths</a>
             </li>
             <li v-if="!desktopMode" class="nav-item">
               <a class="nav-link" id="settings_password-tab" data-bs-toggle="tab" href="#settings_password" role="tab"
@@ -118,6 +122,12 @@
 
               </div>
 
+              <div class="text-end">
+                <button class='btn btn-success' @click='saveSettings'>Save</button>
+              </div>
+            </div>
+
+            <div class="tab-pane fade" id="settings_paths" role="tabpanel" aria-labelledby="settings-paths-tab">
               <div class="row">
                 <div class="form-group col-12">
                   <label class="fw-bold mb-2">PostgreSQL Binaries</label>

@@ -23,6 +23,16 @@
                 </select>
               </div>
 
+              <div v-if="!isNotServer && pgKeys.length" class="form-group d-flex flex-column justify-content-end">
+                    <label class="fw-bold">PG version:</label>
+
+                    <select class="form-select" v-model="restoreOptions.pg_version">
+                      <option v-for="k in pgKeys" :key="k" :value="k">
+                        {{ k }}
+                      </option>
+                    </select>
+              </div>
+
               <div v-if="!isNotServer" class="form-group mb-1 mt-2">
                 <div class="form-check form-switch">
                   <input class="form-check-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsEchoQueries`"
@@ -54,7 +64,28 @@
                 </select>
               </div>
 
-              <div v-if="!isWindowsOS" class="form-group mb-1">
+              <div v-if="isNotServer" class="row mt-1">
+                <div v-if="pgKeys.length" class="form-group col-6 d-flex flex-column justify-content-end">
+                    <label class="fw-bold">PG version:</label>
+
+                    <select class="form-select" v-model="restoreOptions.pg_version">
+                      <option v-for="k in pgKeys" :key="k" :value="k">
+                        {{ k }}
+                      </option>
+                    </select>
+                </div>
+
+                <div v-if="!isWindowsOS" class="form-group col-6 align-content-end">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsPigz`" v-model="restoreOptions.pigz" :disabled="isDirectoryFormat">
+                    <label class="form-check-label" :for="`${restoreTabId}_restoreOptionsPigz`">
+                      Decompress with Pigz
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div v-if="!isWindowsOS && !isNotServer" class="form-group mb-1">
                 <div class="form-check form-switch">
                   <input class="form-check-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsPigz`" v-model="restoreOptions.pigz" :disabled="isDirectoryFormat">
                   <label class="form-check-label" :for="`${restoreTabId}_restoreOptionsPigz`">
@@ -281,6 +312,7 @@ export default {
       roleNames: [],
       restoreOptionsDefault: {
         database: this.treeNode.data.database,
+        pg_version: '',
         type: this.restoreType,
         table: "",
         schema: "",
@@ -339,7 +371,11 @@ export default {
     },
     isWindowsOS() {
       return navigator.userAgent.indexOf("Win") != -1
-    }
+    },
+    pgKeys() {
+      const keys = Object.keys(settingsStore.binaryPaths || {}).filter(k => (k !== "default") && settingsStore.binaryPaths[k]);
+      return keys.map(k => parseInt(k.split('-')[1])).sort();
+    },
   },
   watch: {
     'restoreOptions.format'(newValue){
@@ -378,6 +414,7 @@ export default {
       }
       this.restoreOptions = { ...this.restoreOptionsDefault }
       this.getRoleNames()
+      this.getServerVersion();
     })
 
     fileManagerStore.$onAction(({name, store, after}) => {
@@ -447,7 +484,20 @@ export default {
       if(jobId === this.lastJobId)
         this.restoreLocked = false;
     },
-    truncateText
+    truncateText,
+    getServerVersion() {
+      axios
+        .post("/get_postgresql_version/", {
+          database_index: this.databaseIndex,
+          workspace_id: this.workspaceId,
+        })
+        .then((response) => {
+          this.restoreOptions.pg_version = response.data.version;
+        })
+        .catch((error) => {
+          handleError(error);
+        });
+    },
   }
 }
 

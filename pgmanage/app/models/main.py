@@ -42,6 +42,33 @@ class UserDetails(models.Model):
         bp = self.binary_paths or {}
 
         save = False
+        
+        bin_dir_template = None
+
+        for v in supported:
+            key = f"pg-{v}"
+            if key not in bp:
+                if not bin_dir_template:
+                    candidates = [
+                        f"/usr/lib/postgresql/{v}/bin",     # Ubuntu/Debian
+                        f"/usr/pgsql-{v}/bin",              # RHEL/CentOS
+                        f"/usr/lib/postgresql-{v}/bin",     # Gentoo
+                        f"/usr/lib/postgresql{v}/bin",      # openSUSE/SLES
+                    ]
+
+                    for p in candidates:
+                        if Path(p).exists():
+                            bin_dir_template = p.replace(str(v), "{v}")
+                            break
+                bin_dir = bin_dir_template.format(v=v) if bin_dir_template else None
+
+                if bin_dir and Path(bin_dir).exists():
+                    bp[key] = bin_dir
+                else:
+                    bp[key] = None
+                save = True
+
+
         if "default" not in bp:
             default_binaries = os.path.dirname(shutil.which("psql")) if shutil.which("psql") else ""
             if default_binaries:
@@ -56,18 +83,6 @@ class UserDetails(models.Model):
             else:
                 bp["default"] = None
             save = True
-
-        for v in supported:
-            key = f"pg-{v}"
-            if key not in bp:
-                bin_dir = f"/usr/lib/postgresql/{v}/bin"
-                if Path(bin_dir).exists():
-                    bp[key] = bin_dir
-                    if not bp.get("default"):
-                        bp["default"] = key
-                else:
-                    bp[key] = None
-                save = True
 
         self.binary_paths = bp
 
