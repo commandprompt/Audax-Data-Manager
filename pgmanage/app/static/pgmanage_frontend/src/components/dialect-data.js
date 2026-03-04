@@ -106,18 +106,19 @@ export default Object.freeze({
                   this.dropIndex(null, from);
 
                   const qb = knex({ client: this.client.dialect });
-                 
+
+                  const strippedPredicate = indexDef.predicate != null ? indexDef.predicate.trimStart().replace(/^where/i, "") : "";
                   if (indexDef.type === "unique") {
                     this.unique(indexDef.columns, {
                       indexName: indexDef.index_name,
                       useConstraint: false,
-                      predicate: qb.where(qb.raw(indexDef.predicate)),
+                      predicate: qb.where(qb.raw(strippedPredicate)),
                     })
                   } else {
                     this.index(indexDef.columns, indexDef.index_name, {
                       indexType: indexDef.type === 'non-unique' ? '' : indexDef.type,
                       storageEngineIndexType: null,
-                      predicate: qb.where(qb.raw(indexDef.predicate)),
+                      predicate: qb.where(qb.raw(strippedPredicate)),
                     }
                   )
                   }
