@@ -89,14 +89,14 @@
                   <a
                     data-testid="add-file-button"
                     class="btn btn-outline-secondary btn-sm"
-                    title="Add File"
+                    title="Create File"
                     @click="openActionsModal('addFile')"
                     ><i class="fas fa-file-circle-plus fa-xl"></i
                   ></a>
                   <a
                     data-testid="add-folder-button"
                     class="btn btn-outline-secondary btn-sm"
-                    title="Add Folder"
+                    title="Create Folder"
                     @click="openActionsModal('addFolder')"
                     ><i class="fas fa-folder-plus fa-xl"></i
                   ></a>
@@ -122,7 +122,7 @@
                         !Object.keys(selectedFile).length ||
                         selectedFile.is_directory,
                     }"
-                    title="Download"
+                    title="Download Selecte File"
                     @click="onDownload"
                   >
                     <i class="fas fa-download"></i
@@ -131,7 +131,7 @@
                     data-testid="upload-button"
                     class="btn btn-outline-secondary btn-sm"
                     :class="{ disabled: !!uploadingFile }"
-                    title="Upload"
+                    title="Upload File"
                     @click="onUpload"
                   >
                     <i class="fas fa-upload"></i
