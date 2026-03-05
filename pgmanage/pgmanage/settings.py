@@ -11,6 +11,7 @@ DESKTOP_MODE = custom_settings.DESKTOP_MODE
 BASE_DIR = custom_settings.BASE_DIR
 HOME_DIR = custom_settings.HOME_DIR
 MAX_UPLOAD_SIZE = custom_settings.MAX_UPLOAD_SIZE
+SUPPORTED_POSTGRES_VERSIONS = [13, 14, 15, 16, 17, 18]
 
 TEMP_DIR = os.path.join(BASE_DIR,'app','static','temp')
 PLUGINS_DIR = os.path.join(BASE_DIR,'app','plugins')

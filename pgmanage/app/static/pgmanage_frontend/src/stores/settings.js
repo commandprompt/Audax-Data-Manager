@@ -14,7 +14,7 @@ const useSettingsStore = defineStore("settings", {
     terminalTheme: "",
     restoreTabs: "",
     scrollTree: "",
-    binaryPath: "",
+    binaryPaths: {},
     pigzPath: "",
     csvEncoding: "",
     csvDelimiter: "",
@@ -35,7 +35,7 @@ const useSettingsStore = defineStore("settings", {
           editorTheme: userSettings.editor_theme,
           restoreTabs: userSettings.restore_tabs,
           scrollTree: userSettings.scroll_tree,
-          binaryPath: userSettings.binary_path,
+          binaryPaths: userSettings.binary_paths,
           pigzPath: userSettings.pigz_path,
           csvEncoding: userSettings.csv_encoding,
           csvDelimiter: userSettings.csv_delimiter,
@@ -69,7 +69,7 @@ const useSettingsStore = defineStore("settings", {
             theme: this.theme,
             csv_encoding: this.csvEncoding,
             csv_delimiter: this.csvDelimiter,
-            binary_path: this.binaryPath,
+            binary_paths: this.binaryPaths,
             date_format: this.dateFormat,
             pigz_path: this.pigzPath,
             restore_tabs: this.restoreTabs,
@@ -107,9 +107,6 @@ const useSettingsStore = defineStore("settings", {
     setCSVDelimiter(delimiter) {
       this.csvDelimiter = delimiter;
     },
-    setBinaryPath(path) {
-      this.binaryPath = path;
-    },
     setPigzPath(path) {
       this.pigzPath = path;
     },
@@ -128,6 +125,13 @@ const useSettingsStore = defineStore("settings", {
       }).show();
       const tab = new Tab(document.querySelector('#settings_shortcuts-tab'));
       tab.show();
+    },
+    setBinaryPathForVersion(versionKey, path) {
+      if (!this.binaryPaths) this.binaryPaths = {};
+      this.binaryPaths[versionKey] = path ? path.trim() : null;
+    },
+    setBinaryPaths(value) {
+      this.binaryPaths = value;
     },
   },
 });

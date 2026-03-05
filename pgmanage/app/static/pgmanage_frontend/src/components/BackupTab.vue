@@ -51,14 +51,28 @@
                       <option v-for="name in roleNames" :value="name" :key="name">{{ name }}</option>
                     </select>
                   </div>
-                  <div v-if="!isWindowsOS" class="form-group mb-1">
-                    <div class="form-check form-switch">
-                      <input class="form-check-input" type="checkbox" :id="`${backupTabId}_backupOptionsPigz`" v-model="backupOptions.pigz" :disabled="isDirectoryFormat || isTarFormat">
-                      <label class="form-check-label" :for="`${backupTabId}_backupOptionsPigz`">
-                        Compress with Pigz
-                      </label>
+
+                  <div class="row mt-1">
+                    <div v-if="pgKeys.length" class="form-group col-6 d-flex flex-column justify-content-end">
+                        <label class="fw-bold mb-1">PG version:</label>
+
+                        <select class="form-select" v-model="backupOptions.pg_version">
+                          <option v-for="k in pgKeys" :key="k" :value="k">
+                            {{ k }}
+                          </option>
+                        </select>
+                    </div>
+
+                    <div v-if="!isWindowsOS" class="form-group col-6 align-content-end">
+                      <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" :id="`${backupTabId}_backupOptionsPigz`" v-model="backupOptions.pigz" :disabled="isDirectoryFormat || isTarFormat">
+                        <label class="form-check-label" :for="`${backupTabId}_backupOptionsPigz`">
+                          Compress with Pigz
+                        </label>
+                      </div>
                     </div>
                   </div>
+                 
     
                   <div class="row mt-1" :class="(backupOptions.pigz) ? 'collapse show':'collapse'">
                     <div class="form-group col-6 d-flex flex-column justify-content-end">
@@ -349,6 +363,7 @@ export default {
       ],
       backupOptionsDefault: {
         database: this.treeNode.data.database,
+        pg_version: '',
         tables: [],
         schemas: [],
         role: "",
@@ -427,7 +442,11 @@ export default {
     },
     isWindowsOS() {
       return navigator.userAgent.indexOf("Win") != -1
-    }
+    },
+    pgKeys() {
+      const keys = Object.keys(settingsStore.binaryPaths || {}).filter(k => settingsStore.binaryPaths[k]);
+      return keys.map(k => parseInt(k.split('-')[1])).sort();
+    },
   },
   mounted() {
     this.$nextTick(() => {
@@ -438,6 +457,7 @@ export default {
       }
       this.backupOptions = { ...this.backupOptionsDefault }
       this.getRoleNames()
+      this.getServerVersion();
     })
 
     fileManagerStore.$onAction(({ name, store, after }) => {
@@ -572,7 +592,20 @@ export default {
       if(jobId === this.lastJobId)
         this.backupLocked = false;
     },
-    truncateText
+    truncateText,
+    getServerVersion() {
+      axios
+        .post("/get_postgresql_version/", {
+          database_index: this.databaseIndex,
+          workspace_id: this.workspaceId,
+        })
+        .then((response) => {
+          this.backupOptions.pg_version = this.pgKeys.includes(response.data.version) ? response.data.version : this.pgKeys.at(-1);
+        })
+        .catch((error) => {
+          handleError(error);
+        });
+    },
   }
 }
 

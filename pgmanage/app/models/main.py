@@ -1,9 +1,11 @@
 import os
 import shutil
 
+from pathlib import Path
 from app.utils.crypto import decrypt, encrypt
 from django.contrib.auth.models import User
 from django.db import models, transaction, DatabaseError
+from django.conf import settings
 
 
 class Technology(models.Model):
@@ -17,7 +19,7 @@ class UserDetails(models.Model):
     csv_encoding = models.CharField(max_length=50, blank=False, default='utf-8')
     csv_delimiter = models.CharField(max_length=10, blank=False, default=',')
     masterpass_check = models.CharField(max_length=256, default='')
-    binary_path = models.CharField(max_length=256, null=True)
+    binary_paths = models.JSONField(default=dict)
     date_format = models.CharField(max_length=200, null=True)
     pigz_path = models.CharField(max_length=256, null=True)
     restore_tabs = models.BooleanField(default=True)
@@ -33,15 +35,56 @@ class UserDetails(models.Model):
             )
         return pigz_path
 
-    def get_binary_path(self):
+    def get_binary_paths(self, reset: bool = False):
+        supported = settings.SUPPORTED_POSTGRES_VERSIONS
+        bp = {} if reset else self.binary_paths
 
-        if self.binary_path:
-            binary_path = self.binary_path
-        else:
-            binary_path = (
-                os.path.dirname(shutil.which("psql")) if shutil.which("psql") else ""
-            )
-        return binary_path
+        save = False
+        
+        bin_dir_template = None
+
+        for v in supported:
+            key = f"pg-{v}"
+            if key not in bp:
+                if not bin_dir_template:
+                    candidates = [
+                        f"/usr/lib/postgresql/{v}/bin",     # Ubuntu/Debian
+                        f"/usr/pgsql-{v}/bin",              # RHEL/CentOS
+                        f"/usr/lib/postgresql-{v}/bin",     # Gentoo
+                        f"/usr/lib/postgresql{v}/bin",      # openSUSE/SLES
+                    ]
+
+                    for p in candidates:
+                        if Path(p).exists():
+                            bin_dir_template = p.replace(str(v), "{v}")
+                            break
+                bin_dir = bin_dir_template.format(v=v) if bin_dir_template else None
+
+                if bin_dir and Path(bin_dir).exists():
+                    bp[key] = bin_dir
+                else:
+                    bp[key] = None
+                save = True
+
+        self.binary_paths = bp
+
+        if save:
+            self.save(update_fields=["binary_paths"])
+
+        return bp
+
+    def get_pg_bin(self, version: int = None) -> str:
+        bp = self.get_binary_paths()
+
+        key = f"pg-{version}"
+
+        binary_path = bp.get(key)
+
+        if binary_path:
+            return binary_path
+
+        psql = shutil.which("psql")
+        return os.path.dirname(psql) if psql else ""
 
     def get_editor_theme(self):
         if self.theme == "light":

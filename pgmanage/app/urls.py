@@ -363,6 +363,7 @@ base_urlpatterns = [
     path('file_manager/upload/', views.file_manager.upload, name='upload_file'),
 
     path('validate_binary_path/', views.workspace.validate_binary_path, name='validate_binary_path'),
+    path('discover_binary_paths/', views.workspace.discover_binary_paths, name='discover_binary_paths'),
 
     path('log/', views.logging.log_message, name="log_message"),
 

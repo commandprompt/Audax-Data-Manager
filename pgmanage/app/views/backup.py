@@ -327,7 +327,7 @@ def create_backup(request, database):
 
     utility_path = None
     try:
-        utility_path = get_utility_path(utility, request.user)
+        utility_path = get_utility_path(utility, request.user, data.get("pg_version"))
     except FileNotFoundError as exc:
         return JsonResponse(
             data={"data": str(exc)},
@@ -409,7 +409,7 @@ def preview_command(request, database):
 
     utility_path = None
     try:
-        utility_path = get_utility_path(utility, request.user)
+        utility_path = get_utility_path(utility, request.user, data.get("pg_version"))
     except FileNotFoundError as exc:
         return JsonResponse(
             data={"data": str(exc)},

@@ -14,7 +14,11 @@
             </li>
             <li class="nav-item">
               <a class="nav-link" id="settings_options-tab" data-bs-toggle="tab" href="#settings_options" role="tab"
-                aria-controls="settings_options" aria-selected="false">Options</a>
+              aria-controls="settings_options" aria-selected="false">Options</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="settings-paths-tab" data-bs-toggle="tab" href="#settings_paths" role="tab"
+                aria-controls="settings_paths" aria-selected="false">Paths</a>
             </li>
             <li v-if="!desktopMode" class="nav-item">
               <a class="nav-link" id="settings_password-tab" data-bs-toggle="tab" href="#settings_password" role="tab"
@@ -118,21 +122,45 @@
 
               </div>
 
+              <div class="text-end">
+                <button class='btn btn-success' @click='saveSettings'>Save</button>
+              </div>
+            </div>
+
+            <div class="tab-pane fade" id="settings_paths" role="tabpanel" aria-labelledby="settings-paths-tab">
               <div class="row">
                 <div class="form-group col-12">
-                  <label for="binary_path" class="fw-bold mb-2">PostgreSQL Binary Path</label>
-                  <div class="d-flex">
-                    <div class="input-group">
-                      <input id="binary_path" type="text" class="form-control" v-model="binaryPath"
-                        :placeholder="`${action} binary path..`" autocomplete="off">
-                      <label v-if="desktopMode" class="btn btn-outline-secondary mb-0" type="button">
-                        Select
-                        <input type="file" @change="setPostgresqlPath" nwdirectory hidden>
-                      </label>
+                  <div class="d-flex justify-content-between mb-3">
+                    <label class="fw-bold my-2">PostgreSQL Binaries</label>
+                    <button class='btn btn-ghost btn-ghost-secondary' @click='discoverBinaries'>Discover binaries</button>
+                  </div>
+
+                  <div v-for="k in pgKeys" :key="k" class="mb-2">
+                    <div class="d-flex align-items-center">
+                      <label :for="`binary_path_${k}`" class="w-25 text-muted">{{ k }}</label>
+                      <div class="input-group">
+                        <input
+                          :id="`binary_path_${k}`"
+                          type="text"
+                          class="form-control"
+                          :value="binaryPaths[k] || ''"
+                          @input="setBinaryPathForVersion(k, $event.target.value)"
+                          :placeholder="`${action} binary path..`"
+                          autocomplete="off"
+                        />
+
+                        <label v-if="desktopMode" class="btn btn-outline-secondary mb-0" type="button">
+                          Select
+                          <input type="file" @change="setPostgresqlPathForVersion($event, k)" nwdirectory hidden>
+                        </label>
+                      </div>
+
+                      <a class="btn btn-outline-primary ms-2"
+                        @click="validateBinaryPath(binaryPaths[k], ['pg_dump', 'pg_dumpall', 'pg_restore', 'psql'])"
+                        title="Validate">
+                        Validate
+                      </a>
                     </div>
-                    <a data-testid="validate-binary-path-button" class="btn btn-outline-primary ms-2" @click="validateBinaryPath(binaryPath, ['pg_dump', 'pg_dumpall', 'pg_restore', 'psql'])" title="Validate">
-                      Validate
-                    </a>
                   </div>
                 </div>
               </div>
@@ -320,14 +348,6 @@ export default {
         settingsStore.setCSVDelimiter(value)
       }
     },
-    binaryPath: {
-      get() {
-        return settingsStore.binaryPath
-      },
-      set(value) {
-        settingsStore.setBinaryPath(value)
-      }
-    },
     pigzPath: {
       get() {
         return settingsStore.pigzPath
@@ -365,7 +385,14 @@ export default {
     },
     desktopMode() {
       return settingsStore.desktopMode
-    }
+    },
+    binaryPaths() {
+      return settingsStore.binaryPaths;
+    },
+    pgKeys() {
+      const keys = Object.keys(this.binaryPaths || {});
+      return keys.sort((a,b) => parseInt(a.split("-")[1]) - parseInt(b.split("-")[1]));
+    },
   },
   watch: {
     fontSize(newValue, oldValue) {
@@ -793,10 +820,6 @@ export default {
           handleError(error);
         })
     },
-    setPostgresqlPath(e) {
-      const [file] = e.target.files
-      this.binaryPath = file?.path
-    },
     setPigzPath(e) {
       const [file] = e.target.files
       this.pigzPath = file?.path
@@ -846,6 +869,23 @@ export default {
       }
 
       return false;
+    },
+    setPostgresqlPathForVersion(e, versionKey) {
+      const [file] = e.target.files;
+      const path = file?.path || "";
+      settingsStore.setBinaryPathForVersion(versionKey, path);
+    },
+    setBinaryPathForVersion(versionKey, value) {
+      settingsStore.setBinaryPathForVersion(versionKey, value);
+    },
+    discoverBinaries() {
+      axios.get('/discover_binary_paths/')
+        .then((resp) => {
+          settingsStore.setBinaryPaths(resp.data);
+        })
+        .catch((error) => {
+          handleError(error);
+        })
     }
   }
 }
