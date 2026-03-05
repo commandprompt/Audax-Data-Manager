@@ -10,7 +10,7 @@
       <div class="modal-dialog modal-xl modal-file-manager">
         <div class="modal-content">
           <div class="modal-header align-items-center">
-            <h2 class="modal-title">File manager</h2>
+            <h2 class="modal-title">{{ this.dialogTitle }}</h2>
             <button
               type="button"
               class="btn-close"
@@ -19,80 +19,6 @@
             ></button>
           </div>
           <div class="modal-body p-0" style="height: 60vh">
-            <div
-              id="actions-tab"
-              class="d-flex justify-content-between border-bottom px-4 py-3"
-            >
-              <div class="btn-group">
-                <a
-                  data-testid="add-file-button"
-                  class="btn btn-outline-secondary btn-sm"
-                  title="Add File"
-                  @click="openActionsModal('addFile')"
-                  ><i class="fas fa-file-circle-plus fa-xl"></i
-                ></a>
-                <a
-                  data-testid="add-folder-button"
-                  class="btn btn-outline-secondary btn-sm"
-                  title="Add Folder"
-                  @click="openActionsModal('addFolder')"
-                  ><i class="fas fa-folder-plus fa-xl"></i
-                ></a>
-                <a
-                  data-testid="rename-button"
-                  :class="[
-                    'btn',
-                    'btn-outline-secondary',
-                    'btn-sm',
-                    { disabled: !Object.keys(selectedFile).length },
-                  ]"
-                  title="Rename Folder/File"
-                  @click="openActionsModal('rename')"
-                  ><i class="fas fa-thin fa-file-pen fa-xl"></i
-                ></a>
-              </div>
-              <div>
-                <div class="btn-group me-2">
-                  <a
-                    data-testid="download-button"
-                    class="btn btn-outline-secondary btn-sm"
-                    :class="{
-                      disabled:
-                        !Object.keys(selectedFile).length ||
-                        selectedFile.is_directory,
-                    }"
-                    title="Download"
-                    @click="onDownload"
-                  >
-                    <i class="fas fa-download"></i
-                  ></a>
-                  <a
-                    data-testid="upload-button"
-                    class="btn btn-outline-secondary btn-sm"
-                    :class="{ disabled: !!uploadingFile }"
-                    title="Upload"
-                    @click="onUpload"
-                  >
-                    <i class="fas fa-upload"></i
-                  ></a>
-                </div>
-                <div class="btn-group">
-                  <a
-                    data-testid="delete-file-button"
-                    :class="[
-                      'btn',
-                      'btn-outline-secondary',
-                      'btn-sm',
-                      { disabled: !Object.keys(selectedFile).length },
-                    ]"
-                    title="Delete"
-                    @click="openActionsModal('delete')"
-                    ><i class="fas fa-trash fa-xl"></i
-                  ></a>
-                </div>
-              </div>
-            </div>
-
             <div
               class="d-flex justify-content-between align-items-center border-bottom px-4 py-3"
             >
@@ -129,7 +55,7 @@
                   ><i class="fas fa-house fa-xl"></i
                 ></a>
               </div>
-              <div class="form-group w-75 mb-0">
+              <div class="form-group w-75 mb-0 mx-1">
                 <input
                 class="form-control"
                 type="text"
@@ -151,6 +77,79 @@
                 @click="changeView"
                 title="Change View"
                 ><i class="fas fa-grip-horizontal fa-xl"></i
+              ></a>
+            </div>
+
+            <div
+              id="actions-tab"
+              class="d-flex justify-content-between border-bottom px-4 py-3"
+            >
+              <div>
+                <div class="btn-group">
+                  <a
+                    data-testid="add-file-button"
+                    class="btn btn-outline-secondary btn-sm"
+                    title="Create File"
+                    @click="openActionsModal('addFile')"
+                    ><i class="fas fa-file-circle-plus fa-xl"></i
+                  ></a>
+                  <a
+                    data-testid="add-folder-button"
+                    class="btn btn-outline-secondary btn-sm"
+                    title="Create Folder"
+                    @click="openActionsModal('addFolder')"
+                    ><i class="fas fa-folder-plus fa-xl"></i
+                  ></a>
+                  <a
+                    data-testid="rename-button"
+                    :class="[
+                      'btn',
+                      'btn-outline-secondary',
+                      'btn-sm',
+                      { disabled: !Object.keys(selectedFile).length },
+                    ]"
+                    title="Rename Folder/File"
+                    @click="openActionsModal('rename')"
+                    ><i class="fas fa-thin fa-file-pen fa-xl"></i
+                  ></a>
+                </div>
+                <div class="btn-group ms-2">
+                  <a
+                    data-testid="download-button"
+                    class="btn btn-outline-secondary btn-sm"
+                    :class="{
+                      disabled:
+                        !Object.keys(selectedFile).length ||
+                        selectedFile.is_directory,
+                    }"
+                    title="Download Selecte File"
+                    @click="onDownload"
+                  >
+                    <i class="fas fa-download"></i
+                  ></a>
+                  <a
+                    data-testid="upload-button"
+                    class="btn btn-outline-secondary btn-sm"
+                    :class="{ disabled: !!uploadingFile }"
+                    title="Upload File"
+                    @click="onUpload"
+                  >
+                    <i class="fas fa-upload"></i
+                  ></a>
+                </div>
+              </div>
+
+              <a
+                data-testid="delete-file-button"
+                :class="[
+                  'btn',
+                  'btn-outline-danger',
+                  'btn-sm',
+                  { disabled: !Object.keys(selectedFile).length },
+                ]"
+                title="Delete"
+                @click="openActionsModal('delete')"
+                ><i class="fas fa-trash"></i
               ></a>
             </div>
 
@@ -186,10 +185,7 @@
                         'fas',
                         'fa-2xl',
                         'me-2',
-                        {
-                          'fa-folder': file.is_directory,
-                          'fa-file': !file.is_directory,
-                        },
+                        fileIconClass(file)
                       ]"
                       :style="{
                         color: file.is_directory ? '#0ea5e9' : 'rgb(105 114 118)',
@@ -202,7 +198,7 @@
   
               <!-- Table format for files and folders-->
               <div v-else class="file-table">
-                <div class="p-0">
+                <div class="p-2">
                   <ul class="list-group list-group-flush form-group">
                     <li
                       class="list-group-item d-flex row g-0 fw-bold mb-1 border-0 file-table-header bg-transparent"
@@ -228,10 +224,7 @@
                           :class="[
                             'fas',
                             'fa-2xl',
-                            {
-                              'fa-folder': file.is_directory,
-                              'fa-file': !file.is_directory,
-                            },
+                            fileIconClass(file)
                           ]"
                           :style="{
                             color: file.is_directory
@@ -284,14 +277,14 @@
             <a
               :class="[
                 'btn',
-                'btn-secondary',
+                'btn-primary',
                 'btn-sm',
                 'm-0',
                 { disabled: !Object.keys(selectedFile).length },
               ]"
               @click="confirmSelection"
             >
-              Select</a
+              Confirm</a
             >
           </div>
         </div>
@@ -333,6 +326,7 @@ export default {
       uploadProgress: null,
       uploadingFile: "",
       controller: null,
+      dialogTitle: 'File Manager'
     };
   },
   computed: {
@@ -350,6 +344,7 @@ export default {
     fileManagerStore.$onAction(({ name, store, after }) => {
       if (name === "showModal") {
         after(() => {
+          this.dialogTitle = store.title;
           this.show(store.desktopMode, store.onChange, store.dialogType);
         });
       }
@@ -364,6 +359,13 @@ export default {
     window.removeEventListener("beforeunload", this.preventNavigation);
   },
   methods: {
+    fileIconClass(f) {
+      if(f.is_directory) {
+        return 'fa-folder'
+      } else {
+        return f.file_name.endsWith('.incomplete') ? 'fa-file-half-dashed' : 'fa-file'
+      }
+    },
     preventNavigation(event) {
       if (this.uploadingFile) {
         event.preventDefault();
@@ -444,28 +446,12 @@ export default {
       inputEl.dispatchEvent(new MouseEvent("click"));
     },
     onDownload() {
-      axios
-        .post(
-          "/file_manager/download/",
-          { path: this.selectedFile.path },
-          { responseType: "blob" }
-        )
-        .then((resp) => {
-          const url = window.URL.createObjectURL(new Blob([resp.data]));
-          const link = document.createElement("a");
-          link.href = url;
-          link.setAttribute(
-            "download",
-            this.selectedFile.path.split("/").pop()
-          );
-          document.body.appendChild(link);
-          link.click();
-          link.remove();
-          window.URL.revokeObjectURL(url);
-        })
-        .catch((error) => {
-          handleError(error);
-        });
+      const link = document.createElement("a");
+      link.href = `/file_manager/download/?path=${encodeURIComponent(this.selectedFile.path)}`;
+      link.setAttribute("download", "");
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
     },
     async onUploadProgress(event) {
       const file = event.target.files[0];
@@ -480,23 +466,33 @@ export default {
         return;
       }
 
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("path", this.currentPath);
+      const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB
+      const TOTAL_CHUNKS = Math.ceil(file.size / CHUNK_SIZE);
 
       try {
         this.showLoading = true;
         this.uploadingFile = file.name;
         this.controller = new AbortController();
-        const response = await axios.post("/file_manager/upload/", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-          onUploadProgress: (progressEvent) => {
-            this.uploadProgress = Math.round(progressEvent.progress * 100);
-          },
-          signal: this.controller.signal,
-        });
+
+        for (let i = 0; i < TOTAL_CHUNKS; i++) {
+          const start = i * CHUNK_SIZE;
+          const end = Math.min(start + CHUNK_SIZE, file.size);
+          const chunk = file.slice(start, end);
+
+          const formData = new FormData();
+          formData.append("file", chunk, file.name);
+          formData.append("total_size", file.size);
+          formData.append("path", this.currentPath);
+          formData.append('offset', start);
+          const response = await axios.post("/file_manager/upload/", formData, {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+            signal: this.controller.signal,
+          });
+          this.uploadProgress = response.data.progress;
+        }
+
         this.showLoading = false;
         this.uploadProgress = null;
         this.uploadingFile = null;
@@ -512,6 +508,7 @@ export default {
         this.controller = null;
         if (axios.isCancel(error)) {
           showToast("info", `Upload of file "${file.name}"" was cancelled.`);
+          this.refreshManager()
         } else {
           handleError(error);
         }

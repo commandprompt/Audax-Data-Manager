@@ -3,7 +3,7 @@ import os
 from app.file_manager.file_manager import FileManager
 from app.utils.decorators import user_authenticated
 from django.http import FileResponse, HttpResponse, JsonResponse
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET
 from django.conf import settings
 
 
@@ -59,15 +59,12 @@ def delete(request):
         return JsonResponse({"data": str(exc)}, status=400)
 
 
-@require_POST
+@require_GET
 @user_authenticated
 def download(request):
     file_manager = FileManager(request.user)
-
-    data = request.data
-
     try:
-        rel_path = data.get("path")
+        rel_path = request.GET.get("path")
 
         if not rel_path:
             return JsonResponse({"data": "File path is required."}, status=400)
@@ -92,11 +89,18 @@ def upload(request):
     file_manager = FileManager(request.user)
     upload_file = request.FILES.get("file")
     rel_path = request.POST.get("path", "")
+    offset = int(request.POST.get("offset", 0))
+    total_size = int(request.POST.get("total_size", 0))
+
+    TMP_SUFFIX = '.incomplete'
+
+    if total_size == 0:
+        return JsonResponse({"data": "Cant upload files with zero size."}, status=400)
 
     if not upload_file:
         return JsonResponse({"data": "No file provided."}, status=400)
 
-    if upload_file.size > settings.MAX_UPLOAD_SIZE:
+    if total_size > settings.MAX_UPLOAD_SIZE:
         return JsonResponse(
             {
                 "data": f"File size exceeds {int(settings.MAX_UPLOAD_SIZE / (1024 **2))}MB limit."
@@ -110,16 +114,29 @@ def upload(request):
         )
         abs_path = os.path.abspath(file_manager.resolve_path(normalized_path))
 
-        file_name = upload_file.name
+        file_name = upload_file.name + TMP_SUFFIX
 
-        new_file_name = os.path.join(abs_path, file_name)
+        new_file_path = os.path.join(abs_path, file_name)
 
-        file_manager.check_access_permission(new_file_name)
+        file_manager.check_access_permission(new_file_path)
 
-        with open(new_file_name, "wb+") as f:
+        mode = "wb+" if offset == 0 else "rb+"
+
+        with open(new_file_path, mode) as f:
+            f.seek(offset)
             for chunk in upload_file.chunks():
                 f.write(chunk)
+            current_pos = f.tell()
+            progress = int(current_pos / total_size * 100)
+            is_complete = current_pos >= total_size
+            if is_complete:
+                os.rename(new_file_path, new_file_path.removesuffix(TMP_SUFFIX))
 
-        return JsonResponse({"data": "File uploaded successfully."}, status=201)
+            return JsonResponse({
+                "status": "complete" if is_complete else "in_progress",
+                "progress": progress,
+                "data": "Success" if is_complete else "Chunk received"
+            }, status=201)
+
     except Exception as exc:
         return JsonResponse({"data": str(exc)}, status=400)
