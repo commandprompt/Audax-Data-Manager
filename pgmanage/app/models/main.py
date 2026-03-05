@@ -35,9 +35,9 @@ class UserDetails(models.Model):
             )
         return pigz_path
 
-    def get_binary_paths(self):
+    def get_binary_paths(self, reset: bool = False):
         supported = settings.SUPPORTED_POSTGRES_VERSIONS
-        bp = self.binary_paths or {}
+        bp = {} if reset else self.binary_paths
 
         save = False
         

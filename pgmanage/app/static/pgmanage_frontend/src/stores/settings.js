@@ -130,6 +130,9 @@ const useSettingsStore = defineStore("settings", {
       if (!this.binaryPaths) this.binaryPaths = {};
       this.binaryPaths[versionKey] = path ? path.trim() : null;
     },
+    setBinaryPaths(value) {
+      this.binaryPaths = value;
+    },
   },
 });
 

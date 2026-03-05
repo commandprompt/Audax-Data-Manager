@@ -130,7 +130,10 @@
             <div class="tab-pane fade" id="settings_paths" role="tabpanel" aria-labelledby="settings-paths-tab">
               <div class="row">
                 <div class="form-group col-12">
-                  <label class="fw-bold mb-2">PostgreSQL Binaries</label>
+                  <div class="d-flex justify-content-between mb-3">
+                    <label class="fw-bold mb-2">PostgreSQL Binaries</label>
+                    <button class='btn btn-primary float-end' @click='discoverBinaries'>Discover binaries</button>
+                  </div>
 
                   <div v-for="k in pgKeys" :key="k" class="mb-2 ps-3">
                     <div class="d-flex align-items-center">
@@ -876,6 +879,15 @@ export default {
     setBinaryPathForVersion(versionKey, value) {
       settingsStore.setBinaryPathForVersion(versionKey, value);
     },
+    discoverBinaries() {
+      axios.get('/discover_binary_paths/')
+        .then((resp) => {
+          settingsStore.setBinaryPaths(resp.data);
+        })
+        .catch((error) => {
+          handleError(error);
+        })
+    }
   }
 }
 </script>

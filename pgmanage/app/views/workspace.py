@@ -642,3 +642,13 @@ def execute_query(request, database):
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
     return JsonResponse({"status": "success"})
+
+
+@user_authenticated
+def discover_binary_paths(request):
+    try:
+        user_details = UserDetails.objects.get(user=request.user)
+        binary_paths = user_details.get_binary_paths(reset=True)
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+    return JsonResponse(data=binary_paths)
