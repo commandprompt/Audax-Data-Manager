@@ -36,8 +36,6 @@ class UserDetails(models.Model):
         return pigz_path
 
     def get_binary_paths(self):
-        from app.utils.postgresql_utilities import get_pg_version_from_psql_bin
-
         supported = settings.SUPPORTED_POSTGRES_VERSIONS
         bp = self.binary_paths or {}
 
@@ -68,22 +66,6 @@ class UserDetails(models.Model):
                     bp[key] = None
                 save = True
 
-
-        if "default" not in bp:
-            default_binaries = os.path.dirname(shutil.which("psql")) if shutil.which("psql") else ""
-            if default_binaries:
-                pg_version = get_pg_version_from_psql_bin(default_binaries)
-                if pg_version and pg_version in supported:
-                    key = f"pg-{pg_version}"
-                    bp["default"] = key
-                    if key not in bp or not bp.get(key):
-                        bp[key] = default_binaries
-                else:
-                    bp["default"] = None
-            else:
-                bp["default"] = None
-            save = True
-
         self.binary_paths = bp
 
         if save:
@@ -94,7 +76,7 @@ class UserDetails(models.Model):
     def get_pg_bin(self, version: int = None) -> str:
         bp = self.get_binary_paths()
 
-        key = f"pg-{version}" if version else bp.get("default")
+        key = f"pg-{version}"
 
         binary_path = bp.get(key)
 
@@ -103,21 +85,6 @@ class UserDetails(models.Model):
 
         psql = shutil.which("psql")
         return os.path.dirname(psql) if psql else ""
-
-    def set_pg_bin(self, version: int, path: str, save=True):
-        bp = self.get_binary_paths()
-
-        key = f"pg-{version}"
-
-        if key not in bp:
-            raise ValueError("Unsupported PostgreSQL version")
-
-        bp[key] = path
-
-        self.binary_paths = bp
-
-        if save:
-            self.save(update_fields=["binary_paths"])
 
     def get_editor_theme(self):
         if self.theme == "light":

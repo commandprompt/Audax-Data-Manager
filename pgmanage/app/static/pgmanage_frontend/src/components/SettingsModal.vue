@@ -132,16 +132,6 @@
                 <div class="form-group col-12">
                   <label class="fw-bold mb-2">PostgreSQL Binaries</label>
 
-                  <div class="d-flex align-items-center mb-3 ps-3">
-                    <div class="fw-bold">Default:</div>
-
-                    <select class="form-select ms-2" v-model="binaryPathsDefault">
-                      <option v-for="k in pgKeys" :key="k" :value="k">
-                        {{ k }}
-                      </option>
-                    </select>
-                  </div>
-
                   <div v-for="k in pgKeys" :key="k" class="mb-2 ps-3">
                     <div class="d-flex align-items-center">
                       <div class="fw-bold w-25">{{ k }}</div>
@@ -397,16 +387,8 @@ export default {
     binaryPaths() {
       return settingsStore.binaryPaths;
     },
-    binaryPathsDefault: {
-      get() {
-         return settingsStore.binaryPaths?.default || null;
-      },
-      set(value) {
-         settingsStore.setBinaryPathsDefault(value);
-      },
-    },
     pgKeys() {
-      const keys = Object.keys(this.binaryPaths || {}).filter(k => k !== "default");
+      const keys = Object.keys(this.binaryPaths || {});
       return keys.sort((a,b) => parseInt(a.split("-")[1]) - parseInt(b.split("-")[1]));
     },
   },

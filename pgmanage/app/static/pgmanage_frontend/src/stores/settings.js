@@ -126,10 +126,6 @@ const useSettingsStore = defineStore("settings", {
       const tab = new Tab(document.querySelector('#settings_shortcuts-tab'));
       tab.show();
     },
-    setBinaryPathsDefault(key) {
-      if (!this.binaryPaths) this.binaryPaths = {};
-      this.binaryPaths.default = key;
-    },
     setBinaryPathForVersion(versionKey, path) {
       if (!this.binaryPaths) this.binaryPaths = {};
       this.binaryPaths[versionKey] = path ? path.trim() : null;

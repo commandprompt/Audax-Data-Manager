@@ -1,7 +1,5 @@
 import os
 import shutil
-import subprocess
-import re
 from typing import Union
 
 from app.models.main import UserDetails
@@ -38,23 +36,3 @@ def get_utility_path(utility: str, current_user: User, pg_version: int | None = 
                           More information: <a target='_blank' href='https://pgmanage.readthedocs.io/en/latest/en/02_quick_start.html#install-guide'>Postgresql Client Installation</a>"
         raise FileNotFoundError(error_msg)
     return utility_path
-
-
-def get_pg_version_from_psql_bin(binary_path: str) -> int | None:
-    psql = os.path.join(binary_path, "psql.exe" if os.name == "nt" else "psql")
-    if not os.path.exists(psql):
-        return None
-
-    try:
-        res = subprocess.run(
-            [psql, "--version"],
-            capture_output=True,
-            text=True,
-            timeout=2,
-            check=False,
-        )
-        out = (res.stdout or res.stderr or "").strip()
-        m = re.search(r"\b(\d+)\.\d+\b", out or "")
-        return int(m.group(1)) if m else None
-    except Exception:
-        return None

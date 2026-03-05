@@ -54,7 +54,7 @@
 
                   <div class="row mt-1">
                     <div v-if="pgKeys.length" class="form-group col-6 d-flex flex-column justify-content-end">
-                        <label class="fw-bold">PG version:</label>
+                        <label class="fw-bold mb-1">PG version:</label>
 
                         <select class="form-select" v-model="backupOptions.pg_version">
                           <option v-for="k in pgKeys" :key="k" :value="k">
@@ -444,7 +444,7 @@ export default {
       return navigator.userAgent.indexOf("Win") != -1
     },
     pgKeys() {
-      const keys = Object.keys(settingsStore.binaryPaths || {}).filter(k => (k !== "default") && settingsStore.binaryPaths[k]);
+      const keys = Object.keys(settingsStore.binaryPaths || {}).filter(k => settingsStore.binaryPaths[k]);
       return keys.map(k => parseInt(k.split('-')[1])).sort();
     },
   },
