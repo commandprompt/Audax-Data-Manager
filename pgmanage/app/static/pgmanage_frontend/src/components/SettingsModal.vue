@@ -131,14 +131,13 @@
               <div class="row">
                 <div class="form-group col-12">
                   <div class="d-flex justify-content-between mb-3">
-                    <label class="fw-bold mb-2">PostgreSQL Binaries</label>
-                    <button class='btn btn-primary float-end' @click='discoverBinaries'>Discover binaries</button>
+                    <label class="fw-bold my-2">PostgreSQL Binaries</label>
+                    <button class='btn btn-ghost btn-ghost-secondary' @click='discoverBinaries'>Discover binaries</button>
                   </div>
 
-                  <div v-for="k in pgKeys" :key="k" class="mb-2 ps-3">
+                  <div v-for="k in pgKeys" :key="k" class="mb-2">
                     <div class="d-flex align-items-center">
-                      <div class="fw-bold w-25">{{ k }}</div>
-
+                      <label :for="`binary_path_${k}`" class="w-25 text-muted">{{ k }}</label>
                       <div class="input-group">
                         <input
                           :id="`binary_path_${k}`"
