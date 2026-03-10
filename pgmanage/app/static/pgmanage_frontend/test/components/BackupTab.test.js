@@ -349,7 +349,8 @@ describe("BackupTab Component", () => {
     expect(showModalSpy).toHaveBeenCalledWith(
       undefined,
       wrapper.vm.onFile,
-      wrapper.vm.dialogType
+      wrapper.vm.dialogType,
+      'Choose a backup destination',
     );
   });
 

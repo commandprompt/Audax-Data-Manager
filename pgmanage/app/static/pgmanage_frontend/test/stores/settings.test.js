@@ -40,7 +40,7 @@ describe("settings store", () => {
     expect(store.terminalTheme).toBe("");
     expect(store.restoreTabs).toBe("");
     expect(store.scrollTree).toBe("");
-    expect(store.binaryPath).toBe("");
+    expect(store.binaryPaths).toEqual({});
     expect(store.pigzPath).toBe("");
     expect(store.csvEncoding).toBe("");
     expect(store.csvDelimiter).toBe("");
@@ -59,7 +59,7 @@ describe("settings store", () => {
           editor_theme: "monokai",
           restore_tabs: true,
           scroll_tree: false,
-          binary_path: "/usr/bin",
+          binary_paths: { "pg-16": "/usr/bin" },
           pigz_path: "/usr/local/bin",
           csv_encoding: "UTF-8",
           csv_delimiter: ",",
@@ -77,7 +77,7 @@ describe("settings store", () => {
         editor_theme: "monokai",
         restore_tabs: true,
         scroll_tree: false,
-        binary_path: "/usr/bin",
+        binary_paths: { "pg-16": "/usr/bin" },
         pigz_path: "/usr/local/bin",
         csv_encoding: "UTF-8",
         csv_delimiter: ",",
@@ -91,7 +91,7 @@ describe("settings store", () => {
     expect(store.editorTheme).toBe("monokai");
     expect(store.restoreTabs).toBe(true);
     expect(store.scrollTree).toBe(false);
-    expect(store.binaryPath).toBe("/usr/bin");
+    expect(store.binaryPaths).toEqual({ "pg-16": "/usr/bin" });
     expect(store.pigzPath).toBe("/usr/local/bin");
     expect(store.csvEncoding).toBe("UTF-8");
     expect(store.csvDelimiter).toBe(",");
@@ -220,10 +220,10 @@ describe("settings store", () => {
     expect(store.csvDelimiter).toBe(",");
   });
 
-  it("sets binaryPath", () => {
+  it("sets binaryPaths", () => {
     const store = settingsStore;
-    store.setBinaryPath("/usr/bin");
-    expect(store.binaryPath).toBe("/usr/bin");
+    store.setBinaryPaths({ "pg-13": "/usr/bin" });
+    expect(store.binaryPaths).toEqual({ "pg-13": "/usr/bin" });
   });
 
   it("sets pigzPath", () => {

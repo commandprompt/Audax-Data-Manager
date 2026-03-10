@@ -36,9 +36,10 @@ describe("FileManagerActionsModal.vue", () => {
     expect(wrapper.find(".modal-title").text()).toBe("Rename");
   });
 
-  it("displays correct file icon and name", () => {
+  it("displays correct file icon and name", async () => {
+    await wrapper.setProps({ action: "delete" });
     expect(wrapper.find("i.fa-file").exists()).toBe(true);
-    expect(wrapper.find("span.ms-1").text()).toBe(fileMock.file_name);
+    expect(wrapper.find('[data-testid="delete-file-name"]').text()).toBe(fileMock.file_name);
   });
 
   it("emits actionDone event on successful rename", async () => {

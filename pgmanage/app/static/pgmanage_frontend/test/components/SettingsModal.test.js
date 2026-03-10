@@ -3,6 +3,7 @@ import SettingsModal from "@src/components/SettingsModal.vue";
 import { useSettingsStore } from "@src/stores/settings";
 import { vi, describe, beforeEach, afterEach, it, expect } from "vitest";
 import axios from "axios";
+import { Tab } from "bootstrap";
 
 vi.mock("@src/notification_control", () => {
   const showAlert = vi.fn();
@@ -91,19 +92,22 @@ describe("SettingsModal.vue", () => {
     );
   });
 
-  it("should handle the validation of PostgreSQL binary path", async () => {
+  it("should handle the validation of PostgreSQL binary paths", async () => {
+    settingsStore.binaryPaths = { "pg-16": "/usr/bin" };
+    const tab = await wrapper.find("#settings-paths-tab");
+    Tab.getOrCreateInstance(tab.element).show();
+
+    await flushPromises();
     const validateBinaryPathSpy = vi.spyOn(wrapper.vm, "validateBinaryPath");
     const validateButton = wrapper.find(
       '[data-testid="validate-binary-path-button"]'
     );
     axios.post.mockResolvedValue({ data: { data: "test data" } });
     await validateButton.trigger("click");
-    expect(validateBinaryPathSpy).toHaveBeenCalledWith(wrapper.vm.binaryPath, [
-      "pg_dump",
-      "pg_dumpall",
-      "pg_restore",
-      "psql",
-    ]);
+    expect(validateBinaryPathSpy).toHaveBeenCalledWith(
+      wrapper.vm.binaryPaths["pg-16"],
+      ["pg_dump", "pg_dumpall", "pg_restore", "psql"],
+    );
   });
 
   it("should handle theme changes correctly", async () => {

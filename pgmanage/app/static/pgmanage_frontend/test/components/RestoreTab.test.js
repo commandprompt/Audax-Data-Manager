@@ -236,7 +236,8 @@ describe("RestoreTab.vue", () => {
     expect(showModalSpy).toHaveBeenCalledWith(
       undefined,
       wrapper.vm.onFile,
-      wrapper.vm.dialogType
+      wrapper.vm.dialogType,
+      "Choose a backup to restore",
     );
   });
 

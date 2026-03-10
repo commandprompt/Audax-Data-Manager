@@ -17,7 +17,7 @@
                   <i :class="['fas', 'fa-2xl', { 'fa-folder': file.is_directory, 'fa-file': !file.is_directory }]"
                     :style="{ 'color': file.is_directory ? '#0ea5e9' : 'rgb(105 114 118)', }"></i>
                 </div>
-                <span>{{ file.file_name }}</span>
+                <span data-testid="delete-file-name">{{ file.file_name }}</span>
               </div>
 
             </div>

@@ -155,7 +155,8 @@
                         </label>
                       </div>
 
-                      <a class="btn btn-outline-primary ms-2"
+                      <a data-testid="validate-binary-path-button"
+                        class="btn btn-outline-primary ms-2"
                         @click="validateBinaryPath(binaryPaths[k], ['pg_dump', 'pg_dumpall', 'pg_restore', 'psql'])"
                         title="Validate">
                         Validate
