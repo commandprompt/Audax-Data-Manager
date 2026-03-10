@@ -11,6 +11,7 @@ DESKTOP_MODE = custom_settings.DESKTOP_MODE
 BASE_DIR = custom_settings.BASE_DIR
 HOME_DIR = custom_settings.HOME_DIR
 MAX_UPLOAD_SIZE = custom_settings.MAX_UPLOAD_SIZE
+APP_DB_NAME = custom_settings.APP_DB_NAME
 SUPPORTED_POSTGRES_VERSIONS = [13, 14, 15, 16, 17, 18]
 
 TEMP_DIR = os.path.join(BASE_DIR,'app','static','temp')
@@ -24,9 +25,9 @@ CSRF_TRUSTED_ORIGINS = []
 SESSION_COOKIE_NAME = 'pgmanage_sessionid'
 CSRF_COOKIE_NAME = 'pgmanage_csrftoken'
 ALLOWED_HOSTS = ['*']
-SQLITE_PATH = os.path.join(HOME_DIR, 'pgmanage.db')
+SQLITE_PATH = os.path.join(HOME_DIR, f'{APP_DB_NAME}.db')
 if not DESKTOP_MODE:
-    SQLITE_PATH = os.path.join(HOME_DIR, 'pgmanage-server.db')
+    SQLITE_PATH = os.path.join(HOME_DIR, f'{APP_DB_NAME}-server.db')
 
 # Database
 DATABASES = {

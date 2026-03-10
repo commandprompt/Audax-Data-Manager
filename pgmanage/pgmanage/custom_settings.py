@@ -10,6 +10,7 @@ PATH = ''
 HOME_DIR = Path(__file__).resolve().parent.parent
 BASE_DIR = Path(__file__).resolve().parent.parent
 MAX_UPLOAD_SIZE = 1024**2 * 30000
+APP_DB_NAME = 'pgmanage'
 
 # Django settings
 SESSION_COOKIE_SECURE = False
