@@ -24,7 +24,7 @@ portend = "3.1"
 tempora = "5.6"
 paramiko = "3.5.1"
 prettytable = "3.16.0"
-pymssql = "2.3.11"
+pymssql = "2.3.10"
 
 [build-system]
 requires = ["poetry-core"]
