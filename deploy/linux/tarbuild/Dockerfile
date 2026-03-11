@@ -8,7 +8,7 @@ ENV HOME=/root
 WORKDIR /root
 SHELL ["/bin/bash", "-c"]
 
-ARG PYVER="3.11.13"
+ARG PYVER="3.11.15"
 
 RUN apt-get update && apt-get install -y wget gcc make zlib1g-dev libssl-dev \
     libffi-dev libsqlite3-dev liblzma-dev
