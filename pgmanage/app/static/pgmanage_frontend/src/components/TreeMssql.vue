@@ -215,7 +215,6 @@ export default {
               tabsStore.createSchemaEditorTab(
                 this.selectedNode,
                 operationModes.CREATE,
-                "mssql"
               );
             },
           },
@@ -259,7 +258,6 @@ export default {
               tabsStore.createSchemaEditorTab(
                 this.selectedNode,
                 operationModes.UPDATE,
-                "mssql"
               );
             },
           },

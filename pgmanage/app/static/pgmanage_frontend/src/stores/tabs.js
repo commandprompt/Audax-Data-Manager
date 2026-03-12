@@ -654,7 +654,7 @@ const useTabsStore = defineStore("tabs", {
 
       this.selectTab(tab);
     },
-    createSchemaEditorTab(node, mode, dialect) {
+    createSchemaEditorTab(node, mode) {
       let tableName = node.title.replace(/^"(.*)"$/, "$1");
 
       let tabTitle =
@@ -680,17 +680,13 @@ const useTabsStore = defineStore("tabs", {
 
       tab.metaData.dialect = this.selectedPrimaryTab?.metaData?.selectedDBMS;
       tab.metaData.editMode = mode;
-      tab.metaData.schema =
-        dialect === "mysql" ? node.data.database : node.data.schema;
+      tab.metaData.schema = ["mysql", "mariadb"].includes(this.selectedPrimaryTab.metaData.selectedDBMS) ? node.data.database : node.data.schema;
       tab.metaData.table = mode === operationModes.UPDATE ? tableName : null;
       tab.metaData.treeNode = node;
       tab.metaData.databaseIndex =
         this.selectedPrimaryTab?.metaData?.selectedDatabaseIndex;
 
-      tab.metaData.databaseName =
-        dialect === "mysql"
-          ? node.data.database
-          : this.selectedPrimaryTab?.metaData?.selectedDatabase;
+      tab.metaData.databaseName = ["mysql", "mariadb"].includes(this.selectedPrimaryTab.metaData.selectedDBMS) ? node.data.database : this.selectedPrimaryTab?.metaData?.selectedDatabase;
 
       this.selectTab(tab);
     },
