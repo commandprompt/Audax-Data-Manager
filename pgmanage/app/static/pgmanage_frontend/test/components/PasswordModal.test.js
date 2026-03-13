@@ -161,7 +161,6 @@ describe("PasswordModal", () => {
     await nextTick();
 
     const input = wrapper.vm.$refs.passwordInput;
-    console.log(wrapper.html());
     expect(document.activeElement).toBe(input);
   });
 
