@@ -51,6 +51,9 @@ describe("RestoreTab.vue", () => {
     axios.get.mockResolvedValue({
       data: { data: [] },
     });
+    axios.post.mockResolvedValueOnce({
+      data: { version: "16" },
+    });
     wrapper = mount(RestoreTab, {
       props: props,
     });

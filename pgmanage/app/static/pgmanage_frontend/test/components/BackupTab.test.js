@@ -51,6 +51,9 @@ describe("BackupTab Component", () => {
     axios.get.mockResolvedValue({
       data: { data: [] },
     });
+    axios.post.mockResolvedValueOnce({
+      data: { version: "16" },
+    });
     wrapper = mount(BackupTab, {
       props: props,
     });
@@ -195,6 +198,9 @@ describe("BackupTab Component", () => {
     wrapper.unmount();
     axios.post.mockResolvedValueOnce({
       data: { data: [] },
+    });
+    axios.post.mockResolvedValueOnce({
+      data: { version: "16" },
     });
     wrapper = mount(BackupTab, {
       props: {
