@@ -447,7 +447,7 @@ export default {
     },
     onDownload() {
       const link = document.createElement("a");
-      link.href = `/file_manager/download/?path=${encodeURIComponent(this.selectedFile.path)}`;
+      link.href = `${app_base_path}/file_manager/download/?path=${encodeURIComponent(this.selectedFile.path)}`;
       link.setAttribute("download", "");
       document.body.appendChild(link);
       link.click();
