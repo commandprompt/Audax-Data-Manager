@@ -55,11 +55,14 @@ def get_tree_info(request, database):
 @database_required(check_timeout=True, open_connection=True)
 def get_databases(request, database):
     list_databases = []
+    system_dbs = {"master", "model", "msdb", "tempdb"}
 
     try:
         conn_object = Connection.objects.get(id=database.conn_id)
         databases = database.QueryDatabases()
         for database_object in databases.Rows:
+            if not request.user.userdetails.show_system_catalogs and database_object[0] in system_dbs:
+                continue
             database_data = {
                 "name": database_object[0],
                 "pinned": database_object[0] in conn_object.pinned_databases,
@@ -75,10 +78,13 @@ def get_databases(request, database):
 @database_required(check_timeout=True, open_connection=True)
 def get_schemas(request, database):
     schemas_list = []
+    system_schemas = {"sys", "INFORMATION_SCHEMA"}
 
     try:
         schemas = database.QuerySchemas()
         for schema in schemas.Rows:
+            if not request.user.userdetails.show_system_catalogs and schema["schema_name"] in system_schemas:
+                continue
             schema_data = {
                 "name": schema["schema_name"],
             }

@@ -24,6 +24,7 @@ class UserDetails(models.Model):
     pigz_path = models.CharField(max_length=256, null=True)
     restore_tabs = models.BooleanField(default=True)
     scroll_tree = models.BooleanField(default=True)
+    show_system_catalogs = models.BooleanField(default=False)
 
     def get_pigz_path(self):
 

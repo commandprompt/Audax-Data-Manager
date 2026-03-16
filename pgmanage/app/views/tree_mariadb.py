@@ -253,6 +253,7 @@ def get_indexes_columns(request, database):
 def get_databases(request, database):
     try:
         conn_object = Connection.objects.get(id=database.conn_id)
+        system_dbs = {"mysql", "information_schema", "performance_schema", "sys"}
 
         databases = database.QueryDatabases()
         list_databases = [
@@ -261,6 +262,7 @@ def get_databases(request, database):
                 "pinned": db[0] in conn_object.pinned_databases,
             }
             for db in databases.Rows
+            if request.user.userdetails.show_system_catalogs or db[0] not in system_dbs
         ]
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)

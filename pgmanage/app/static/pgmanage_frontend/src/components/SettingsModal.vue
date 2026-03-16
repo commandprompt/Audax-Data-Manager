@@ -107,6 +107,15 @@
               </div>
 
               <div class="row">
+                <div class="col-6">
+                  <div class="form-check form-switch">
+                    <input v-model="showSystemCatalogs" id="show_system_catalogs" type="checkbox" class="form-check-input" >
+                    <label for="show_system_catalogs" class="form-check-label fw-bold mb-2">Show System Catalogs</label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
                 <div class="form-group col-6">
                   <label for="date_format" class="fw-bold mb-2">Date format</label>
                   <select id="date_format" class="form-select" v-model="selectedDateFormat">
@@ -379,6 +388,14 @@ export default {
       },
       set(value) {
         settingsStore.setScrollTree(value)
+      }
+    },
+    showSystemCatalogs: {
+      get() {
+        return settingsStore.showSystemCatalogs
+      },
+      set(value) {
+        settingsStore.setShowSystemCatalogs(value)
       }
     },
     shortcuts() {

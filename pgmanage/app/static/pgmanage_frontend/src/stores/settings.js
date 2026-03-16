@@ -22,6 +22,7 @@ const useSettingsStore = defineStore("settings", {
     shortcuts: {},
     currentOS: "Unknown OS",
     max_upload_size: "",
+    showSystemCatalogs: "",
   }),
   actions: {
     async getSettings() {
@@ -43,6 +44,7 @@ const useSettingsStore = defineStore("settings", {
             ? "YYYY-MM-DD, HH:mm:ss"
             : userSettings.date_format,
           max_upload_size: userSettings.max_upload_size,
+          showSystemCatalogs: userSettings.show_system_catalogs,
         });
 
         this.shortcuts = Object.assign(
@@ -74,6 +76,7 @@ const useSettingsStore = defineStore("settings", {
             pigz_path: this.pigzPath,
             restore_tabs: this.restoreTabs,
             scroll_tree: this.scrollTree,
+            show_system_catalogs: this.showSystemCatalogs,
           },
         });
 
@@ -118,6 +121,9 @@ const useSettingsStore = defineStore("settings", {
     },
     setScrollTree(value) {
       this.scrollTree = value;
+    },
+    setShowSystemCatalogs(value) {
+      this.showSystemCatalogs = value;
     },
     showModal() {
       Modal.getOrCreateInstance("#modal_settings", {

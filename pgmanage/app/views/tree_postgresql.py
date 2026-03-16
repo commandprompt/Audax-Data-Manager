@@ -817,10 +817,12 @@ def get_mview_definition(request, database):
 @database_required(check_timeout=True, open_connection=True)
 def get_schemas(request, database):
     schemas_list = []
-
+    system_schemas = {"information_schema", "pg_catalog"}
     try:
         schemas = database.QuerySchemas()
         for schema in schemas.Rows:
+            if not request.user.userdetails.show_system_catalogs and schema["schema_name"] in system_schemas:
+                continue
             schema_data = {
                 "name": schema["schema_name"],
                 "oid": schema["oid"],

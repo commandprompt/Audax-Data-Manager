@@ -987,15 +987,34 @@ DROP SUBSCRIPTION #sub_name#
         response = self.client_nosession.post('/get_schemas_postgresql/')
         assert 401 == response.status_code
 
-    def test_get_schemas_postgresql_session(self):
+    def test_get_schemas_postgresql_session_with_system_catalogs(self):
+        user = User.objects.get(username="admin")
+        user.userdetails.show_system_catalogs = True
+        user.userdetails.save()
+
         response = self.client_session.post('/get_schemas_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
-        data = json.loads(response.content.decode())
+        data = response.json()
         assert self.lists_equal([a['name'] for a in data], [
             'public',
             'pg_catalog',
             'information_schema'
         ])
+    
+    def test_get_schemas_postgresql_session_without_system_catalogs(self):
+        user = User.objects.get(username="admin")
+        user.userdetails.show_system_catalogs = False
+        user.userdetails.save()
+
+        response = self.client_session.post('/get_schemas_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
+        assert response.status_code == 200
+
+        data = json.loads(response.content.decode())
+
+        assert self.lists_equal(
+            [a['name'] for a in data],
+            ['public']
+        )
 
     def test_get_columns_postgresql_nosession(self):
         response = self.client_nosession.post('/get_columns_postgresql/')
