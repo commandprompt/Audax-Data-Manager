@@ -30,6 +30,7 @@
             <div class="tab-pane fade show active" id="settings_shortcuts" role="tabpanel"
               aria-labelledby="settings_shortcuts-tab">
               <div id="div_shortcut_background_dark" style="display: block; visibility: hidden;" ref="shortcutBackground">
+                <!-- dont close modal on escape if crecording -->
                 <div style="position: absolute; top: 40%; width: 100%;">Press key combination... (ESC to cancel)</div>
                 <div v-if="hasConflicts" style="position: absolute; top: 50%; width: 100%;">{{ conflictText }}</div>
               </div>
@@ -290,6 +291,7 @@ export default {
       hidden: true,
       hasConflicts: false,
       conflictText: '',
+      recordingShortcut: false,
     }
   },
   validations() {
@@ -570,6 +572,12 @@ export default {
     document.body.addEventListener('keydown', this.keyBoardShortcuts);
 
     this.$nextTick(() => {
+      // intercept close event, ignore if we're recording a shortcut
+      this.$refs.settingsModal.addEventListener('hide.bs.modal', (e) => {
+        if(this.recordingShortcut)
+          e.preventDefault()
+      });
+
       this.$refs.settingsModal.addEventListener('hidden.bs.modal', (e) => {
         this.password = '';
         this.passwordConfirm = '';
@@ -579,7 +587,6 @@ export default {
         setTimeout(function () {
           $('#txt_new_pwd').keydown()
         }, 100);
-
       });
     })
 
@@ -610,6 +617,7 @@ export default {
       return LABEL_MAP[shortcut.shortcut_code] || 'unknown'
     },
     startSetShortcut(event) {
+      this.recordingShortcut = true;
       this.$refs.shortcutBackground.style.visibility = 'visible'
       event.target.style['z-index'] = 1002;
       this.shortcutObject.button = event.target;
@@ -624,16 +632,15 @@ export default {
       event.preventDefault();
       event.stopPropagation();
 
-      //16 - Shift
-      //17 - Ctrl
-      //18 - Alt
-      //91 - Meta (Windows and Mac)
-
       if (event.keyCode == 27) {
         this.finishSetShortcut();
         return;
       }
 
+      //16 - Shift
+      //17 - Ctrl
+      //18 - Alt
+      //91 - Meta (Windows and Mac)
       if (event.keyCode == 16 || event.keyCode == 17 || event.keyCode == 18 || event.keyCode == 91)
         return;
 
@@ -686,6 +693,7 @@ export default {
       this.shortcutObject.button = null;
       this.$refs.shortcutBackground.style.visibility = 'hidden';
       this.hasConflicts = false;
+      this.recordingShortcut = false;
       document.body.removeEventListener('keydown', this.setShortcutEvent);
       document.body.addEventListener('keydown', this.keyBoardShortcuts);
     },
@@ -769,6 +777,7 @@ export default {
         this.buttonFormDisabled = true;
       }
     },
+    // TODO: extract shortcut handling out of settings modal
     keyBoardShortcuts(event) {
 
       //16 - Shift
