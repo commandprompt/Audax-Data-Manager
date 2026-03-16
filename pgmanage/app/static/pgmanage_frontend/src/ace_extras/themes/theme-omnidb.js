@@ -98,7 +98,7 @@ color: #0ca678\
 .ace-omnidb .ace_meta.ace_tag,\
 .ace-omnidb .ace_string.ace_regexp,\
 .ace-omnidb .ace_variable {\
-color: #C82829\
+color: #0ca678\
 }\
 .ace-omnidb .ace_comment {\
 color: #767f8f\

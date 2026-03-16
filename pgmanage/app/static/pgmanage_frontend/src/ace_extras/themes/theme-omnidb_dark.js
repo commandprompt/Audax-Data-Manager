@@ -100,7 +100,7 @@ color: #0ca678\
 .ace-omnidb_dark .ace_meta.ace_tag,\
 .ace-omnidb_dark .ace_string.ace_regexp,\
 .ace-omnidb_dark .ace_variable {\
-color: #CC6666\
+color: #0ca678\
 }\
 .ace-omnidb_dark .ace_comment {\
 color: #767f8f\
