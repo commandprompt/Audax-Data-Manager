@@ -11,6 +11,7 @@
     &:disabled {
         opacity: .4;
         pointer-events: none;
+        border-color: transparent;
     }
 
     &:hover {
