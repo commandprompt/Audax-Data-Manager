@@ -655,18 +655,15 @@ const useTabsStore = defineStore("tabs", {
       this.selectTab(tab);
     },
     createSchemaEditorTab(node, mode) {
-      let tableName = node.title.replace(/^"(.*)"$/, "$1");
-
-      let tabTitle =
-        mode === operationModes.UPDATE ? `Alter: ${tableName}` : "New Table";
-      let icon = `<i class="fas ${
-        mode === operationModes.CREATE ? "fa-plus" : "fa-edit"
-      } icon-tab-title"></i>`;
+      const isCreate = mode === operationModes.CREATE;
+      const tableName = node.title.replace(/^"(.*)"$/, "$1");
+      const tabTitle = isCreate ? "New Table" : `Alter: ${tableName}`;
+      const iconClass = isCreate ? "fa-plus" : "fa-edit";
 
       const tab = this.addTab({
         parentId: this.selectedPrimaryTab.id,
         name: tabTitle,
-        icon: icon,
+        icon: `<i class="fas ${iconClass} icon-tab-title"></i>`,
         component: "SchemaEditorTab",
         mode: "alter",
         closeFunction: (e, tab) => {
@@ -678,15 +675,17 @@ const useTabsStore = defineStore("tabs", {
         },
       });
 
-      tab.metaData.dialect = this.selectedPrimaryTab?.metaData?.selectedDBMS;
-      tab.metaData.editMode = mode;
-      tab.metaData.schema = ["mysql", "mariadb"].includes(this.selectedPrimaryTab.metaData.selectedDBMS) ? node.data.database : node.data.schema;
-      tab.metaData.table = mode === operationModes.UPDATE ? tableName : null;
-      tab.metaData.treeNode = node;
-      tab.metaData.databaseIndex =
-        this.selectedPrimaryTab?.metaData?.selectedDatabaseIndex;
+      const { metaData } = this.selectedPrimaryTab;
 
-      tab.metaData.databaseName = ["mysql", "mariadb"].includes(this.selectedPrimaryTab.metaData.selectedDBMS) ? node.data.database : this.selectedPrimaryTab?.metaData?.selectedDatabase;
+      Object.assign(tab.metaData, {
+        dialect: metaData.selectedDBMS,
+        editMode: mode,
+        treeNode: node,
+        databaseIndex: metaData.selectedDatabaseIndex,
+        table: isCreate ? null : tableName,
+        schema: node.data.schema || node.data.database,
+        databaseName: metaData.selectedDatabase
+      });
 
       this.selectTab(tab);
     },
