@@ -102,14 +102,10 @@ export default {
 
       const editorContainer = this.$refs.editor;
       editorContainer.addEventListener("mouseover", () => {
-        if (!this.isEmpty) {
-          copyToEditorButton.classList.toggle("d-none");
-        }
+        copyToEditorButton.classList.toggle("d-none", this.isEmpty);
       });
       editorContainer.addEventListener("mouseout", () => {
-        if (!this.isEmpty) {
-          copyToEditorButton.classList.toggle("d-none");
-        }
+        copyToEditorButton.classList.toggle("d-none", !this.isEmpty);
       });
 
       editorContainer.appendChild(copyToEditorButton);
