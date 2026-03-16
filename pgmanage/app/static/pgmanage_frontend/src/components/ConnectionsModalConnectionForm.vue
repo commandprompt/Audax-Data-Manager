@@ -255,7 +255,7 @@
     <button v-if="connectionLocal.id"
       type="button"
       @click="$emit('connection:clone', this.connectionLocal)"
-      class="btn btn-link">Clone</button>
+      class="btn btn-ghost btn-ghost-secondary">Clone</button>
     <button type="button"
       @click="trySave()"
       :disabled="connectionLocal.locked || v$.$invalid || (!isChanged && !!connectionLocal.id)"
