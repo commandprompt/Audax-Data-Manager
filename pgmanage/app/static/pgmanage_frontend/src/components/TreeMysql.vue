@@ -143,7 +143,7 @@ export default {
             label: "Create Table",
             icon: "fas fa-plus",
             onClick: () => {
-              tabsStore.createSchemaEditorTab(this.selectedNode, operationModes.CREATE, "mysql")
+              tabsStore.createSchemaEditorTab(this.selectedNode, operationModes.CREATE)
             },
           },
         ],
@@ -170,7 +170,7 @@ export default {
             label: "Alter Table",
             icon: "fas fa-edit",
             onClick: () => {
-              tabsStore.createSchemaEditorTab(this.selectedNode, operationModes.UPDATE, "mysql")
+              tabsStore.createSchemaEditorTab(this.selectedNode, operationModes.UPDATE)
             },
           },
           {

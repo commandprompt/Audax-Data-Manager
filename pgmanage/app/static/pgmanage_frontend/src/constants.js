@@ -105,6 +105,7 @@ const editorModeMap = {
   mysql: "mysql_extended",
   mariadb: "mysql_extended",
   oracle: "plsql",
+  mssql: "sqlserver",
 };
 
 const dataEditorFilterModes = {
@@ -129,7 +130,7 @@ const maxFontSize = 20;
 //otherwise - our db technology names match perfectly
 const sqlFormatterDialectMap = {
   oracle: "plsql",
-  mssql: "tsql"
+  mssql: "transactsql"
 }
 
 const knexDialectMap = {
