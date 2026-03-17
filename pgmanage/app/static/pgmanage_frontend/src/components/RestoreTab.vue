@@ -23,14 +23,20 @@
                 </select>
               </div>
 
-              <div v-if="!isNotServer && pgKeys.length" class="form-group d-flex flex-column justify-content-end">
-                    <label class="fw-bold mb-1">PG version:</label>
+              <div
+                v-if="!isNotServer && pgKeys.length"
+                class="form-group d-flex flex-column justify-content-end"
+                data-bs-toggle="tooltip"
+                data-bs-placement="bottom"
+                data-bs-title="The Postgres utility version used to restore a backup. If not found, the latest available version is used."
+                >
+                  <label class="fw-bold mb-1">PG version:</label>
 
-                    <select class="form-select" v-model="restoreOptions.pg_version">
-                      <option v-for="k in pgKeys" :key="k" :value="k">
-                        {{ k }}
-                      </option>
-                    </select>
+                  <select class="form-select" v-model="restoreOptions.pg_version">
+                    <option v-for="k in pgKeys" :key="k" :value="k">
+                      {{ k }}
+                    </option>
+                  </select>
               </div>
 
               <div v-if="!isNotServer" class="form-group mb-1 mt-2">
@@ -65,7 +71,13 @@
               </div>
 
               <div v-if="isNotServer" class="row mt-1">
-                <div v-if="pgKeys.length" class="form-group col-6 d-flex flex-column justify-content-end">
+                <div
+                  v-if="pgKeys.length"
+                  class="form-group col-4 d-flex flex-column justify-content-end"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="The Postgres utility version used to restore a backup. If not found, the latest available version is used."
+                  >
                     <label class="fw-bold mb-1">PG version:</label>
 
                     <select class="form-select" v-model="restoreOptions.pg_version">
@@ -75,7 +87,7 @@
                     </select>
                 </div>
 
-                <div v-if="!isWindowsOS" class="form-group col-6 align-content-end">
+                <div v-if="!isWindowsOS" class="form-group col-8 align-content-end">
                   <div class="form-check form-switch">
                     <input class="form-check-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsPigz`" v-model="restoreOptions.pigz" :disabled="isDirectoryFormat">
                     <label class="form-check-label" :for="`${restoreTabId}_restoreOptionsPigz`">
@@ -293,6 +305,7 @@ import axios from 'axios'
 import { showAlert } from '../notification_control';
 import { settingsStore, fileManagerStore, tabsStore } from '../stores/stores_initializer';
 import { truncateText } from "../utils";
+import ComponentTooltipMixin from "../mixins/component_tooltip_mixin";
 import { handleError } from '../logging/utils';
 
 export default {
@@ -300,6 +313,7 @@ export default {
   components: {
     UtilityJobs,
   },
+  mixins: [ComponentTooltipMixin],
   props: {
     workspaceId: String,
     tabId: String,
