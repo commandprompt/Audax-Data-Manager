@@ -35,6 +35,7 @@ import { getCookie } from './ajax_control.js';
 import App from './App.vue'
 import { createApp } from 'vue';
 import ToastPlugin from 'vue-toast-notification';
+import TooltipDirective from './directives/tooltip_directive.js';
 import { setupLogger } from './logging/logger_setup.js';
 import {
   settingsStore,
@@ -126,6 +127,7 @@ window.addEventListener("message", (event) => {
 settingsStore.getSettings().then(() => {
   const app = createApp(App);
   setupLogger(app, stores);
+  app.directive('tooltip', TooltipDirective);
   if (__VITE_ENTERPRISE__) {
     import("@conditional/index").then(({ default: enterprisePlugin }) => {
       app.use(enterprisePlugin);

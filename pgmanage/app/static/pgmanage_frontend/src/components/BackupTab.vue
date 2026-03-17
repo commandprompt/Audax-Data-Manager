@@ -55,6 +55,7 @@
                   <div class="row mt-1">
                     <div
                       v-if="pgKeys.length"
+                      v-tooltip
                       class="form-group col-6 d-flex flex-column justify-content-end"
                       data-bs-toggle="tooltip"
                       data-bs-placement="bottom"
@@ -336,7 +337,6 @@ import axios from 'axios'
 import { showAlert } from "../notification_control";
 import { fileManagerStore, tabsStore, settingsStore } from "../stores/stores_initializer";
 import { truncateText } from "../utils";
-import ComponentTooltipMixin from "../mixins/component_tooltip_mixin";
 import { handleError } from "../logging/utils";
 
 export default {
@@ -344,7 +344,6 @@ export default {
   components: {
     UtilityJobs,
   },
-  mixins: [ComponentTooltipMixin],
   props: {
     workspaceId: String,
     tabId: String,

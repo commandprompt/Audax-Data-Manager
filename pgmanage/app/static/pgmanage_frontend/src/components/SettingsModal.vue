@@ -95,6 +95,7 @@
                 <div class="col-6">
                   <div
                     class="form-check form-switch"
+                    v-tooltip
                     data-bs-toggle="tooltip"
                     data-bs-placement="bottom"
                     data-bs-title="Restore workspace tabs when application is loaded"
@@ -107,6 +108,7 @@
                 <div class="col-6">
                   <div
                     class="form-check form-switch"
+                    v-tooltip
                     data-bs-toggle="tooltip"
                     data-bs-placement="bottom"
                     data-bs-title="Scroll the Database Explorer tree node into view when expanded."
@@ -243,7 +245,6 @@ import { useVuelidate } from '@vuelidate/core'
 import { required, maxLength } from '@vuelidate/validators'
 import { Modal } from 'bootstrap'
 import PasswordMeter from 'vue-simple-password-meter';
-import ComponentTooltipMixin from "../mixins/component_tooltip_mixin";
 import { handleError } from '@src/logging/utils';
 
 const light_terminal_theme = {
@@ -267,7 +268,6 @@ export default {
   components: {
     PasswordMeter
   },
-  mixins: [ComponentTooltipMixin],
   data() {
     return {
       shortcutObject: {
