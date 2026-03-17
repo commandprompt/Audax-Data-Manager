@@ -53,7 +53,14 @@
                   </div>
 
                   <div class="row mt-1">
-                    <div v-if="pgKeys.length" class="form-group col-6 d-flex flex-column justify-content-end">
+                    <div
+                      v-if="pgKeys.length"
+                      v-tooltip
+                      class="form-group col-6 d-flex flex-column justify-content-end"
+                      data-bs-toggle="tooltip"
+                      data-bs-placement="bottom"
+                      data-bs-title="The Postgres utility version used to create backup. If not found, the latest available version is used."
+                      >
                         <label class="fw-bold mb-1">PG version:</label>
 
                         <select class="form-select" v-model="backupOptions.pg_version">
