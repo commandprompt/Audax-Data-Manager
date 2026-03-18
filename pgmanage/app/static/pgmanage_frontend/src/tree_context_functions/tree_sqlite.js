@@ -14,13 +14,10 @@ function TemplateSelectSqlite(table, kind) {
       kind: kind,
     })
     .then((resp) => {
-      tabsStore.createQueryTab(table, null, null, resp.data.template);
-
-      setTimeout(() => {
-        emitter.emit(
-          `${tabsStore.selectedPrimaryTab.metaData.selectedTab.id}_run_query`
-        );
-      }, 200);
+      tabsStore.createQueryTab(table, null, null, resp.data.template)
+      .then((tab) => {
+        emitter.emit(`${tab.id}_run_query`);
+      });
     })
     .catch((error) => {
       handleError(error);

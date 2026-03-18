@@ -431,34 +431,37 @@ const useTabsStore = defineStore("tabs", {
       initialQuery = null,
       parentId = null
     ) {
-      const tab = this.addTab({
-        parentId: parentId ?? this.selectedPrimaryTab.id,
-        name: name,
-        icon: '<i class="fas fa-database icon-tab-title"></i>',
-        component: "QueryTab",
-        mode: "query",
-        selectFunction: function () {
-          emitter.emit(`${this.id}_check_query_status`);
-        },
-        closeFunction: (e, tab) => {
-          this.closeTabWithConfirmation(
-            tab,
-            "Are you sure you wish to discard unsaved query changes?",
-            this.closeTab
-          );
-        },
-        dblClickFunction: renameTab,
+      return new Promise((resolve, reject) => {
+        const tab = this.addTab({
+          parentId: parentId ?? this.selectedPrimaryTab.id,
+          name: name,
+          icon: '<i class="fas fa-database icon-tab-title"></i>',
+          component: "QueryTab",
+          mode: "query",
+          selectFunction: function () {
+            emitter.emit(`${this.id}_check_query_status`);
+          },
+          closeFunction: (e, tab) => {
+            this.closeTabWithConfirmation(
+              tab,
+              "Are you sure you wish to discard unsaved query changes?",
+              this.closeTab
+            );
+          },
+          dblClickFunction: renameTab,
+        });
+        const primaryTab = !!parentId
+          ? this.getPrimaryTabById(parentId)
+          : this.selectedPrimaryTab;
+        tab.metaData.databaseName =
+          tabDbName ?? primaryTab.metaData?.selectedDatabase;
+        tab.metaData.initTabDatabaseId = tabDbId;
+        tab.metaData.initialQuery = initialQuery;
+        tab.metaData.databaseIndex = primaryTab.metaData?.selectedDatabaseIndex;
+        tab.metaData.dialect = primaryTab.metaData?.selectedDBMS;
+        this.selectTab(tab);
+        resolve(tab);
       });
-      const primaryTab = !!parentId
-        ? this.getPrimaryTabById(parentId)
-        : this.selectedPrimaryTab;
-      tab.metaData.databaseName =
-        tabDbName ?? primaryTab.metaData?.selectedDatabase;
-      tab.metaData.initTabDatabaseId = tabDbId;
-      tab.metaData.initialQuery = initialQuery;
-      tab.metaData.databaseIndex = primaryTab.metaData?.selectedDatabaseIndex;
-      tab.metaData.dialect = primaryTab.metaData?.selectedDBMS;
-      this.selectTab(tab);
     },
     createSnippetTab(tabId, snippet) {
       let snippetName = "New Snippet";
