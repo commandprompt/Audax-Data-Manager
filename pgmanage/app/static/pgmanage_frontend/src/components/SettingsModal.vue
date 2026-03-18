@@ -30,7 +30,6 @@
             <div class="tab-pane fade show active" id="settings_shortcuts" role="tabpanel"
               aria-labelledby="settings_shortcuts-tab">
               <div id="div_shortcut_background_dark" style="display: block; visibility: hidden;" ref="shortcutBackground">
-                <!-- dont close modal on escape if crecording -->
                 <div style="position: absolute; top: 40%; width: 100%;">Press key combination... (ESC to cancel)</div>
                 <div v-if="hasConflicts" style="position: absolute; top: 50%; width: 100%;">{{ conflictText }}</div>
               </div>
@@ -584,10 +583,14 @@ export default {
     document.body.addEventListener('keydown', this.keyBoardShortcuts);
 
     this.$nextTick(() => {
-      // intercept close event, ignore if we're recording a shortcut
       this.$refs.settingsModal.addEventListener('hide.bs.modal', (e) => {
-        if(this.recordingShortcut)
+        // intercept close event via ESC key, ignore if we're recording a shortcut
+        if(this.recordingShortcut) {
           e.preventDefault()
+        } else {
+          // revert settings if closing via ESC
+          this.resetUnsavedSettings()
+        }
       });
 
       this.$refs.settingsModal.addEventListener('hidden.bs.modal', (e) => {
