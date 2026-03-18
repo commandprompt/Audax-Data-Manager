@@ -74,16 +74,28 @@
 
               <div class="row">
                 <div class="col-6">
-                  <div class="form-check form-switch">
+                  <div
+                    class="form-check form-switch"
+                    v-tooltip
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="bottom"
+                    data-bs-title="Restore workspace tabs when application is loaded"
+                  >
                     <input v-model="restoreTabs" id="restore_tabs" type="checkbox" class="form-check-input" >
                     <label for="restore_tabs" class="form-check-label fw-bold mb-2">Restore Tabs on Start</label>
                   </div>
                 </div>
 
                 <div class="col-6">
-                  <div class="form-check form-switch">
+                  <div
+                    class="form-check form-switch"
+                    v-tooltip
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="bottom"
+                    data-bs-title="Scroll the Database Explorer tree node into view when expanded."
+                    >
                     <input v-model="scrollTree" id="scroll_tree" type="checkbox" class="form-check-input" >
-                    <label for="scroll_tree" title="Scroll datatase tree node into view when opened" class="form-check-label fw-bold mb-2">Database Tree Autoscroll</label>
+                    <label for="scroll_tree" class="form-check-label fw-bold mb-2">Database Tree Autoscroll</label>
                   </div>
                 </div>
               </div>
@@ -385,10 +397,14 @@ export default {
   },
   mounted() {
     this.$nextTick(() => {
-      // intercept close event, ignore if we're recording a shortcut
       this.$refs.settingsModal.addEventListener('hide.bs.modal', (e) => {
-        if(this.recordingShortcut)
+        // intercept close event via ESC key, ignore if we're recording a shortcut
+        if(this.recordingShortcut) {
           e.preventDefault()
+        } else {
+          // revert settings if closing via ESC
+          this.resetUnsavedSettings()
+        }
       });
 
       this.$refs.settingsModal.addEventListener('hidden.bs.modal', (e) => {
