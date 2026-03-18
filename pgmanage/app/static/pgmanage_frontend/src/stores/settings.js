@@ -22,6 +22,7 @@ const useSettingsStore = defineStore("settings", {
     shortcuts: {},
     currentOS: "Unknown OS",
     max_upload_size: "",
+    isPausedShortcuts: false,
   }),
   actions: {
     async getSettings() {
