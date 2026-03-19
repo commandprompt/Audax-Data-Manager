@@ -15,13 +15,10 @@ function TemplateSelectMariadb(schema, table) {
     })
     .then((resp) => {
       let tab_name = `${schema}.${table}`;
-      tabsStore.createQueryTab(tab_name, null, null, resp.data.template);
-
-      setTimeout(() => {
-        emitter.emit(
-          `${tabsStore.selectedPrimaryTab.metaData.selectedTab.id}_run_query`
-        );
-      }, 200);
+      tabsStore.createQueryTab(tab_name, null, null, resp.data.template)
+      .then((tab) => {
+        emitter.emit(`${tab.id}_run_query`);
+      });
     })
     .catch((error) => {
       handleError(error);
