@@ -23,7 +23,7 @@
                   <div v-if="isObjectsType" class="row mt-1">
                     <div class="form-group col-6 d-flex flex-column justify-content-end">
                       <label for="backupCompressionRatio" class="fw-bold mb-1">Compression ratio</label>
-                      <select id="backupCompressionRatio" class="form-select" v-model="backupOptions.compression_ratio" :disabled="isTarFormat">
+                      <select id="backupCompressionRatio" class="form-select" v-model="backupOptions.compression_ratio" :disabled="isTarFormat || backupOptions.pigz">
                         <option value="" disabled>Select an item...</option>
                         <option v-for="compress_ratio in compressionRatioValues" :value="compress_ratio" :key="compress_ratio">{{ compress_ratio }}</option>
                       </select>
@@ -72,7 +72,7 @@
 
                     <div v-if="!isWindowsOS" class="form-group col-6 align-content-end">
                       <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" :id="`${backupTabId}_backupOptionsPigz`" v-model="backupOptions.pigz" :disabled="isDirectoryFormat || isTarFormat">
+                        <input class="form-check-input" type="checkbox" :id="`${backupTabId}_backupOptionsPigz`" v-model="backupOptions.pigz" :disabled="isDirectoryFormat || isTarFormat || !!backupOptions.compression_ratio">
                         <label class="form-check-label" :for="`${backupTabId}_backupOptionsPigz`">
                           Compress with Pigz
                         </label>

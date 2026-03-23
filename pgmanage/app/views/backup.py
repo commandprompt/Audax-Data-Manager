@@ -284,6 +284,9 @@ def get_args_params_values(data, conn, backup_obj_type, backup_file):
     if data.get("pigz"):
         file_name = args[1]
 
+        if not file_name.endswith(".gz"):
+            file_name += ".gz"
+
         pigz_number_of_jobs = (
             f"-p{data.get('pigz_number_of_jobs')}"
             if data.get("pigz_number_of_jobs") != "auto"
