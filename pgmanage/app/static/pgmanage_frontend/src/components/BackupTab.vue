@@ -20,17 +20,17 @@
                       <option v-for="(value, key) in formats" :value="key" :key="key">{{ value }}</option>
                     </select>
                   </div>
-                  <div v-if="isObjectsType" class="row mt-1">
+                  <div class="row mt-1">
                     <div class="form-group col-6 d-flex flex-column justify-content-end">
                       <label for="backupCompressionRatio" class="fw-bold mb-1">Compression ratio</label>
-                      <select id="backupCompressionRatio" class="form-select" v-model="backupOptions.compression_ratio" :disabled="isTarFormat">
+                      <select id="backupCompressionRatio" class="form-select" v-model="backupOptions.compression_ratio" :disabled="isTarFormat || (isServerType && !backupOptions.pigz)">
                         <option value="" disabled>Select an item...</option>
                         <option v-for="compress_ratio in compressionRatioValues" :value="compress_ratio" :key="compress_ratio">{{ compress_ratio }}</option>
                       </select>
                     </div>
                     <div class="form-group col-6 d-flex flex-column justify-content-end">
                       <label for="backupNumberOfJobs" class="fw-bold mb-1">Number of jobs</label>
-                      <select id="backupNumberOfJobs" class="form-select" v-model="backupOptions.number_of_jobs" :disabled="!isDirectoryFormat">
+                      <select id="backupNumberOfJobs" class="form-select" v-model="backupOptions.number_of_jobs" :disabled="isTarFormat || (isServerType && !backupOptions.pigz)">
                         <option value="" disabled>Select an item...</option>
                         <option v-for="number_of_jobs in numberOfJobs" :value="number_of_jobs" :key="number_of_jobs">{{ number_of_jobs }}</option>
                       </select>
@@ -79,23 +79,7 @@
                       </div>
                     </div>
                   </div>
-                 
-    
-                  <div class="row mt-1" :class="(backupOptions.pigz) ? 'collapse show':'collapse'">
-                    <div class="form-group col-6 d-flex flex-column justify-content-end">
-                      <label for="backupPigzCompressionRatio" class="fw-bold mb-1">Compression ratio</label>
-                      <select id="backupPigzCompressionRatio" class="form-select" v-model="backupOptions.pigz_compression_ratio">
-                        <option value="" disabled>Select an item...</option>
-                        <option v-for="compress_ratio in compressionRatioValues" :value="compress_ratio" :key="compress_ratio">{{ compress_ratio }}</option>
-                      </select>
-                    </div>
-                    <div class="form-group col-6 d-flex flex-column justify-content-end">
-                      <label for="backupPigzNumberOfJobs" class="fw-bold mb-1">Number of jobs</label>
-                      <select id="backupPigzNumberOfJobs" class="form-select" v-model="backupOptions.pigz_number_of_jobs">
-                        <option v-for="number_of_jobs in pigzNumberOfJobs" :value="number_of_jobs" :key="number_of_jobs">{{ number_of_jobs }}</option>
-                      </select>
-                    </div>
-                </div>
+
                   <div v-if="isServerType" class="d-flex fst-italic mt-auto muted-text">
                     <i class="fa-solid fa-circle-info me-1"></i>
                     <p>The backup will be in PLAIN format.</p>
@@ -404,8 +388,6 @@ export default {
         number_of_jobs: "",
         compression_ratio: "",
         pigz: false,
-        pigz_number_of_jobs: "auto",
-        pigz_compression_ratio: "6"
       },
       backupOptions: {},
       backupTabId: this.tabId,
@@ -439,10 +421,7 @@ export default {
       return this.backupOptions.format === 'directory' ? 'select_folder' : 'create_file'
     },
     numberOfJobs() {
-      return Array.from({length: 8}, (_, index) => index + 1)
-    },
-    pigzNumberOfJobs() {
-      return ['auto', ...this.numberOfJobs]
+      return ['auto', ...Array.from({length: 8}, (_, index) => index + 1)]
     },
     isDirectoryFormat() {
       return this.backupOptions.format === 'directory'

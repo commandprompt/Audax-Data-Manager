@@ -223,7 +223,7 @@ def get_args_params_values(data, conn, backup_obj_type, backup_file):
             "compression_ratio",
             "--compress",
             None,
-            data.get("format") in ["custom", "plain", "directory"],
+            data.get("format") in ["custom", "plain", "directory"] and not data.get("pigz"),
         )
 
     set_param("only_data", "--data-only", data.get("only_data", None))
@@ -263,7 +263,7 @@ def get_args_params_values(data, conn, backup_obj_type, backup_file):
     )
 
     set_value("encoding", "--encoding")
-    set_value("number_of_jobs", "--jobs", None, data.get("format") == "directory")
+    set_value("number_of_jobs", "--jobs", None, data.get("format") == "directory" and not data.get("pigz"))
 
     args.extend(
         functools.reduce(
@@ -284,13 +284,15 @@ def get_args_params_values(data, conn, backup_obj_type, backup_file):
     if data.get("pigz"):
         file_name = args[1]
 
-        pigz_number_of_jobs = (
-            f"-p{data.get('pigz_number_of_jobs')}"
-            if data.get("pigz_number_of_jobs") != "auto"
-            else ""
-        )
+        if not file_name.endswith(".gz"):
+            file_name += ".gz"
 
-        pigz_compression_ratio = f"-{data.get('pigz_compression_ratio')}"
+        number_of_jobs = data.get("number_of_jobs")
+        pigz_number_of_jobs = ""
+        if number_of_jobs and number_of_jobs != "auto":
+            pigz_number_of_jobs = f"-p{number_of_jobs}"
+
+        pigz_compression_ratio = f"-{data.get('compression_ratio')}"
         pigz_path = data.get("pigz_path", "pigz")
 
         pigz_line = [
