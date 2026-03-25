@@ -307,18 +307,24 @@ class BatchJob:
         :param data: Data
         :return:
         """
+        changed = False
         if "start_time" in data and data.get("start_time", None):
-            job.start_time = make_aware(
+            new_start_time = make_aware(
                 datetime.strptime(data["start_time"], "%Y%m%d%H%M%S%f")
             )
-
+            if job.start_time != new_start_time:
+                job.start_time = new_start_time
+                changed = True
             if "exit_code" in data and data.get("exit_code", None) is not None:
                 job.exit_code = data["exit_code"]
+                changed = True
 
                 if "end_time" in data and data.get("end_time", None):
                     job.end_time = make_aware(
                         datetime.strptime(data["end_time"], "%Y%m%d%H%M%S%f")
                     )
+                    changed = True
+        return changed
 
     @staticmethod
     def update_job_info(job):
@@ -331,12 +337,13 @@ class BatchJob:
                 try:
                     data = json.load(fp)
 
-                    BatchJob._check_start_time(job, data)
+                    changed = BatchJob._check_start_time(job, data)
 
-                    if "pid" in data:
+                    if "pid" in data and job.utility_pid != data["pid"]:
                         job.utility_pid = data["pid"]
+                        changed = True
 
-                    return True, True
+                    return True, changed
 
                 except ValueError as e:
                     return False, False
@@ -386,15 +393,12 @@ class BatchJob:
     @staticmethod
     def list(user):
         jobs = Job.objects.filter(user=user).select_related("connection").order_by('-start_time')
-        changed = False
 
         res = []
         for job in jobs:
             status, updated = BatchJob.update_job_info(job)
             if not status:
                 continue
-            elif not changed:
-                changed = updated
 
             start_time = job.start_time
             end_time = job.end_time or make_aware(datetime.now())
@@ -421,7 +425,7 @@ class BatchJob:
                 }
             )
 
-            if changed:
+            if updated:
                 job.save()
 
         return res
