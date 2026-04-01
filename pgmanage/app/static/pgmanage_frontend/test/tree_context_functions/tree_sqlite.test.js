@@ -57,11 +57,13 @@ describe("TemplateSqlite Functions", () => {
         data: { template: "SELECT * FROM testTable;" },
       };
       axios.post.mockResolvedValue(response);
+      tabsStore.createQueryTab.mockResolvedValueOnce({
+        id: "tab-1",
+      });
 
       TemplateSelectSqlite("table", "kind");
 
       await flushPromises();
-      vi.runAllTimers();
 
       expect(axios.post).toHaveBeenCalledWith("/template_select_sqlite/", {
         database_index: 1,

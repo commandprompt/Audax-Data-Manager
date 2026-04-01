@@ -59,11 +59,13 @@ describe("TemplatePostgresql Functions", () => {
         },
       };
       axios.post.mockResolvedValue(response);
+      tabsStore.createQueryTab.mockResolvedValueOnce({
+        id: "tab-1",
+      });
 
       TemplateSelectPostgresql("schema", "table", "kind");
 
       await flushPromises();
-      vi.runAllTimers();
 
       expect(axios.post).toHaveBeenCalledWith("/template_select_postgresql/", {
         database_index: 1,

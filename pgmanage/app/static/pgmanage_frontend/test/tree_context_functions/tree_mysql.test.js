@@ -59,6 +59,9 @@ describe("TemplateMysql Functions", () => {
         },
       };
       axios.post.mockResolvedValue(response);
+      tabsStore.createQueryTab.mockResolvedValueOnce({
+        id: "tab-1",
+      });
 
       TemplateSelectMysql("schema", "table");
 
@@ -76,7 +79,6 @@ describe("TemplateMysql Functions", () => {
         null,
         "SELECT * FROM table"
       );
-      vi.runAllTimers();
       expect(emitter.emit).toHaveBeenCalledWith("tab-1_run_query");
     });
 

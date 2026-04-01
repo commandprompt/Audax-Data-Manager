@@ -55,6 +55,9 @@ describe("Template Functions", () => {
       const response = { data: { template: "SELECT * FROM testTable;" } };
 
       axios.post.mockResolvedValueOnce(response);
+      tabsStore.createQueryTab.mockResolvedValueOnce({
+        id: "tab-1",
+      });
 
       TemplateSelectOracle(schema, table);
 
@@ -72,7 +75,7 @@ describe("Template Functions", () => {
         null,
         response.data.template
       );
-      vi.runAllTimers();
+
       expect(emitter.emit).toHaveBeenCalledWith("tab-1_run_query");
     });
 

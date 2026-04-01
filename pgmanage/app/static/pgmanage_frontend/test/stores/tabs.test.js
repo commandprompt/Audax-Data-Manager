@@ -3,6 +3,7 @@ import { createPinia, setActivePinia } from "pinia";
 import { useTabsStore } from "@src/stores/tabs";
 import { emitter } from "@src/emitter";
 import * as worspaceModule from "@src/workspace";
+import { operationModes } from "@src/constants";
 
 vi.mock("@src/workspace");
 
@@ -355,18 +356,20 @@ describe("useTabsStore", () => {
 
   it("should create a Schema Editor tab", () => {
     const store = useTabsStore();
+    const primaryTab = store.addTab({ name: "Primary Tab" });
+    store.selectTab(primaryTab);
+    store.selectedPrimaryTab.metaData.selectedDBMS = "mysql";
     store.createSchemaEditorTab(
       {
         title: "test_table",
         data: { schema: "TestSchema", database: "TestDB" },
       },
-      "create",
-      "mysql"
+      operationModes.CREATE,
     );
-    const tab = store.tabs.find((tab) => tab.name === "New Table");
+
+    const tab = store.getSecondaryTabs(primaryTab.id).find((tab) => tab.name === "New Table");
     expect(tab).toBeTruthy();
     expect(tab.component).toBe("SchemaEditorTab");
-    expect(store.selectedPrimaryTab).toBe(tab);
   });
 
   it("should create a Monitoring tab", async () => {

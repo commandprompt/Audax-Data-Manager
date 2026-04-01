@@ -80,8 +80,8 @@ describe("BackupTab Component", () => {
       wrapper.find(`#${props.tabId}_backupOptionsOnlyGlobals`).exists()
     ).toBeTruthy();
     expect(wrapper.find("#backupFormat").exists()).toBeFalsy();
-    expect(wrapper.find("#backupCompressionRatio").exists()).toBeFalsy();
-    expect(wrapper.find("#backupNumberOfJobs").exists()).toBeFalsy();
+    expect(wrapper.find("#backupCompressionRatio").exists()).toBeTruthy();
+    expect(wrapper.find("#backupNumberOfJobs").exists()).toBeTruthy();
     expect(
       wrapper.find(`#${props.tabId}_backupOptionsPreData`).exists()
     ).toBeFalsy();

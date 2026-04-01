@@ -56,11 +56,13 @@ describe("Template Functions", () => {
       const response = { data: { template: "SELECT * FROM testTable;" } };
 
       axios.post.mockResolvedValueOnce(response);
+      tabsStore.createQueryTab.mockResolvedValueOnce({
+        id: "tab-1",
+      });
 
       TemplateSelectMariadb(schema, table);
 
       await flushPromises();
-      vi.runAllTimers();
 
       expect(axios.post).toHaveBeenCalledWith("/template_select_mariadb/", {
         database_index: 1,
