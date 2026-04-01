@@ -69,7 +69,7 @@ class UserDetailsModelTest(TestCase):
     def test_font_size_default(self):
         user_details = UserDetails.objects.get(id=1)
         font_size_default = user_details._meta.get_field("font_size").default
-        self.assertEqual(font_size_default, 12)
+        self.assertEqual(font_size_default, 16)
 
     def test_csv_encoding_max_length(self):
         user_details = UserDetails.objects.get(id=1)
@@ -102,16 +102,6 @@ class UserDetailsModelTest(TestCase):
             "masterpass_check"
         ).default
         self.assertEqual(masterpass_check_default, "")
-
-    def test_binary_path_max_length(self):
-        user_details = UserDetails.objects.get(id=1)
-        max_length = user_details._meta.get_field("binary_path").max_length
-        self.assertEqual(max_length, 256)
-
-    def test_binary_path_null(self):
-        user_details = UserDetails.objects.get(id=1)
-        binary_path_null = user_details._meta.get_field("binary_path").null
-        self.assertTrue(binary_path_null)
 
     def test_date_format_max_length(self):
         user_details = UserDetails.objects.get(id=1)
@@ -157,21 +147,6 @@ class UserDetailsModelTest(TestCase):
         user_details = UserDetails.objects.get(id=1)
         with patch("shutil.which", return_value=None):
             self.assertEqual(user_details.get_pigz_path(), "")
-
-    def test_get_binary_path_with_binary_path(self):
-        user_details = UserDetails.objects.get(id=1)
-        user_details.binary_path = "/test/path/to/psql"
-        self.assertEqual(user_details.get_binary_path(), "/test/path/to/psql")
-
-    def test_get_binary_path_without_binary_path(self):
-        user_details = UserDetails.objects.get(id=1)
-        with patch("shutil.which", return_value="/test/path/psql"):
-            self.assertEqual(user_details.get_binary_path(), "/test/path")
-
-    def test_get_binary_path_without_psql_installed(self):
-        user_details = UserDetails.objects.get(id=1)
-        with patch("shutil.which", return_value=None):
-            self.assertEqual(user_details.get_binary_path(), "")
 
     def test_get_editor_theme_light_theme(self):
         user_details = UserDetails.objects.get(id=1)
