@@ -1,0 +1,65 @@
+services:
+  backend:
+    build: 
+      context: .
+      dockerfile: ./Dockerfile.backend
+    volumes:
+      - .:/app
+      - django_venv:/app/venv
+    # ports are not needed because of network_mode: host
+    # ports:
+    #   - "8000:8000"
+    # allows connecting to locahost:5432 from within a container in the same way as it would be on non-dockerized setup
+    network_mode: "host"
+    environment:
+      # - PATH=/app/venv/bin:$PATH
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONUNBUFFERED=1
+    command: >
+          bash -c "python3 -m venv /app/venv ; source /app/venv/bin/activate && \
+           python3 -m ensurepip --upgrade && \
+           python3 -m pip install -r requirements.txt && \
+           python3 pgmanage/manage.py runserver 0.0.0.0:8000"
+
+  frontend:
+    build:
+      context: ./pgmanage/app/static/pgmanage_frontend
+      dockerfile: ../../../../Dockerfile.frontend
+    volumes:
+      - ./pgmanage/app/static/pgmanage_frontend:/app
+      - frontend_node_modules:/app/node_modules
+    ports:
+      - "3000:3000"
+    command: >
+      bash -c "npm install --ignore-scripts && 
+               npm run dev -- --host"
+
+  # SHORTCUT: docker compose run --rm backend-audit
+  backend-audit:
+    profiles: ["tools"]
+    image: pgmanage-backend
+    volumes:
+      - .:/app
+      - django_venv:/app/venv
+    command: bash -c "pip3 install pip-audit && pip-audit -r requirements.txt"
+
+  # SHORTCUT: docker compose run --rm frontend-audit
+  frontend-audit:
+    profiles: ["tools"]
+    image: pgmanage-frontend
+    volumes:
+      - ./pgmanage/app/static/pgmanage_frontend:/app
+      - frontend_node_modules:/app/node_modules
+    command: npm audit
+
+  frontend-npminstall:
+    profiles: ["tools"]
+    image: pgmanage-frontend
+    volumes:
+      - ./pgmanage/app/static/pgmanage_frontend:/app
+      - frontend_node_modules:/app/node_modules
+    command: npm install
+
+volumes:
+  django_venv:
+  frontend_node_modules:

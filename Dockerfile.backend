@@ -1,0 +1,34 @@
+FROM ubuntu:24.04
+
+ENV TZ=UTC
+ARG PYVER="3.11.13"
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+WORKDIR /app
+
+# stop python from generating .pyc files
+ENV PYTHONDONTWRITEBYTECODE=1
+# dont buffer stdout, write to console immediately
+ENV PYTHONUNBUFFERED=1
+
+ENV TZ=UTC
+ARG PYVER="3.11.13"
+ARG PG_VERSIONS="13 14 15 16 17 18"
+
+# install deps and postgres
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends gnupg2 wget curl lsb-release ca-certificates && \
+    bash -c 'echo "deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list' && \
+    curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/postgresql.gpg && \
+    apt-get update && \
+    PACKAGES=$(for v in $PG_VERSIONS; do echo -n "postgresql-client-$v "; done) && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        $PACKAGES build-essential libpq5 libpq-dev zlib1g-dev libffi-dev libsqlite3-dev liblzma-dev  libsasl2-dev libldap2-dev libssl-dev libreadline8 pigz tzdata && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN wget https://www.python.org/ftp/python/$PYVER/Python-$PYVER.tgz && \
+    tar -zxvf Python-$PYVER.tgz && cd Python-$PYVER && \
+    ./configure --enable-shared && make && make install && ldconfig &&\
+    cd .. && rm Python-$PYVER.tgz && rm -r Python-$PYVER/
+
+EXPOSE 8000

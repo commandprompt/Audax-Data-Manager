@@ -1,0 +1,12 @@
+FROM node:22-slim
+WORKDIR /app
+
+# Install basic build tools in case some npm packages need compilation
+RUN apt-get update && apt-get install -y \
+    python3 \
+    make \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
+
+# Vite dev server port
+EXPOSE 3000
