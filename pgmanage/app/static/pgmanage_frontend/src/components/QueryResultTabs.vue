@@ -38,9 +38,6 @@
               The file is ready.
               <a class="text-info" :href="exportFileName" :download="exportDownloadName">Save</a>
             </template>
-            <template v-else-if="errorMessage" class="error_text" style="white-space: pre">
-              {{ errorMessage }}
-            </template>
             <div v-show="showTable" ref="tabulator" class="tabulator-custom"></div>
           </div>
         </div>
@@ -51,10 +48,19 @@
                 <div class="query_info">
                 {{ queryInfoText }}
               </div>
+            <div v-if="errorMessage">
+              <span
+              class="badge rounder-pill"
+              :class="noticeClass('EXCEPTION')"
+              >Exception</span>
+              <pre>
+                {{ errorMessage }}
+              </pre>
+            </div>
               <div v-for="notice in notices">
                 <span
                   class="badge rounded-pill"
-                  :class="noticeClass(notice)"
+                  :class="noticeClass(notice[0])"
                   >{{ notice[0] }}</span>
                 <pre>{{ notice[1] }}</pre>
               </div>
@@ -249,6 +255,7 @@ export default {
       this.clearData();
       if (data.error && context.cmd_type !== "explain") {
         this.errorMessage = data.data.message;
+        Tab.getOrCreateInstance(this.$refs.messagesTab).show();
       } else {
         if (context.cmd_type === "explain") {
           this.showExplainTab(data);
@@ -631,7 +638,7 @@ export default {
         targetElement.dispatchEvent(clickEvent);
       });
     },
-    noticeClass(notice){
+    noticeClass(notice_level){
       const NOTICE_MAP = {
         'NOTICE': 'badge-primary',
         'INFO': 'badge-secondary',
@@ -640,7 +647,7 @@ export default {
         'EXCEPTION': 'badge-danger',
         'ERROR': 'badge-danger',
       }
-      return NOTICE_MAP[notice[0]] || 'badge-secondary';
+      return NOTICE_MAP[notice_level] || 'badge-secondary';
     }
   },
 };
