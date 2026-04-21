@@ -1211,7 +1211,8 @@ def thread_query(self, args) -> None:
                 queue_response(client_object, response_data)
     except Exception as exc:
         if not self.cancel:
-            notices = database.connection.GetNotices()
+            notices = database.connection.GetNotices()[:]
+            database.connection.ClearNotices()
 
             log_end_time = datetime.now(timezone.utc)
             duration = get_duration(log_start_time, log_end_time)
