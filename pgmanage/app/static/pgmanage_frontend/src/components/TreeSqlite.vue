@@ -466,18 +466,26 @@ export default {
         const response = await this.api.post("/get_tables_sqlite/")
 
         this.removeChildNodes(node);
-          this.$refs.tree.updateNode(node.path, {
-            title: `Tables (${response.data.length})`,
-          });
+        this.$refs.tree.updateNode(node.path, {
+          title: `Tables (${response.data.length})`,
+        });
 
-          response.data.reduceRight((_, el) => {
-            this.insertNode(node, el.name, {
+        let childNodes = response.data.map((el) => {
+          return {
+            title: el.name,
+            isLeaf: false,
+            isExpanded: false,
+            isDraggable: false,
+            data: {
               icon: "fas node-all fa-table node-table",
               type: "table",
               contextMenu: "cm_table",
               raw_value: el.name_raw,
-            });
-          }, null);
+            },
+          }
+        });
+      
+        this.insertNodes(node, childNodes);
       } catch(error) {
         this.nodeOpenError(error, node);
       }

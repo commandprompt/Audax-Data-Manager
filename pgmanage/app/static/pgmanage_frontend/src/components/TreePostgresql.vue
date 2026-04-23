@@ -3464,18 +3464,27 @@ export default {
         this.$refs.tree.updateNode(node.path, {
           title: `Tables (${response.data.length})`,
         });
-  
-        response.data.reduceRight((_, el) => {
-          this.insertNode(node, el.name, {
-            icon: "fas node-all fa-table node-table",
-            type: "table",
-            contextMenu: "cm_table",
-            schema: node.data.schema,
-            schema_raw: node.data.schema_raw,
-            raw_value: el.name_raw,
-            oid: el.oid,
-          });
-        }, null);
+
+        let childNodes = response.data.map((el) => {
+          return {
+            title: el.name,
+            isLeaf: false,
+            isExpanded: false,
+            isDraggable: false,
+            data: {
+              database: this.selectedDatabase,
+              icon: "fas node-all fa-table node-table",
+              type: "table",
+              contextMenu: "cm_table",
+              schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
+              raw_value: el.name_raw,
+              oid: el.oid,
+            },
+          }
+        });
+
+        this.insertNodes(node, childNodes);
       } catch(error) {
         throw error;
       }

@@ -985,14 +985,22 @@ export default {
           title: `Tables (${response.data.length})`,
         });
 
-        response.data.reduceRight((_, el) => {
-          this.insertNode(node, el, {
-            icon: "fas node-all fa-table node-table",
-            type: "table",
-            contextMenu: "cm_table",
-            database: node.data.database
-          });
-        }, null);
+        let childNodes = response.data.map((el) => {
+          return {
+            title: el,
+            isLeaf: false,
+            isExpanded: false,
+            isDraggable: false,
+            data: {
+              icon: "fas node-all fa-table node-table",
+              type: "table",
+              contextMenu: "cm_table",
+              database: node.data.database
+            },
+          }
+        });
+
+        this.insertNodes(node, childNodes);
       } catch (error) {
         throw error;
       }

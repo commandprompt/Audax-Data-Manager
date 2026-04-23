@@ -878,18 +878,26 @@ export default {
         const response = await this.api.post("/get_tables_oracle/")
         this.removeChildNodes(node);
 
-          this.$refs.tree.updateNode(node.path, {
-            title: `Tables (${response.data.length})`,
-          });
+        this.$refs.tree.updateNode(node.path, {
+          title: `Tables (${response.data.length})`,
+        });
 
-          response.data.reduceRight((_, el) => {
-            this.insertNode(node, el, {
+        let childNodes = response.data.map((el) => {
+          return {
+            title: el,
+            isLeaf: false,
+            isExpanded: false,
+            isDraggable: false,
+            data: {
+              database: this.selectedDatabase,
               icon: "fas node-all fa-table node-table",
               type: "table",
               contextMenu: "cm_table",
-            });
-          }, null);
+            },
+          }
+        });
 
+        this.insertNodes(node, childNodes);
       } catch(error) {
         this.nodeOpenError(error, node);
       }
