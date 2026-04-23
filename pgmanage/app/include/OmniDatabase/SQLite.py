@@ -202,7 +202,12 @@ class SQLite:
             tables.Columns.append('table_name')
             tables.Rows.append(OrderedDict(zip(tables.Columns, [table_name])))
         else:
-            tables = self.QueryTables()
+            tables = self.connection.Query('''
+                select name as table_name
+                from sqlite_master
+                where type = 'table'
+                order by table_name ASC
+                ''', True)
         for table in tables.Rows:
             quoted_table_name = '"{0}"'.format(table['table_name'].lstrip("\'").rstrip("\'"))
             table_columns_tmp = self.connection.Query('pragma table_info({0})'.format(quoted_table_name), True)
@@ -638,7 +643,7 @@ class SQLite:
         ''', True)
 
     @lock_required
-    def QueryViewFields(self, table_name=None):
+    def QueryViewFields(self, table=None, all_schemas=False, schema=None):
         table_columns_all = Spartacus.Database.DataTable()
         table_columns_all.Columns = [
             'column_name',
@@ -649,12 +654,17 @@ class SQLite:
             'data_scale',
             'table_name'
         ]
-        if table_name:
+        if table:
             tables = Spartacus.Database.DataTable()
             tables.Columns.append('table_name')
-            tables.Rows.append(OrderedDict(zip(tables.Columns, [table_name])))
+            tables.Rows.append(OrderedDict(zip(tables.Columns, [table])))
         else:
-            tables = self.QueryTables()
+            tables = self.connection.Query('''
+                select name as table_name
+                from sqlite_master
+                where type = 'view'
+                order by table_name ASC
+                ''', True)
         for table in tables.Rows:
             table_columns_tmp = self.connection.Query("pragma table_info({0})".format(table['table_name']), True)
             table_columns = Spartacus.Database.DataTable()
