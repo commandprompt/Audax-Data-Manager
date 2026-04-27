@@ -252,6 +252,7 @@ export default {
           databaseIndex: tab?.metaData?.databaseIndex,
           backupType: tab.metaData.backupType,
           treeNode: tab.metaData.treeNode,
+          database: tab.metaData.database,
         },
         RestoreTab: {
           workspaceId: tab.parentId,
@@ -259,6 +260,7 @@ export default {
           databaseIndex: tab?.metaData?.databaseIndex,
           restoreType: tab.metaData.backupType,
           treeNode: tab.metaData.treeNode,
+          database: tab.metaData.database,
         },
         ERDTab: {
           tabId: tab.id,

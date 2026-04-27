@@ -333,7 +333,8 @@ export default {
     tabId: String,
     databaseIndex: Number,
     backupType: String,
-    treeNode: Object
+    treeNode: Object,
+    database: String,
   },
   data() {
     return {
@@ -353,7 +354,7 @@ export default {
         'WIN1257', 'WIN1258', 'WIN866', 'WIN874'
       ],
       backupOptionsDefault: {
-        database: this.treeNode.data.database,
+        database: this.database,
         pg_version: '',
         tables: [],
         schemas: [],

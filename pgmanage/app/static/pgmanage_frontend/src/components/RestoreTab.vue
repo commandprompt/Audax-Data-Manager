@@ -319,13 +319,14 @@ export default {
     tabId: String,
     databaseIndex: Number,
     treeNode: Object,
-    restoreType: String
+    restoreType: String,
+    database: String,
   },
   data() {
     return {
       roleNames: [],
       restoreOptionsDefault: {
-        database: this.treeNode.data.database,
+        database: this.database,
         pg_version: '',
         type: this.restoreType,
         table: "",

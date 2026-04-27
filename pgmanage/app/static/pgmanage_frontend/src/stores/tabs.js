@@ -556,7 +556,7 @@ const useTabsStore = defineStore("tabs", {
         this.selectedPrimaryTab?.metaData?.selectedDatabaseIndex;
       this.selectTab(tab);
     },
-    createUtilityTab(node, utility, backupType = "objects") {
+    createUtilityTab(node, database, utility, backupType = "objects") {
       let utilityTitle =
         backupType === "objects"
           ? `(${node.data.type}:${node.title})`
@@ -579,6 +579,7 @@ const useTabsStore = defineStore("tabs", {
       });
 
       tab.metaData.treeNode = node;
+      tab.metaData.database = database;
       tab.metaData.backupType = backupType;
       tab.metaData.databaseIndex =
         this.selectedPrimaryTab?.metaData?.selectedDatabaseIndex;

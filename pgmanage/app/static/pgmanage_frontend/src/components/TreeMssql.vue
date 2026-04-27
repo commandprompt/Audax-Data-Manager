@@ -761,7 +761,7 @@ export default {
         let db_node = tree.getNextNode([0], (node) => {
           return (
             node.data.type === "database" &&
-            node.data.database === database_name
+            node.title === database_name
           );
         });
         let schema_node = tree.getNextNode(db_node.path, (node) => {
@@ -796,7 +796,7 @@ export default {
         const databaseNode = findNode(
           updatedDatabasesRoot,
           (node) =>
-            node.data?.database === database && node.data.type === "database"
+            node.title === database && node.data.type === "database"
         );
         if (!databaseNode) return;
 
@@ -914,33 +914,35 @@ export default {
       callback_continue,
       callback_stop
     ) {
+      const nodeDatabase = this.getNodeDatabase(node);
+
       if (
-        !!node.data.database &&
-        node.data.database !== this.selectedDatabase &&
+        nodeDatabase &&
+        nodeDatabase !== this.selectedDatabase &&
         (complete_check || (!complete_check && node.data.type !== "database"))
       ) {
         let isAllowed = checkBeforeChangeDatabase(callback_stop);
         if (isAllowed) {
           this.api
             .post("/change_active_database/", {
-              database: node.data.database,
+              database: nodeDatabase,
             })
             .then((resp) => {
               dbMetadataStore.fetchDbMeta(
                 this.databaseIndex,
                 this.workspaceId,
-                node.data.database
+                nodeDatabase
               );
               connectionsStore.updateConnection(this.databaseIndex, {
-                last_used_database: node.data.database,
+                last_used_database: nodeDatabase,
               });
               const database_nodes = this.$refs.tree.getNode([0, 0]).children;
 
               database_nodes.forEach((el) => {
-                if (node.data.database === el.title) {
-                  this.selectedDatabase = node.data.database;
+                if (nodeDatabase === el.title) {
+                  this.selectedDatabase = nodeDatabase;
                   tabsStore.selectedPrimaryTab.metaData.selectedDatabase =
-                    node.data.database;
+                    nodeDatabase;
                 }
               });
               if (callback_continue) callback_continue();
@@ -1062,20 +1064,17 @@ export default {
           icon: "fas node-all fa-users node-user-list",
           type: "server_role_list",
           contextMenu: "cm_server_roles",
-          database: false,
         });
 
         this.insertNode(node, "Logins", {
           icon: "fas node-all fa-users node-user-list",
           type: "logins_list",
           contextMenu: "cm_logins",
-          database: false,
         });
         this.insertNode(node, "Databases", {
           icon: "fas node-all fa-database node-database-list",
           type: "database_list",
           contextMenu: "cm_databases",
-          database: false,
         });
       } catch (error) {
         throw error;
@@ -1098,7 +1097,6 @@ export default {
             isExpanded: false,
             isDraggable: false,
             data: {
-              database: el.name,
               icon: "fas node-all fa-database node-database",
               type: "database",
               contextMenu: "cm_database",
@@ -1123,14 +1121,12 @@ export default {
             icon: "fas node-all fa-users node-user-list",
             type: "database_role_list",
             contextMenu: "cm_database_roles",
-            database: false,
           });
 
           this.insertNode(node, "Users", {
             icon: "fas node-all fa-users node-user-list",
             type: "users_list",
             contextMenu: "cm_users",
-            database: false,
           });
           this.insertNode(node, "Schemas", {
             icon: "fas node-all fa-layer-group node-schema-list",
@@ -1160,7 +1156,6 @@ export default {
             isExpanded: false,
             isDraggable: false,
             data: {
-              database: this.selectedDatabase,
               icon: "fas node-all fa-layer-group node-schema",
               type: "schema",
               contextMenu: "cm_schema",
@@ -1239,7 +1234,6 @@ export default {
               icon: "fas node-all fa-table node-table",
               type: "table",
               contextMenu: "cm_table",
-              database: node.data.database,
               schema: node.data.schema,
             },
           }
@@ -1265,7 +1259,6 @@ export default {
             isExpanded: false,
             isDraggable: false,
             data: {
-              database: this.selectedDatabase,
               icon: "fas node-all fa-columns node-column",
               type: "table_field",
               contextMenu: "cm_column",
@@ -1279,7 +1272,6 @@ export default {
                 isExpanded: false,
                 isDraggable: false,
                 data: {
-                  database: this.selectedDatabase,
                   icon: "fas node-all fa-ellipsis-h node-bullet",
                   schema: node.data.schema,
                 },
@@ -1290,7 +1282,6 @@ export default {
                 isExpanded: false,
                 isDraggable: false,
                 data: {
-                  database: this.selectedDatabase,
                   icon: "fas node-all fa-ellipsis-h node-bullet",
                   schema: node.data.schema,
                 },
@@ -1306,7 +1297,6 @@ export default {
             isExpanded: false,
             isDraggable: false,
             data: {
-              database: this.selectedDatabase,
               icon: "fas node-all fa-columns node-column",
               type: "column_list",
               contextMenu: "cm_columns",
@@ -1320,7 +1310,6 @@ export default {
             isExpanded: false,
             isDraggable: false,
             data: {
-              database: this.selectedDatabase,
               icon: "fas node-all fa-key node-pkey",
               type: "primary_keys",
               contextMenu: "cm_pks",
@@ -1333,7 +1322,6 @@ export default {
             isExpanded: false,
             isDraggable: false,
             data: {
-              database: this.selectedDatabase,
               icon: "fas node-all fa-key node-fkey",
               type: "foreign_keys",
               contextMenu: "cm_fks",
@@ -1346,7 +1334,6 @@ export default {
             isExpanded: false,
             isDraggable: false,
             data: {
-              database: this.selectedDatabase,
               icon: "fas node-all fa-key node-unique",
               type: "uniques",
               contextMenu: "cm_uniques",
@@ -1359,7 +1346,6 @@ export default {
             isExpanded: false,
             isDraggable: false,
             data: {
-              database: this.selectedDatabase,
               icon: "fas node-all fa-check-square node-check",
               type: "check_list",
               contextMenu: "cm_checks",
@@ -1372,7 +1358,6 @@ export default {
             isExpanded: false,
             isDraggable: false,
             data: {
-              database: this.selectedDatabase,
               icon: "fas node-all fa-thumbtack node-index",
               type: "indexes",
               contextMenu: "cm_indexes",
@@ -1385,7 +1370,6 @@ export default {
             isExpanded: false,
             isDraggable: false,
             data: {
-              database: this.selectedDatabase,
               icon: "fas node-all fa-bolt node-trigger",
               type: "trigger_list",
               contextMenu: "cm_triggers",
@@ -1398,7 +1382,6 @@ export default {
             isExpanded: false,
             isDraggable: false,
             data: {
-              database: this.selectedDatabase,
               icon: "fas node-all fa-chart-bar node-statistics",
               type: "statistics_list",
               contextMenu: "cm_statistics",
@@ -1481,7 +1464,6 @@ export default {
             isExpanded: false,
             isDraggable: false,
             data: {
-              database: this.selectedDatabase,
               icon: "fas node-all fa-key node-fkey",
               type: "foreign_key",
               contextMenu: "cm_fk",
@@ -1770,7 +1752,6 @@ export default {
             isExpanded: false,
             isDraggable: false,
             data: {
-              database: this.selectedDatabase,
               icon: "fas node-all fa-eye node-view",
               type: "view",
               contextMenu: "cm_view",
@@ -1800,7 +1781,6 @@ export default {
             isExpanded: false,
             isDraggable: false,
             data: {
-              database: this.selectedDatabase,
               icon: "fas node-all fa-columns node-column",
               type: "view_field",
               schema: node.data.schema,
@@ -1812,7 +1792,6 @@ export default {
                 isExpanded: false,
                 isDraggable: false,
                 data: {
-                  database: this.selectedDatabase,
                   icon: "fas node-all fa-ellipsis-h node-bullet",
                   schema: node.data.schema,
                 },
@@ -1828,7 +1807,6 @@ export default {
             isExpanded: false,
             isDraggable: false,
             data: {
-              database: this.selectedDatabase,
               icon: "fas node-all fa-columns node-column",
               schema: node.data.schema,
             },
@@ -1840,7 +1818,6 @@ export default {
             isExpanded: false,
             isDraggable: false,
             data: {
-              database: this.selectedDatabase,
               icon: "fas node-all fa-bolt node-trigger",
               type: "trigger_list",
               contextMenu: "cm_view_triggers",
@@ -1873,7 +1850,6 @@ export default {
             isExpanded: false,
             isDraggable: false,
             data: {
-              database: this.selectedDatabase,
               icon: "fas node-all fa-cog node-procedure",
               type: "procedure",
               contextMenu: "cm_procedure",
@@ -1953,7 +1929,6 @@ export default {
             isExpanded: false,
             isDraggable: false,
             data: {
-              database: this.selectedDatabase,
               icon: "fas node-all fa-cog node-function",
               type: "function",
               contextMenu: "cm_function",
@@ -2030,7 +2005,6 @@ export default {
             isExpanded: false,
             isDraggable: false,
             data: {
-              database: this.selectedDatabase,
               icon: "fas node-all fa-user node-user",
               type: "server_role",
               contextMenu: "cm_server_role",
@@ -2060,7 +2034,6 @@ export default {
             isExpanded: false,
             isDraggable: false,
             data: {
-              database: this.selectedDatabase,
               icon: "fas node-all fa-user node-user",
               type: "database_role",
               contextMenu: "cm_database_role",
@@ -2090,7 +2063,6 @@ export default {
             isExpanded: false,
             isDraggable: false,
             data: {
-              database: this.selectedDatabase,
               icon: "fas node-all fa-user node-user",
               type: "login",
               contextMenu: "cm_login",
@@ -2120,7 +2092,6 @@ export default {
             isExpanded: false,
             isDraggable: false,
             data: {
-              database: this.selectedDatabase,
               icon: "fas node-all fa-user node-user",
               type: "user",
               contextMenu: "cm_user",
@@ -2153,7 +2124,6 @@ export default {
             isExpanded: false,
             isDraggable: false,
             data: {
-              database: this.selectedDatabase,
               icon: "fas node-all fa-square node-type",
               type: "type",
               contextMenu: "cm_type",
