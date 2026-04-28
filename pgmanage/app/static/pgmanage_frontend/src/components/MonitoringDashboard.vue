@@ -76,10 +76,10 @@ export default {
     };
   },
   mounted() {
-    this.getMonitoringWidges();
+    this.getMonitoringWidgets();
   },
   methods: {
-    getMonitoringWidges() {
+    getMonitoringWidgets() {
       axios
         .post("/monitoring-widgets", {
           workspace_id: this.workspaceId,
