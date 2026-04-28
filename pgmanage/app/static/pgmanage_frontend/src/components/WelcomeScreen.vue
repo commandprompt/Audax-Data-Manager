@@ -102,12 +102,6 @@ import logoUrl from '../../src/assets/images/logo.svg'
 
 export default {
   name: "WelcomeScreen",
-  props: {
-
-  },
-  setup(props) {
-
-  },
   computed: {
     recentConnections() {
       return connectionsStore.connections

@@ -70,7 +70,6 @@ export default {
       pendingJobId: [],
       jobList: [],
       workerId: "",
-      selectedJob: {},
     };
   },
   mounted() {

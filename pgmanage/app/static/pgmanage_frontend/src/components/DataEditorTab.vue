@@ -97,11 +97,6 @@ export default {
     tabId: String,
     workspaceId: String,
     databaseIndex: Number,
-    databaseName: String,
-    initial_filter: {
-      type: String,
-    default: ''
-    }
   },
   data() {
     return {

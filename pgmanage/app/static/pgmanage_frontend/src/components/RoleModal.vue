@@ -233,7 +233,8 @@
   import SearchableDropdown from './SearchableDropdown.vue'
   import { required, between, maxLength, helpers } from '@vuelidate/validators'
   import { useVuelidate } from '@vuelidate/core'
-  import { isEmpty, capitalize } from 'lodash';
+  import isEmpty from 'lodash/isEmpty';
+  import capitalize from 'lodash/capitalize';
   import { emitter } from '../emitter'
   import axios from 'axios'
   import moment from 'moment'

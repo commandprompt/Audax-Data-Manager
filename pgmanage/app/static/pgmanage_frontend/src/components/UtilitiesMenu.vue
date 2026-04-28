@@ -81,9 +81,7 @@ export default {
     return {
       shortVersion: window.short_version,
       userName: window.user_name,
-      superUser: window.v_super_user,
       menuExpanded: false,
-      utitiesExtras: [],
     };
   },
   computed: {
@@ -94,7 +92,6 @@ export default {
       return utilitiesMenuStore.items;
     },
   },
-  mounted() {},
   watch: {
     menuExpanded(newVal) {
       if (newVal) {

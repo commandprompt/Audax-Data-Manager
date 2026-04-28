@@ -163,7 +163,6 @@ export default {
     tabId: String,
     databaseIndex: Number,
     databaseName: String,
-    treeNode: Object,
   },
   components: {
     ColumnList,
@@ -198,7 +197,6 @@ export default {
         generatedSQL: '',
         hasChanges: false,
         queryIsRunning: false,
-        tabType: "Columns"
     };
   },
   created() {

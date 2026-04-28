@@ -271,11 +271,9 @@ export default {
           workspaceId: tab.parentId,
           tabId: tab.id,
           databaseIndex: tab?.metaData?.databaseIndex,
-          databaseName: tab?.metaData?.databaseName,
           table: tab.metaData.table,
           schema: tab.metaData.schema,
           dialect: tab.metaData.dialect,
-          query_filter: tab.metaData.dialect,
         },
         SchemaEditorTab: {
           workspaceId: tab.parentId,
@@ -285,7 +283,6 @@ export default {
           mode: tab.metaData.editMode,
           schema: tab.metaData.schema,
           table: tab.metaData.table,
-          treeNode: tab.metaData.treeNode,
           dialect: tab.metaData.dialect,
         },
         MonitoringTab: {

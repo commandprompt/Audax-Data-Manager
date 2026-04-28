@@ -154,7 +154,6 @@ export default {
       editModalVisible: false,
       editWidgetId: null,
       modalInstance: null,
-      availableWidgets: []
     };
   },
   mounted() {

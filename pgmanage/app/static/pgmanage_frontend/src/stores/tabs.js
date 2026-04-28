@@ -649,11 +649,8 @@ const useTabsStore = defineStore("tabs", {
       tab.metaData.dialect = this.selectedPrimaryTab.metaData.selectedDBMS;
       tab.metaData.table = table;
       tab.metaData.schema = schema;
-      tab.metaData.query_filter = ""; //to be used in the future for passing extra filters when tab is opened
       tab.metaData.databaseIndex =
         this.selectedPrimaryTab?.metaData?.selectedDatabaseIndex;
-      tab.metaData.databaseName =
-        this.selectedPrimaryTab?.metaData?.selectedDatabase;
 
       this.selectTab(tab);
     },
@@ -683,7 +680,6 @@ const useTabsStore = defineStore("tabs", {
       Object.assign(tab.metaData, {
         dialect: metaData.selectedDBMS,
         editMode: mode,
-        treeNode: node,
         databaseIndex: metaData.selectedDatabaseIndex,
         table: isCreate ? null : tableName,
         schema: node.data.schema || node.data.database,
