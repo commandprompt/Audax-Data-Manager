@@ -61,7 +61,7 @@
           </div>
 
           <div v-if="commentable" class="col-3">
-            <input :disabled="this.mode === operationModes.UPDATE" v-model="column.comment" class="form-control mb-0"
+            <input v-model="column.comment" class="form-control mb-0"
             type="text"
             :placeholder="this.mode === operationModes.UPDATE ? '' : 'column comment...'" />
           </div>
