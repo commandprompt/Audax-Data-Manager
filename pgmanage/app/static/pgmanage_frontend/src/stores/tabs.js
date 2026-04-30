@@ -654,7 +654,7 @@ const useTabsStore = defineStore("tabs", {
 
       this.selectTab(tab);
     },
-    createSchemaEditorTab(node, mode) {
+    createSchemaEditorTab(node, mode, serverVersion) {
       const isCreate = mode === operationModes.CREATE;
       const tableName = node.title.replace(/^"(.*)"$/, "$1");
       const tabTitle = isCreate ? "New Table" : `Alter: ${tableName}`;
@@ -683,7 +683,8 @@ const useTabsStore = defineStore("tabs", {
         databaseIndex: metaData.selectedDatabaseIndex,
         table: isCreate ? null : tableName,
         schema: node.data.schema || node.data.database,
-        databaseName: metaData.selectedDatabase
+        databaseName: metaData.selectedDatabase,
+        serverVersion: serverVersion,
       });
 
       this.selectTab(tab);

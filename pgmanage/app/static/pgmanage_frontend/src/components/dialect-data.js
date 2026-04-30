@@ -274,7 +274,31 @@ export default Object.freeze({
         },
       ],
   },
-  'oracle':{
+  'oracledb':{
+      dataTypes: [
+      'char', 'nchar', 'varchar2', 'nvarchar2',
+      'number', 'numeric', 'decimal', 'float', 'binary_float', 'binary_double',
+      'date', 'timestamp', 'timestamp with time zone', 'timestamp with local time zone',
+      'interval year to month', 'interval day to second',
+      'clob', 'nclob', 'blob', 'bfile',
+      'raw', 'long raw', 'long',
+      'xmltype', 'rowid', 'urowid'
+    ],
     nonEditableDataTypes: ["raw", "long raw", "blob", "bfile"],
+    numericTypes: [
+      'number', 'numeric', 'decimal', 'float', 'binary_float', 'binary_double'
+    ],
+    hasSchema: false,
+    hasComments: true,
+    api_endpoints: {
+      types_url: "/get_types_oracle/",
+      indexes_url: "/get_indexes_oracle/",
+      table_definition_url: "/get_table_definition_oracle/",
+      foreign_keys_url: "/get_fks_oracle/",
+    },
+    disabledFeatures: {
+      indexPredicate: true,
+      indexMethod: true,
+    },
   }
 });

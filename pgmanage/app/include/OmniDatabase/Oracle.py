@@ -182,7 +182,7 @@ class Oracle:
         return self.service
 
     @lock_required
-    def GetVersion(self):
+    def GetFormattedVersion(self):
         return self.connection.ExecuteScalar('''
             select (case when product like '%Express%'
                          then 'Oracle XE '
@@ -191,7 +191,15 @@ class Oracle:
             from product_component_version
             where product like 'Oracle%'
         ''')
-
+    
+    @lock_required
+    def GetVersion(self):
+        return self.connection.ExecuteScalar('''
+            select version_full
+            from product_component_version
+            where product like 'Oracle%'
+        ''')
+    
     def GetUserName(self):
         return self.user
 
@@ -1169,3 +1177,26 @@ select * from all_objects
 
     def GetAutocompleteValues(self, p_columns, p_filter):
         return None
+    
+    @lock_required
+    def QueryTypes(self, all_schemas=False, schema=None):
+        query_filter = ''
+
+        if not all_schemas:
+            if schema:
+                query_filter = "AND OWNER = '{0}' ".format(schema.upper())
+            else:
+                query_filter = "AND OWNER = '{0}' ".format(self.schema.upper())
+        else:
+            query_filter = "AND OWNER NOT IN ('SYS', 'SYSTEM') "
+
+        table = self.connection.Query('''
+            SELECT 
+                TYPE_NAME AS "type_name"
+            FROM ALL_TYPES
+            WHERE 1=1
+            {0}
+            ORDER BY OWNER, TYPE_NAME
+        '''.format(query_filter), True)
+
+        return table

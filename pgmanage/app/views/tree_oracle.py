@@ -8,6 +8,7 @@ def get_tree_info(request, database):
     try:
         data = {
             "database": database.GetName(),
+            "formatted_version": database.GetFormattedVersion(),
             "version": database.GetVersion(),
             "username": database.GetUserName(),
             "superuser": database.GetUserSuper(),
@@ -513,3 +514,23 @@ def template_update(request, database):
         return JsonResponse(data={"data": str(exc)}, status=400)
 
     return JsonResponse(data={"template": template})
+
+
+@user_authenticated
+@database_required(check_timeout=True, open_connection=True)
+def get_types(request, database):
+    schema = request.data["schema"]
+
+    list_types = []
+
+    try:
+        types = database.QueryTypes(False, schema)
+        for type_object in types.Rows:
+            type_data = {
+                "type_name": type_object["type_name"],
+            }
+            list_types.append(type_data)
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+
+    return JsonResponse(data=list_types, safe=False)

@@ -284,6 +284,7 @@ export default {
           schema: tab.metaData.schema,
           table: tab.metaData.table,
           dialect: tab.metaData.dialect,
+          serverVersion: tab.metaData.serverVersion,
         },
         MonitoringTab: {
           tabId: tab.id,

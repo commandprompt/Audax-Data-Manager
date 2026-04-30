@@ -31,6 +31,7 @@ import { tabSQLTemplate } from "../tree_context_functions/tree_postgresql";
 import { emitter } from "../emitter";
 import { tabsStore } from "../stores/stores_initializer";
 import { findNode, findChild } from "../utils.js";
+import { operationModes } from "../constants";
 
 export default {
   name: "TreeOracle",
@@ -85,13 +86,7 @@ export default {
             label: "Create Table",
             icon: "fas fa-plus",
             onClick: () => {
-              tabSQLTemplate(
-                "Create Table",
-                this.templates.create_table.replace(
-                  "#schema_name#",
-                  this.templates.username
-                )
-              );
+              tabsStore.createSchemaEditorTab(this.selectedNode, operationModes.CREATE, this.templates.version)
             },
           },
         ],
@@ -648,6 +643,19 @@ export default {
       }, 100)
     })
 
+    emitter.on(`schemaChanged_${this.workspaceId}`, () => {
+      const tree = this.$refs.tree;
+      let db_node = tree.getNextNode([0], (node) => {
+        return node.data.type === "database";
+      });
+
+      let tables_node = tree.getNextNode(db_node.path, (node) => {
+        return node.data.type === "table_list";
+      });
+
+      this.refreshTree(tables_node, true);
+    });
+
     emitter.on(`goToNode_${this.workspaceId}`, async({ name, type}) => {
       const rootNode = this.getRootNode()
 
@@ -683,6 +691,7 @@ export default {
     })
   },
   unmounted() {
+    emitter.all.delete(`schemaChanged_${this.workspaceId}`);
     emitter.all.delete(`goToNode_${this.workspaceId}`);
   },
   methods: {
@@ -866,6 +875,7 @@ export default {
             icon: "fas node-all fa-th node-table-list",
             type: "table_list",
             contextMenu: "cm_tables",
+            schema: this.templates.username,
           });
         resolve("success")
         } catch(error) {
