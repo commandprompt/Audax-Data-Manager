@@ -785,7 +785,7 @@ export default {
         this.removeChildNodes(node);
 
         this.$refs.tree.updateNode(node.path, {
-          title: response.data.version,
+          title: response.data.formatted_version,
         });
 
         this.templates = response.data;
