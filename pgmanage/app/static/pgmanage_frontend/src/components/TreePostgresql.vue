@@ -1,6 +1,6 @@
 <template>
   <PowerTree ref="tree" v-model="nodes" @nodedblclick="doubleClickNode" @toggle="onToggle"
-    @nodecontextmenu="onContextMenu" :allow-multiselect="false" @nodeclick="onClickHandler" @click="handleLeftSideClick" @dblclick="handleLeftSideDblClick" tabindex="0">
+    @nodecontextmenu="onContextMenu" :allow-drag="false" :allow-multiselect="false" @nodeclick="onClickHandler" @click="handleLeftSideClick" @dblclick="handleLeftSideDblClick" tabindex="0">
     <template v-slot:toggle="{ node }">
       <i v-if="node.isExpanded" class="exp_col fas fa-chevron-down fa-sm"></i>
       <i v-if="!node.isExpanded" class="exp_col fas fa-chevron-right fa-sm"></i>
@@ -43,7 +43,8 @@ import { emitter } from "../emitter";
 import TreeMixin from "../mixins/power_tree.js";
 import PinDatabaseMixin from "../mixins/power_tree_pin_database_mixin.js";
 import DropDbObjectMixin from "../mixins/power_tree_drop_db_object_mixin.js";
-import { PowerTree } from "@onekiloparsec/vue-power-tree";
+// import { PowerTree } from "@onekiloparsec/vue-power-tree";
+import { PowerTree } from "../vendor/vue-power-tree/src/components/index.js";
 import { checkBeforeChangeDatabase } from "../workspace";
 import {
   tabSQLTemplate,
@@ -3213,6 +3214,20 @@ export default {
           type: "database_list",
           contextMenu: "cm_databases",
         });
+        // render mock nodes for treeview performance tuning
+        // TODO: remove this block once #837 is complete
+        // const childNodes = Array.from({ length: 5000 }, (_, i) => ({
+        //   title: `Child Node ${i + 1}`,
+        //   isLeaf: true,
+        //   isExpanded: false,
+        //   isSelected: false,
+        //   isDraggable: true,
+        //   isSelectable: true,
+
+        //   children: []
+        // }));
+
+        // this.insertNodes(node, childNodes);
       } catch(error) {
         throw error; 
       }

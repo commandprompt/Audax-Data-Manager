@@ -1,0 +1,80 @@
+.vue-power-tree {
+    position: relative;
+    cursor: default;
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+    -khtml-user-select: none; /* Konqueror HTML */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none;
+}
+
+.vue-power-tree.vue-power-tree-root {
+    border: 1px solid rgb(9, 22, 29);
+    background-color: rgb(9, 22, 29);
+    color: rgba(255, 255, 255, 0.5);
+    border-radius: 3px;
+}
+
+.vue-power-tree-root > .vue-power-tree-nodes-list {
+    overflow: hidden;
+    position: relative;
+    padding-bottom: 4px;
+}
+
+.vue-power-tree-selected > .vue-power-tree-node-item {
+    background-color: #13242d;
+    color: white;
+}
+
+.vue-power-tree-node-item:hover,
+.vue-power-tree-node-item.vue-power-tree-cursor-hover {
+    color: white;
+}
+
+.vue-power-tree-node-item {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+
+    padding-left: 10px;
+    padding-right: 10px;
+    line-height: 28px;
+    border: 1px solid transparent;
+}
+
+
+.vue-power-tree-node-item.vue-power-tree-cursor-inside {
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.vue-power-tree-gap {
+    width: 25px;
+    min-height: 1px;
+
+}
+
+.vue-power-tree-toggle {
+    display: inline-block;
+    text-align: left;
+    width: 20px;
+}
+
+.vue-power-tree-sidebar {
+    margin-left: auto;
+}
+
+.vue-power-tree-cursor {
+    position: absolute;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    height: 1px;
+    width: 100%;
+}
+
+.vue-power-tree-drag-info {
+    position: absolute;
+    background-color: rgba(0,0,0,0.5);
+    opacity: 0.5;
+    margin-left: 20px;
+    padding: 5px 10px;
+}
