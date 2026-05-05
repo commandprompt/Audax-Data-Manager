@@ -110,16 +110,10 @@ export default {
             },
           },
           {
-            label: "Alter Table (SQL)",
+            label: "Alter Table",
             icon: "fas fa-edit",
             onClick: () => {
-              tabSQLTemplate(
-                "Alter Table",
-                this.templates.alter_table.replace(
-                  "#table_name#",
-                  `${this.templates.username}.${this.selectedNode.title}`
-                )
-              );
+              tabsStore.createSchemaEditorTab(this.selectedNode, operationModes.UPDATE, this.templates.version)
             },
           },
           {
@@ -356,7 +350,7 @@ export default {
                 "Alter Index",
                 this.templates.alter_index.replace(
                   "#index_name#",
-                  `${this.templates.username}.${this.selectedNode.title}`
+                  `${this.templates.username}.${this.selectedNode.data.raw_value}`
                 )
               );
             },
@@ -368,7 +362,7 @@ export default {
             onClick: () => {
               let template = this.templates.drop_index.replace(
                   "#index_name#",
-                  `${this.templates.username}.${this.selectedNode.title}`
+                  `${this.templates.username}.${this.selectedNode.data.raw_value}`
                 )
               this.prepareDropModal(this.selectedNode, template)
             },
@@ -897,6 +891,7 @@ export default {
               icon: "fas node-all fa-table node-table",
               type: "table",
               contextMenu: "cm_table",
+              schema: this.templates.username,
             });
           }, null);
 
@@ -1035,7 +1030,7 @@ export default {
           });
 
           resp.data.reduceRight((_, el) => {
-            this.insertNode(node, el, {
+            this.insertNode(node, el.constraint_name, {
               icon: "fas node-all fa-key node-fkey",
               type: "foreign_key",
               contextMenu: "cm_fk",
@@ -1160,6 +1155,7 @@ export default {
               type: "index",
               contextMenu: "cm_index",
               unique: el.unique ? 'Unique' : "Non unique",
+              raw_value: el.name_raw,
             });
           });
         })
