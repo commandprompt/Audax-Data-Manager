@@ -105,7 +105,7 @@ export default {
         copyToEditorButton.classList.toggle("d-none", this.isEmpty);
       });
       editorContainer.addEventListener("mouseout", () => {
-        copyToEditorButton.classList.toggle("d-none", !this.isEmpty);
+        copyToEditorButton.classList.toggle("d-none", true);
       });
 
       editorContainer.appendChild(copyToEditorButton);
