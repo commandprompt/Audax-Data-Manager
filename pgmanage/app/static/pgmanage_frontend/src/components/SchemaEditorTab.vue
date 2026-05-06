@@ -471,11 +471,9 @@ export default {
             }
           })
 
-          // FIXME: commenting generates drop default - how to avoid this?
-          // columnChanges.comments.forEach((coldef) => {
-          //   //table.specificType(coldef.name, coldef.dataType).comment('test').alter({alterNullable : false, alterType: false})
-          //   // table.raw(`comment on column "${tabledef.schema}"."${table._tableName}"."${coldef.name}" is '${coldef.comment}'`)
-          // })
+          columnChanges.comments.forEach((coldef) => {
+            table.alterComment(coldef);
+          });
 
           columnChanges.renames.forEach((rename) => {
             table.renameColumn(rename.oldName, rename.newName)

@@ -7,8 +7,9 @@ import SchemaCompiler_Oracle from 'knex/lib/dialects/oracle/schema/oracle-compil
 import knex from 'knex';
 import identity from 'lodash/identity';
 import flatten from 'lodash/flatten';
+import isNil from 'lodash/isNil';
 
-// TODO: Mysql - add PrimaryKey and Comment handling in alter table
+// TODO: Mysql - add PrimaryKey handling in alter table
 
 knex.TableBuilder.extend(
   "renameIndex",
@@ -17,6 +18,17 @@ knex.TableBuilder.extend(
       grouping: "alterTable",
       method: "renameIndex",
       args: [oldIndexName, newIndexName, indexDef],
+    });
+  }
+);
+
+knex.TableBuilder.extend(
+  "alterComment",
+  function (column) {
+    this._statements.push({
+      grouping: "alterTable",
+      method: "alterComment",
+      args: [column],
     });
   }
 );
@@ -59,6 +71,14 @@ export default Object.freeze({
                     sql: sql,
                   });
                 };
+            },
+            () => {
+              TableCompiler_PG.prototype.alterComment = function (column) {
+                this.pushQuery({
+                  sql: `COMMENT ON COLUMN ${this.tableName()}.${this.formatter.wrap(column.name)} IS ?`,
+                  bindings: [column.comment || null],
+                });
+              };
             },
         ],
     },
@@ -193,6 +213,26 @@ export default Object.freeze({
                   sql: sql,
                 });
               };
+          },
+          () => {
+            TableCompiler_MySQL.prototype.alterComment = function (column) {
+              let sql = `ALTER TABLE ${this.tableName()} MODIFY COLUMN ${this.formatter.wrap(column.name)} ${column.dataType}`;
+
+              sql += column.nullable ? " NULL" : " NOT NULL";
+
+              if (!isNil(column.defaultValue) && column.defaultValue !== "") {
+                sql += ` DEFAULT ${column.defaultValue}`;
+              }
+
+              if (column.comment) {
+                sql += " COMMENT ?";
+              }
+
+              this.pushQuery({
+                sql,
+                bindings: column.comment ? [column.comment] : [],
+              });
+            };
           },
         ],
     },
