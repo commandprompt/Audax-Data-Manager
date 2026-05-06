@@ -1227,11 +1227,10 @@ select * from all_objects
     def QueryTypes(self, all_schemas=False, schema=None):
         query_filter = ''
 
+        in_schema = schema if schema else self.schema
+
         if not all_schemas:
-            if schema:
-                query_filter = "AND OWNER = '{0}' ".format(schema.upper())
-            else:
-                query_filter = "AND OWNER = '{0}' ".format(self.schema.upper())
+            query_filter = "AND OWNER = '{0}' ".format(in_schema)
         else:
             query_filter = "AND OWNER NOT IN ('SYS', 'SYSTEM') "
 

@@ -163,7 +163,6 @@ export default {
     tabId: String,
     databaseIndex: Number,
     databaseName: String,
-    serverVersion: String,
   },
   components: {
     ColumnList,
@@ -209,17 +208,7 @@ export default {
     // the "client" parameter is a bit misleading here,
     // we do not connect to any db from Knex, just setting
     // the correct SQL dialect with this option
-    let config = {
-      client: mappedDialect, 
-    }
-
-    // oracle needs version parameter to work
-    if (this.dialect === 'oracle') {
-      config.version = this.serverVersion
-    }
-
-    this.knex = Knex(config)
-
+    this.knex = Knex({ client: mappedDialect })
     this.loadDialectData(mappedDialect)
     if(this.$props.mode === operationModes.UPDATE) {
       this.loadTableDefinition().then(() => {
