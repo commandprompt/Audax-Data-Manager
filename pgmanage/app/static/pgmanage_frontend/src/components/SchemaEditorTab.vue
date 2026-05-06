@@ -519,7 +519,7 @@ export default {
               fk = fk.onDelete(foreignKeyDef.on_delete);
             }
 
-            if (foreignKeyDef.on_update) {
+            if (foreignKeyDef.on_update && table.client.dialect !== 'oracle') {
               fk = fk.onUpdate(foreignKeyDef.on_update);
             }
           })

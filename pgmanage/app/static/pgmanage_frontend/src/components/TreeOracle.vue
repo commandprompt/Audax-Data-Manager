@@ -163,7 +163,7 @@ export default {
             onClick: () => {
               let template = this.templates.drop_table.replace(
                   "#table_name#",
-                  `${this.templates.username}.${this.selectedNode.title}`
+                  `${this.templates.username}.${this.selectedNode.data.raw_value}`
                 )
               this.prepareDropModal(this.selectedNode, template)
             },
@@ -887,11 +887,12 @@ export default {
           });
 
           response.data.reduceRight((_, el) => {
-            this.insertNode(node, el, {
+            this.insertNode(node, el.name, {
               icon: "fas node-all fa-table node-table",
               type: "table",
               contextMenu: "cm_table",
               schema: this.templates.username,
+              raw_value: el.name_raw,
             });
           }, null);
 

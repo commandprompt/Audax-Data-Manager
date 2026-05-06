@@ -285,8 +285,9 @@ class Oracle:
             else:
                 query_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' ".format(self.schema)
         return self.connection.Query('''
-            select (case when upper(replace(table_name, ' ', '')) <> table_name then '"' || table_name || '"' else table_name end) as "table_name",
-                   (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) as "table_schema"
+            select (case when upper(replace(table_name, ' ', '')) <> table_name then '"' || table_name || '"' else table_name end) as "name_raw",
+                   (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) as "table_schema",
+                               table_name as "table_name"
             from all_tables
             where 1 = 1
             {0}
@@ -301,7 +302,7 @@ class Oracle:
             if table and schema:
                 query_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' and (case when upper(replace(table_name, ' ', '')) <> table_name then '"' || table_name || '"' else table_name end) = '{1}' ".format(schema, table)
             elif table:
-                query_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' and (case when upper(replace(table_name, ' ', '')) <> table_name then '"' || table_name || '"' else table_name end) = '{1}' ".format(self.schema, table)
+                query_filter = "and owner = '{0}' and table_name = '{1}' ".format(self.schema, table)
             elif schema:
                 query_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' ".format(schema)
             else:
@@ -340,7 +341,8 @@ class Oracle:
             if table:
                 query_filter = "and (case when upper(replace(dcc.table_name, ' ', '')) <> dcc.table_name then '"' || dcc.table_name || '"' else dcc.table_name end) = '{0}' ".format(table)
         return self.connection.Query('''
-            select (case when upper(replace(fk.constraint_name, ' ', '')) <> fk.constraint_name then '"' || fk.constraint_name || '"' else fk.constraint_name end) as "constraint_name",
+            select (case when upper(replace(fk.constraint_name, ' ', '')) <> fk.constraint_name then '"' || fk.constraint_name || '"' else fk.constraint_name end) as "name_raw",
+                                     fk.constraint_name as "constraint_name",
                    (case when upper(replace(dcc.column_name, ' ', '')) <> dcc.column_name then '"' || dcc.column_name || '"' else dcc.column_name end) as "column_name",
                    (case when upper(replace(dcc.table_name, ' ', '')) <> dcc.table_name then '"' || dcc.table_name || '"' else dcc.table_name end) as "table_name",
                    (case when upper(replace(dcc.owner, ' ', '')) <> dcc.owner then '"' || dcc.owner || '"' else dcc.owner end) as "table_schema",
@@ -425,7 +427,7 @@ class Oracle:
             if table and schema:
                 query_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' and (case when upper(replace(\"table_name\", ' ', '')) <> \"table_name\" then '"' || \"table_name\" || '"' else \"table_name\" end) = '{1}' ".format(schema, table)
             elif table:
-                query_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' and (case when upper(replace(\"table_name\", ' ', '')) <> \"table_name\" then '"' || \"table_name\" || '"' else \"table_name\" end) = '{1}' ".format(self.schema, table)
+                query_filter = "and table_schema = '{0}' and table_name = '{1}' ".format(self.schema, table)
             elif schema:
                 query_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' ".format(schema)
             else:
@@ -461,7 +463,7 @@ class Oracle:
             if table and schema:
                 query_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' and (case when upper(replace(\"table_name\", ' ', '')) <> \"table_name\" then '"' || \"table_name\" || '"' else \"table_name\" end) = '{1}' ".format(schema, table)
             elif table:
-                query_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' and (case when upper(replace(\"table_name\", ' ', '')) <> \"table_name\" then '"' || \"table_name\" || '"' else \"table_name\" end) = '{1}' ".format(self.schema, table)
+                query_filter = "and table_schema = '{0}' and table_name = '{1}' ".format(self.schema, table)
             elif schema:
                 query_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' ".format(schema)
             else:
@@ -575,7 +577,7 @@ class Oracle:
             if table and schema:
                 query_filter = "and (case when upper(replace(ai.table_owner, ' ', '')) <> ai.table_owner then '"' || ai.table_owner || '"' else ai.table_owner end) = '{0}' and (case when upper(replace(table_name, ' ', '')) <> ai.table_name then '"' || ai.table_name || '"' else ai.table_name end) = '{1}' ".format(schema, table)
             elif table:
-                query_filter = "and (case when upper(replace(ai.table_owner, ' ', '')) <> ai.table_owner then '"' || ai.table_owner || '"' else ai.table_owner end) = '{0}' and (case when upper(replace(ai.table_name, ' ', '')) <> ai.table_name then '"' || ai.table_name || '"' else ai.table_name end) = '{1}' ".format(self.schema, table)
+                query_filter = "and ai.table_owner = '{0}' and ai.table_name = '{1}' ".format(self.schema, table)
             elif schema:
                 query_filter = "and (case when upper(replace(ai.table_owner, ' ', '')) <> ai.table_owner then '"' || ai.table_owner || '"' else ai.table_owner end) = '{0}' ".format(schema)
             else:
@@ -593,11 +595,7 @@ class Oracle:
                     
                     '[' || LISTAGG(
                 '''' ||
-                CASE
-                    WHEN UPPER(REPLACE(aic.column_name, ' ', '')) <> aic.column_name
-                    THEN '"' || aic.column_name || '"'
-                    ELSE aic.column_name
-                END
+aic.column_name
                 || '''',
                 ','
             ) WITHIN GROUP (ORDER BY aic.column_position) || ']' AS "columns"
@@ -640,7 +638,7 @@ class Oracle:
             if table and schema:
                 query_filter = "and (case when upper(replace(t.owner, ' ', '')) <> t.owner then '"' || t.owner || '"' else t.owner end) = '{0}' and (case when upper(replace(t.table_name, ' ', '')) <> t.table_name then '"' || t.table_name || '"' else t.table_name end) = '{1}' ".format(schema, table)
             elif table:
-                query_filter = "and (case when upper(replace(t.owner, ' ', '')) <> t.owner then '"' || t.owner || '"' else t.owner end) = '{0}' and (case when upper(replace(t.table_name, ' ', '')) <> t.table_name then '"' || t.table_name || '"' else t.table_name end) = '{1}' ".format(self.schema, table)
+                query_filter = "and t.owner = '{0}' and t.table_name = '{1}' ".format(self.schema, table)
             elif schema:
                 query_filter = "and (case when upper(replace(t.owner, ' ', '')) <> t.owner then '"' || t.owner || '"' else t.owner end) = '{0}' ".format(schema)
             else:
@@ -1296,7 +1294,7 @@ select * from all_objects
                 ON pk.owner = c.owner
             AND pk.table_name = c.table_name
             AND pk.column_name = c.column_name
-            WHERE c.owner = UPPER('{0}')
-            AND c.table_name = UPPER('{1}')
+            WHERE c.owner = '{0}'
+            AND c.table_name = '{1}'
             ORDER BY c.column_id
         '''.format(in_schema, table), False)

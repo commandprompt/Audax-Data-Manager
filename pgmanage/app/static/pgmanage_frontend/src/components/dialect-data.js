@@ -341,6 +341,9 @@ export default Object.freeze({
     disabledFeatures: {
       indexPredicate: true,
       indexMethod: true,
+      constraints: {
+        onUpdate: true,
+      },
     },
     overrides: [
       () => {

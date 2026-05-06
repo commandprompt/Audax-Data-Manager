@@ -81,12 +81,18 @@ def get_properties(request, database):
 @user_authenticated
 @database_required(check_timeout=True, open_connection=True)
 def get_tables(request, database):
+    list_tables = []
+
     try:
         tables = database.QueryTables()
-        list_tables = [table["table_name"] for table in tables.Rows]
+        for table in tables.Rows:
+            table_data = {
+                "name": table["table_name"],
+                "name_raw": table["name_raw"],
+            }
+            list_tables.append(table_data)
     except Exception as exc:
-        data = {"password_timeout": True, "data": str(exc)}
-        return JsonResponse(data=data, status=500)
+        return JsonResponse(data={"data": str(exc)}, status=400)
 
     return JsonResponse(data=list_tables, safe=False)
 
