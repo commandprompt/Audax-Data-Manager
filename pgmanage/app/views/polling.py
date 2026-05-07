@@ -1618,6 +1618,10 @@ def thread_schema_edit_data(self, args) -> None:
             except Exception as exc:
                 database.connection.con.rollback()
                 raise DatabaseError(str(exc))
+        elif database.db_type == "oracle" and len(sql_cmd.split(";\n")) >= 2:
+            list_sql: list[str] = sqlparse.split(sql_cmd,  strip_semicolon=True)
+            for sql in list_sql:
+                database.connection.QueryBlock(sql, 50, True, True)
         else:
             database.connection.QueryBlock(sql_cmd, 50, True, True)
 

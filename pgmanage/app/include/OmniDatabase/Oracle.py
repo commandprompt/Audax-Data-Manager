@@ -182,7 +182,7 @@ class Oracle:
         return self.service
 
     @lock_required
-    def GetVersion(self):
+    def GetFormattedVersion(self):
         return self.connection.ExecuteScalar('''
             select (case when product like '%Express%'
                          then 'Oracle XE '
@@ -191,7 +191,15 @@ class Oracle:
             from product_component_version
             where product like 'Oracle%'
         ''')
-
+    
+    @lock_required
+    def GetVersion(self):
+        return self.connection.ExecuteScalar('''
+            select version_full
+            from product_component_version
+            where product like 'Oracle%'
+        ''')
+    
     def GetUserName(self):
         return self.user
 
@@ -277,8 +285,9 @@ class Oracle:
             else:
                 query_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' ".format(self.schema)
         return self.connection.Query('''
-            select (case when upper(replace(table_name, ' ', '')) <> table_name then '"' || table_name || '"' else table_name end) as "table_name",
-                   (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) as "table_schema"
+            select (case when upper(replace(table_name, ' ', '')) <> table_name then '"' || table_name || '"' else table_name end) as "name_raw",
+                   (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) as "table_schema",
+                               table_name as "table_name"
             from all_tables
             where 1 = 1
             {0}
@@ -293,7 +302,7 @@ class Oracle:
             if table and schema:
                 query_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' and (case when upper(replace(table_name, ' ', '')) <> table_name then '"' || table_name || '"' else table_name end) = '{1}' ".format(schema, table)
             elif table:
-                query_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' and (case when upper(replace(table_name, ' ', '')) <> table_name then '"' || table_name || '"' else table_name end) = '{1}' ".format(self.schema, table)
+                query_filter = "and owner = '{0}' and table_name = '{1}' ".format(self.schema, table)
             elif schema:
                 query_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' ".format(schema)
             else:
@@ -321,35 +330,44 @@ class Oracle:
         query_filter = ''
         if not all_schemas:
             if table and schema:
-                query_filter = "and (case when upper(replace(constraint_info.owner, ' ', '')) <> constraint_info.owner then '"' || constraint_info.owner || '"' else constraint_info.owner end) = '{0}' and (case when upper(replace(detail_table.table_name, ' ', '')) <> detail_table.table_name then '"' || detail_table.table_name || '"' else detail_table.table_name end) = '{1}' ".format(schema, table)
+                query_filter = "and (case when upper(replace(fk.owner, ' ', '')) <> fk.owner then '"' || fk.owner || '"' else fk.owner end) = '{0}' and (case when upper(replace(dcc.table_name, ' ', '')) <> dcc.table_name then '"' || dcc.table_name || '"' else dcc.table_name end) = '{1}' ".format(schema, table)
             elif table:
-                query_filter = "and (case when upper(replace(constraint_info.owner, ' ', '')) <> constraint_info.owner then '"' || constraint_info.owner || '"' else constraint_info.owner end) = '{0}' and (case when upper(replace(detail_table.table_name, ' ', '')) <> detail_table.table_name then '"' || detail_table.table_name || '"' else detail_table.table_name end) = '{1}' ".format(self.schema, table)
+                query_filter = "and (case when upper(replace(fk.owner, ' ', '')) <> fk.owner then '"' || fk.owner || '"' else fk.owner end) = '{0}' and (case when upper(replace(dcc.table_name, ' ', '')) <> dcc.table_name then '"' || dcc.table_name || '"' else dcc.table_name end) = '{1}' ".format(self.schema, table)
             elif schema:
-                query_filter = "and (case when upper(replace(constraint_info.owner, ' ', '')) <> constraint_info.owner then '"' || constraint_info.owner || '"' else constraint_info.owner end) = '{0}' ".format(schema)
+                query_filter = "and (case when upper(replace(fk.owner, ' ', '')) <> fk.owner then '"' || fk.owner || '"' else fk.owner end) = '{0}' ".format(schema)
             else:
-                query_filter = "and (case when upper(replace(constraint_info.owner, ' ', '')) <> constraint_info.owner then '"' || constraint_info.owner || '"' else constraint_info.owner end) = '{0}' ".format(self.schema)
+                query_filter = "and (case when upper(replace(fk.owner, ' ', '')) <> fk.owner then '"' || fk.owner || '"' else fk.owner end) = '{0}' ".format(self.schema)
         else:
             if table:
-                query_filter = "and (case when upper(replace(detail_table.table_name, ' ', '')) <> detail_table.table_name then '"' || detail_table.table_name || '"' else detail_table.table_name end) = '{0}' ".format(table)
+                query_filter = "and (case when upper(replace(dcc.table_name, ' ', '')) <> dcc.table_name then '"' || dcc.table_name || '"' else dcc.table_name end) = '{0}' ".format(table)
         return self.connection.Query('''
-            select (case when upper(replace(constraint_info.constraint_name, ' ', '')) <> constraint_info.constraint_name then '"' || constraint_info.constraint_name || '"' else constraint_info.constraint_name end) as "constraint_name",
-                   (case when upper(replace(detail_table.table_name, ' ', '')) <> detail_table.table_name then '"' || detail_table.table_name || '"' else detail_table.table_name end) as "table_name",
-                   (case when upper(replace(constraint_info.r_constraint_name, ' ', '')) <> constraint_info.r_constraint_name then '"' || constraint_info.r_constraint_name || '"' else constraint_info.r_constraint_name end) as "r_constraint_name",
-                   (case when upper(replace(master_table.table_name, ' ', '')) <> master_table.table_name then '"' || master_table.table_name || '"' else master_table.table_name end) as "r_table_name",
-                   (case when upper(replace(detail_table.owner, ' ', '')) <> detail_table.owner then '"' || detail_table.owner || '"' else detail_table.owner end) as "table_schema",
-                   (case when upper(replace(master_table.owner, ' ', '')) <> master_table.owner then '"' || master_table.owner || '"' else master_table.owner end) as "r_table_schema",
-                   constraint_info.delete_rule as "delete_rule",
+            select (case when upper(replace(fk.constraint_name, ' ', '')) <> fk.constraint_name then '"' || fk.constraint_name || '"' else fk.constraint_name end) as "name_raw",
+                                     fk.constraint_name as "constraint_name",
+                   (case when upper(replace(dcc.column_name, ' ', '')) <> dcc.column_name then '"' || dcc.column_name || '"' else dcc.column_name end) as "column_name",
+                   (case when upper(replace(dcc.table_name, ' ', '')) <> dcc.table_name then '"' || dcc.table_name || '"' else dcc.table_name end) as "table_name",
+                   (case when upper(replace(dcc.owner, ' ', '')) <> dcc.owner then '"' || dcc.owner || '"' else dcc.owner end) as "table_schema",
+                   (case when upper(replace(fk.r_constraint_name, ' ', '')) <> fk.r_constraint_name then '"' || fk.r_constraint_name || '"' else fk.r_constraint_name end) as "r_constraint_name",
+                   (case when upper(replace(rcc.table_name, ' ', '')) <> rcc.table_name then '"' || rcc.table_name || '"' else rcc.table_name end) as "r_table_name",
+                   (case when upper(replace(rcc.owner, ' ', '')) <> rcc.owner then '"' || rcc.owner || '"' else rcc.owner end) as "r_table_schema",
+                   (case when upper(replace(rcc.column_name, ' ', '')) <> rcc.column_name then '"' || rcc.column_name || '"' else rcc.column_name end) as "r_column_name",
+                   fk.delete_rule as "delete_rule",
                    'NO ACTION' as "update_rule"
-            from user_constraints constraint_info,
-                 user_cons_columns detail_table,
-                 user_cons_columns master_table
-            where constraint_info.constraint_name = detail_table.constraint_name
-              and constraint_info.r_constraint_name = master_table.constraint_name
-              and detail_table.position = master_table.position
-              and constraint_info.constraint_type = 'R'
+                                     
+            FROM all_constraints fk
+
+            JOIN all_cons_columns dcc
+            ON dcc.owner = fk.owner
+            AND dcc.constraint_name = fk.constraint_name
+            AND dcc.table_name = fk.table_name
+
+            JOIN all_cons_columns rcc
+            ON rcc.owner = fk.r_owner
+            AND rcc.constraint_name = fk.r_constraint_name
+            AND rcc.position = dcc.position
+
+            WHERE fk.constraint_type = 'R'
             {0}
-            order by constraint_info.constraint_name,
-                     detail_table.table_name
+            order by fk.constraint_name
         '''.format(query_filter), True)
 
     @lock_required
@@ -409,7 +427,7 @@ class Oracle:
             if table and schema:
                 query_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' and (case when upper(replace(\"table_name\", ' ', '')) <> \"table_name\" then '"' || \"table_name\" || '"' else \"table_name\" end) = '{1}' ".format(schema, table)
             elif table:
-                query_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' and (case when upper(replace(\"table_name\", ' ', '')) <> \"table_name\" then '"' || \"table_name\" || '"' else \"table_name\" end) = '{1}' ".format(self.schema, table)
+                query_filter = "and table_schema = '{0}' and table_name = '{1}' ".format(self.schema, table)
             elif schema:
                 query_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' ".format(schema)
             else:
@@ -445,7 +463,7 @@ class Oracle:
             if table and schema:
                 query_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' and (case when upper(replace(\"table_name\", ' ', '')) <> \"table_name\" then '"' || \"table_name\" || '"' else \"table_name\" end) = '{1}' ".format(schema, table)
             elif table:
-                query_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' and (case when upper(replace(\"table_name\", ' ', '')) <> \"table_name\" then '"' || \"table_name\" || '"' else \"table_name\" end) = '{1}' ".format(self.schema, table)
+                query_filter = "and table_schema = '{0}' and table_name = '{1}' ".format(self.schema, table)
             elif schema:
                 query_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' ".format(schema)
             else:
@@ -557,28 +575,61 @@ class Oracle:
         query_filter = ''
         if not all_schemas:
             if table and schema:
-                query_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' and (case when upper(replace(table_name, ' ', '')) <> table_name then '"' || table_name || '"' else table_name end) = '{1}' ".format(schema, table)
+                query_filter = "and (case when upper(replace(ai.table_owner, ' ', '')) <> ai.table_owner then '"' || ai.table_owner || '"' else ai.table_owner end) = '{0}' and (case when upper(replace(table_name, ' ', '')) <> ai.table_name then '"' || ai.table_name || '"' else ai.table_name end) = '{1}' ".format(schema, table)
             elif table:
-                query_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' and (case when upper(replace(table_name, ' ', '')) <> table_name then '"' || table_name || '"' else table_name end) = '{1}' ".format(self.schema, table)
+                query_filter = "and ai.table_owner = '{0}' and ai.table_name = '{1}' ".format(self.schema, table)
             elif schema:
-                query_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' ".format(schema)
+                query_filter = "and (case when upper(replace(ai.table_owner, ' ', '')) <> ai.table_owner then '"' || ai.table_owner || '"' else ai.table_owner end) = '{0}' ".format(schema)
             else:
-                query_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' ".format(self.schema)
+                query_filter = "and (case when upper(replace(ai.table_owner, ' ', '')) <> ai.table_owner then '"' || ai.table_owner || '"' else ai.table_owner end) = '{0}' ".format(self.schema)
         else:
             if table:
-                query_filter = "and (case when upper(replace(table_name, ' ', '')) <> table_name then '"' || table_name || '"' else table_name end) = '{0}' ".format(table)
-        return self.connection.Query('''
-            select (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) as "schema_name",
-                   (case when upper(replace(table_name, ' ', '')) <> table_name then '"' || table_name || '"' else table_name end) as "table_name",
-                   (case when upper(replace(index_name, ' ', '')) <> index_name then '"' || index_name || '"' else index_name end) as "index_name",
-                   case when uniqueness = 'UNIQUE' then 'Unique' else 'Non Unique' end as "uniqueness"
-            from all_indexes
-            where 1=1
+                query_filter = "and (case when upper(replace(ai.table_name, ' ', '')) <> ai.table_name then '"' || ai.table_name || '"' else ai.table_name end) = '{0}' ".format(table)
+        return self.connection.Query("""
+            select (case when upper(replace(ai.table_owner, ' ', '')) <> ai.table_owner then '"' || ai.table_owner || '"' else ai.table_owner end) as "schema_name",
+                   (case when upper(replace(ai.table_name, ' ', '')) <> ai.table_name then '"' || ai.table_name || '"' else ai.table_name end) as "table_name",
+                   (case when upper(replace(ai.index_name, ' ', '')) <> ai.index_name then '"' || ai.index_name || '"' else ai.index_name end) as "name_raw",
+                    ai.index_name AS "index_name",
+                   case when ai.uniqueness = 'UNIQUE' then 'Unique' else 'Non Unique' end as "uniqueness",
+                   case when ac.constraint_type = 'P' then 'True' else 'False' end as "is_primary",
+                    
+                    '[' || LISTAGG(
+                '''' ||
+aic.column_name
+                || '''',
+                ','
+            ) WITHIN GROUP (ORDER BY aic.column_position) || ']' AS "columns"
+                                     
+            FROM all_indexes ai
+
+            JOIN all_ind_columns aic
+            ON aic.index_owner = ai.owner
+            AND aic.index_name = ai.index_name
+            AND aic.table_owner = ai.table_owner
+            AND aic.table_name = ai.table_name
+
+            LEFT JOIN all_constraints ac
+            ON ac.owner = ai.table_owner
+            AND ac.table_name = ai.table_name
+            AND ac.index_owner = ai.owner
+            AND ac.index_name = ai.index_name
+            AND ac.constraint_type = 'P'
+
+            WHERE 1 = 1
             {0}
-            order by owner,
-                     table_name,
-                     index_name
-        '''.format(query_filter), True)
+            GROUP BY
+            ai.table_owner,
+            ai.table_name,
+            ai.index_name,
+            ai.uniqueness,
+            ai.index_type,
+            ac.constraint_type
+
+        ORDER BY
+            ai.table_owner,
+            ai.table_name,
+            ai.index_name
+        """.format(query_filter), True)
 
     @lock_required
     def QueryTablesIndexesColumns(self, index_name, table=None, all_schemas=False, schema=None):
@@ -587,7 +638,7 @@ class Oracle:
             if table and schema:
                 query_filter = "and (case when upper(replace(t.owner, ' ', '')) <> t.owner then '"' || t.owner || '"' else t.owner end) = '{0}' and (case when upper(replace(t.table_name, ' ', '')) <> t.table_name then '"' || t.table_name || '"' else t.table_name end) = '{1}' ".format(schema, table)
             elif table:
-                query_filter = "and (case when upper(replace(t.owner, ' ', '')) <> t.owner then '"' || t.owner || '"' else t.owner end) = '{0}' and (case when upper(replace(t.table_name, ' ', '')) <> t.table_name then '"' || t.table_name || '"' else t.table_name end) = '{1}' ".format(self.schema, table)
+                query_filter = "and t.owner = '{0}' and t.table_name = '{1}' ".format(self.schema, table)
             elif schema:
                 query_filter = "and (case when upper(replace(t.owner, ' ', '')) <> t.owner then '"' || t.owner || '"' else t.owner end) = '{0}' ".format(schema)
             else:
@@ -595,7 +646,7 @@ class Oracle:
         else:
             if table:
                 query_filter = "and (case when upper(replace(t.table_name, ' ', '')) <> t.table_name then '"' || t.table_name || '"' else t.table_name end) = '{0}' ".format(table)
-        query_filter = query_filter + "and (case when upper(replace(t.index_name, ' ', '')) <> t.index_name then '"' || t.index_name || '"' else t.index_name end) = '{0}' ".format(index_name)
+        query_filter = query_filter + "and t.index_name = '{0}' ".format(index_name)
         return self.connection.Query('''
             select (case when upper(replace(c.column_name, ' ', '')) <> c.column_name then '"' || c.column_name || '"' else c.column_name end) as "column_name"
             from all_indexes t,
@@ -1169,3 +1220,81 @@ select * from all_objects
 
     def GetAutocompleteValues(self, p_columns, p_filter):
         return None
+    
+    @lock_required
+    def QueryTypes(self, all_schemas=False, schema=None):
+        query_filter = ''
+
+        in_schema = schema if schema else self.schema
+
+        if not all_schemas:
+            query_filter = "AND OWNER = '{0}' ".format(in_schema)
+        else:
+            query_filter = "AND OWNER NOT IN ('SYS', 'SYSTEM') "
+
+        table = self.connection.Query('''
+            SELECT 
+                TYPE_NAME AS "type_name"
+            FROM ALL_TYPES
+            WHERE 1=1
+            {0}
+            ORDER BY OWNER, TYPE_NAME
+        '''.format(query_filter), True)
+
+        return table
+
+
+    @lock_required
+    def QueryTableDefinition(self, table=None, schema=None):
+        in_schema = schema if schema else self.schema
+
+        return self.connection.Query('''
+            SELECT
+                c.owner AS "table_schema",
+                c.table_name as "table_name",
+                c.column_name as "column_name",
+                c.nullable AS "is_nullable",
+                c.column_id AS "ordinal_position",
+                c.data_default AS "column_default",
+                CASE
+                    WHEN i.column_name IS NOT NULL THEN 'autoincrement'
+                    WHEN c.data_type IN ('VARCHAR2', 'NVARCHAR2', 'CHAR', 'NCHAR')
+                        THEN LOWER(c.data_type) || '(' || c.char_length || ')'
+                    WHEN c.data_type = 'NUMBER' AND c.data_precision IS NOT NULL AND c.data_scale IS NOT NULL
+                        THEN 'number(' || c.data_precision || ',' || c.data_scale || ')'
+                    WHEN c.data_type = 'NUMBER' AND c.data_precision IS NOT NULL
+                        THEN 'number(' || c.data_precision || ')'
+                    WHEN c.data_type LIKE 'TIMESTAMP%' AND c.data_scale IS NOT NULL
+                        THEN LOWER(c.data_type) || '(' || c.data_scale || ')'
+                    ELSE LOWER(c.data_type)
+                END AS "data_type",
+                cc.comments AS "column_comment",
+                CASE
+                    WHEN pk.column_name IS NOT NULL THEN 1
+                    ELSE 0
+                END AS "is_primary"
+            FROM all_tab_columns c
+            LEFT JOIN all_col_comments cc
+                ON cc.owner = c.owner
+            AND cc.table_name = c.table_name
+            AND cc.column_name = c.column_name
+            LEFT JOIN all_tab_identity_cols i
+                ON i.owner = c.owner
+            AND i.table_name = c.table_name
+            AND i.column_name = c.column_name
+            LEFT JOIN (
+                SELECT acc.owner, acc.table_name, acc.column_name
+                FROM all_constraints ac
+                JOIN all_cons_columns acc
+                ON acc.owner = ac.owner
+                AND acc.constraint_name = ac.constraint_name
+                AND acc.table_name = ac.table_name
+                WHERE ac.constraint_type = 'P'
+            ) pk
+                ON pk.owner = c.owner
+            AND pk.table_name = c.table_name
+            AND pk.column_name = c.column_name
+            WHERE c.owner = '{0}'
+            AND c.table_name = '{1}'
+            ORDER BY c.column_id
+        '''.format(in_schema, table), False)

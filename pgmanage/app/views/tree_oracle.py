@@ -1,3 +1,5 @@
+import ast
+
 from app.utils.decorators import database_required, user_authenticated
 from django.http import HttpResponse, JsonResponse
 
@@ -8,6 +10,7 @@ def get_tree_info(request, database):
     try:
         data = {
             "database": database.GetName(),
+            "formatted_version": database.GetFormattedVersion(),
             "version": database.GetVersion(),
             "username": database.GetUserName(),
             "superuser": database.GetUserSuper(),
@@ -78,12 +81,18 @@ def get_properties(request, database):
 @user_authenticated
 @database_required(check_timeout=True, open_connection=True)
 def get_tables(request, database):
+    list_tables = []
+
     try:
         tables = database.QueryTables()
-        list_tables = [table["table_name"] for table in tables.Rows]
+        for table in tables.Rows:
+            table_data = {
+                "name": table["table_name"],
+                "name_raw": table["name_raw"],
+            }
+            list_tables.append(table_data)
     except Exception as exc:
-        data = {"password_timeout": True, "data": str(exc)}
-        return JsonResponse(data=data, status=500)
+        return JsonResponse(data={"data": str(exc)}, status=400)
 
     return JsonResponse(data=list_tables, safe=False)
 
@@ -146,9 +155,24 @@ def get_pk_columns(request, database):
 def get_fks(request, database):
     table = request.data["table"]
 
+    list_fk = []
+
     try:
         fks = database.QueryTablesForeignKeys(table)
-        list_fk = [fk["constraint_name"] for fk in fks.Rows]
+        for fk in fks.Rows:
+            fk_data = {
+                "constraint_name": fk["constraint_name"],
+                "column_name": fk["column_name"],
+                "table_name": fk["table_name"],
+                "table_schema": fk["table_schema"],
+                "r_constraint_name": fk["r_constraint_name"],
+                "r_table_name": fk["r_table_name"],
+                "r_table_schema": fk["r_table_schema"],
+                "r_column_name": fk["r_column_name"],
+                "on_update": fk["update_rule"],
+                "on_delete": fk["delete_rule"],
+            }
+            list_fk.append(fk_data)
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 
@@ -213,7 +237,11 @@ def get_indexes(request, database):
         for index in indexes.Rows:
             index_data = {
                 "index_name": index["index_name"],
+                "name_raw": index["name_raw"],
                 "unique": index["uniqueness"] == "Unique",
+                "type": "unique" if index["uniqueness"] == "Unique" else "non-unique",
+                "is_primary": index["is_primary"] == "True",
+                "columns": list(ast.literal_eval(index["columns"])),
             }
             list_indexes.append(index_data)
     except Exception as exc:
@@ -513,3 +541,52 @@ def template_update(request, database):
         return JsonResponse(data={"data": str(exc)}, status=400)
 
     return JsonResponse(data={"template": template})
+
+
+@user_authenticated
+@database_required(check_timeout=True, open_connection=True)
+def get_types(request, database):
+    schema = request.data["schema"]
+
+    list_types = []
+
+    try:
+        types = database.QueryTypes(False, schema)
+        for type_object in types.Rows:
+            type_data = {
+                "type_name": type_object["type_name"],
+            }
+            list_types.append(type_data)
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+
+    return JsonResponse(data=list_types, safe=False)
+
+
+@user_authenticated
+@database_required(check_timeout=True, open_connection=True)
+def get_table_definition(request, database):
+    data = request.data
+    columns = []
+
+    try:
+        table = data["table"]
+        schema = data["schema"]
+
+        q_definition = database.QueryTableDefinition(table, schema)
+
+        for col in q_definition.Rows:
+            column_data = {
+                "name": col["column_name"],
+                "data_type": col["data_type"],
+                "default_value": col["column_default"],
+                "nullable": col["is_nullable"] != "N",
+                "is_primary": bool(col["is_primary"]),
+                "comment": col["column_comment"],
+            }
+            columns.append(column_data)
+
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+
+    return JsonResponse(data={"data": columns})

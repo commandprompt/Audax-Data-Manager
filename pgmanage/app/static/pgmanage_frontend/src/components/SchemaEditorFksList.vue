@@ -16,7 +16,7 @@
       <div class="col-2">
         <p class="h6">FK Column</p>
       </div>
-      <div class="col-1">
+      <div v-if="!disabledFeatures?.constraints?.onUpdate" class="col-1">
         <p class="h6">On Update</p>
       </div>
       <div class="col-1">
@@ -84,7 +84,7 @@
         />
       </div>
 
-      <div class="col-1">
+      <div v-if="!disabledFeatures?.constraints?.onUpdate" class="col-1">
         <SearchableDropdown
           placeholder="on update ..."
           :options="foreignKeyActions"

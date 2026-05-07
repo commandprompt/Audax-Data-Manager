@@ -198,6 +198,8 @@ base_urlpatterns = [
     path('template_select_oracle/', views.tree_oracle.template_select, name='template_select'),
     path('template_insert_oracle/', views.tree_oracle.template_insert, name='template_insert'),
     path('template_update_oracle/', views.tree_oracle.template_update, name='template_update'),
+    path('get_types_oracle/', views.tree_oracle.get_types,),
+    path('get_table_definition_oracle/', views.tree_oracle.get_table_definition,),
 
     #TREE_MYSQL
     path('get_tree_info_mysql/', views.tree_mysql.get_tree_info, name='get_tree_info'),

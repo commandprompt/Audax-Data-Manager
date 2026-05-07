@@ -31,6 +31,7 @@ import { tabSQLTemplate } from "../tree_context_functions/tree_postgresql";
 import { emitter } from "../emitter";
 import { tabsStore } from "../stores/stores_initializer";
 import { findNode, findChild } from "../utils.js";
+import { operationModes } from "../constants";
 
 export default {
   name: "TreeOracle",
@@ -85,13 +86,7 @@ export default {
             label: "Create Table",
             icon: "fas fa-plus",
             onClick: () => {
-              tabSQLTemplate(
-                "Create Table",
-                this.templates.create_table.replace(
-                  "#schema_name#",
-                  this.templates.username
-                )
-              );
+              tabsStore.createSchemaEditorTab(this.selectedNode, operationModes.CREATE)
             },
           },
         ],
@@ -115,16 +110,10 @@ export default {
             },
           },
           {
-            label: "Alter Table (SQL)",
+            label: "Alter Table",
             icon: "fas fa-edit",
             onClick: () => {
-              tabSQLTemplate(
-                "Alter Table",
-                this.templates.alter_table.replace(
-                  "#table_name#",
-                  `${this.templates.username}.${this.selectedNode.title}`
-                )
-              );
+              tabsStore.createSchemaEditorTab(this.selectedNode, operationModes.UPDATE)
             },
           },
           {
@@ -174,7 +163,7 @@ export default {
             onClick: () => {
               let template = this.templates.drop_table.replace(
                   "#table_name#",
-                  `${this.templates.username}.${this.selectedNode.title}`
+                  `${this.templates.username}.${this.selectedNode.data.raw_value}`
                 )
               this.prepareDropModal(this.selectedNode, template)
             },
@@ -361,7 +350,7 @@ export default {
                 "Alter Index",
                 this.templates.alter_index.replace(
                   "#index_name#",
-                  `${this.templates.username}.${this.selectedNode.title}`
+                  `${this.templates.username}.${this.selectedNode.data.raw_value}`
                 )
               );
             },
@@ -373,7 +362,7 @@ export default {
             onClick: () => {
               let template = this.templates.drop_index.replace(
                   "#index_name#",
-                  `${this.templates.username}.${this.selectedNode.title}`
+                  `${this.templates.username}.${this.selectedNode.data.raw_value}`
                 )
               this.prepareDropModal(this.selectedNode, template)
             },
@@ -648,6 +637,19 @@ export default {
       }, 100)
     })
 
+    emitter.on(`schemaChanged_${this.workspaceId}`, () => {
+      const tree = this.$refs.tree;
+      let db_node = tree.getNextNode([0], (node) => {
+        return node.data.type === "database";
+      });
+
+      let tables_node = tree.getNextNode(db_node.path, (node) => {
+        return node.data.type === "table_list";
+      });
+
+      this.refreshTree(tables_node, true);
+    });
+
     emitter.on(`goToNode_${this.workspaceId}`, async({ name, type}) => {
       const rootNode = this.getRootNode()
 
@@ -683,6 +685,7 @@ export default {
     })
   },
   unmounted() {
+    emitter.all.delete(`schemaChanged_${this.workspaceId}`);
     emitter.all.delete(`goToNode_${this.workspaceId}`);
   },
   methods: {
@@ -759,7 +762,7 @@ export default {
         this.$emit("treeTabsUpdate", {
           data: {
             table: table,
-            object: node.title,
+            object: node.data.raw_value ?? node.title,
             type: node.data.type,
             schema: null,
           },
@@ -776,7 +779,7 @@ export default {
         this.removeChildNodes(node);
 
         this.$refs.tree.updateNode(node.path, {
-          title: response.data.version,
+          title: response.data.formatted_version,
         });
 
         this.templates = response.data;
@@ -866,6 +869,7 @@ export default {
             icon: "fas node-all fa-th node-table-list",
             type: "table_list",
             contextMenu: "cm_tables",
+            schema: this.templates.username,
           });
         resolve("success")
         } catch(error) {
@@ -883,10 +887,12 @@ export default {
           });
 
           response.data.reduceRight((_, el) => {
-            this.insertNode(node, el, {
+            this.insertNode(node, el.name, {
               icon: "fas node-all fa-table node-table",
               type: "table",
               contextMenu: "cm_table",
+              schema: this.templates.username,
+              raw_value: el.name_raw,
             });
           }, null);
 
@@ -1025,7 +1031,7 @@ export default {
           });
 
           resp.data.reduceRight((_, el) => {
-            this.insertNode(node, el, {
+            this.insertNode(node, el.constraint_name, {
               icon: "fas node-all fa-key node-fkey",
               type: "foreign_key",
               contextMenu: "cm_fk",
@@ -1150,6 +1156,7 @@ export default {
               type: "index",
               contextMenu: "cm_index",
               unique: el.unique ? 'Unique' : "Non unique",
+              raw_value: el.name_raw,
             });
           });
         })

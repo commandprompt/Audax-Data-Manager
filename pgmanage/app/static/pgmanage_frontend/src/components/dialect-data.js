@@ -2,6 +2,8 @@ import TableCompiler_SQLite3 from 'knex/lib/dialects/sqlite3/schema/sqlite-table
 import TableCompiler_MySQL from 'knex/lib/dialects/mysql/schema/mysql-tablecompiler'
 import TableCompiler_PG from 'knex/lib/dialects/postgres/schema/pg-tablecompiler';
 import TableCompiler_MSSQL from 'knex/lib/dialects/mssql/schema/mssql-tablecompiler'
+import TableCompiler_Oracle from 'knex/lib/dialects/oracledb/schema/oracledb-tablecompiler';
+import SchemaCompiler_Oracle from 'knex/lib/dialects/oracle/schema/oracle-compiler';
 import knex from 'knex';
 import identity from 'lodash/identity';
 import flatten from 'lodash/flatten';
@@ -314,7 +316,65 @@ export default Object.freeze({
         },
       ],
   },
-  'oracle':{
+  'oracledb':{
+      dataTypes: [
+      'char', 'nchar', 'varchar2', 'nvarchar2',
+      'number', 'numeric', 'decimal', 'float', 'binary_float', 'binary_double',
+      'date', 'timestamp', 'timestamp with time zone', 'timestamp with local time zone',
+      'interval year to month', 'interval day to second',
+      'clob', 'nclob', 'blob', 'bfile',
+      'raw', 'long raw', 'long',
+      'xmltype', 'rowid', 'urowid'
+    ],
     nonEditableDataTypes: ["raw", "long raw", "blob", "bfile"],
+    numericTypes: [
+      'number', 'numeric', 'decimal', 'float', 'binary_float', 'binary_double'
+    ],
+    hasSchema: false,
+    hasComments: true,
+    api_endpoints: {
+      types_url: "/get_types_oracle/",
+      indexes_url: "/get_indexes_oracle/",
+      table_definition_url: "/get_table_definition_oracle/",
+      foreign_keys_url: "/get_fks_oracle/",
+    },
+    disabledFeatures: {
+      indexPredicate: true,
+      indexMethod: true,
+      constraints: {
+        onUpdate: true,
+      },
+    },
+    overrides: [
+      () => {
+        TableCompiler_Oracle.prototype.renameColumn = function (from, to) {
+          this.pushQuery({
+            sql: `ALTER TABLE ${this.tableName()} RENAME COLUMN ${this.formatter.wrap(from)} TO ${this.formatter.wrap(to)}`,
+          });
+        };
+      },
+      () => {
+        SchemaCompiler_Oracle.prototype.renameTable = function (from, to) {
+          this.pushQuery({
+            sql: `RENAME ${this.formatter.wrap(from)} TO ${this.formatter.wrap(to)}`,
+          });
+        };
+      },
+      () => {
+        TableCompiler_Oracle.prototype.renameIndex = function (from, to) {
+          this.pushQuery({
+            sql: `ALTER INDEX ${this.formatter.wrap(from)} RENAME TO ${this.formatter.wrap(to)}`,
+          });
+        };
+      },
+      () => {
+        TableCompiler_Oracle.prototype.alterComment = function (column) {
+          this.pushQuery({
+            sql: `COMMENT ON COLUMN ${this.tableName()}.${this.formatter.wrap(column.name)} IS ?`,
+            bindings: [column.comment || null],
+          });
+        };
+      },
+    ]
   }
 });
