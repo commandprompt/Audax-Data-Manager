@@ -367,6 +367,14 @@ export default Object.freeze({
           });
         };
       },
+      () => {
+        TableCompiler_Oracle.prototype.alterComment = function (column) {
+          this.pushQuery({
+            sql: `COMMENT ON COLUMN ${this.tableName()}.${this.formatter.wrap(column.name)} IS ?`,
+            bindings: [column.comment || null],
+          });
+        };
+      },
     ]
   }
 });
