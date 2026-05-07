@@ -762,7 +762,7 @@ export default {
         this.$emit("treeTabsUpdate", {
           data: {
             table: table,
-            object: node.title,
+            object: node.data.raw_value ?? node.title,
             type: node.data.type,
             schema: null,
           },
