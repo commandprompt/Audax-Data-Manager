@@ -680,6 +680,7 @@ export default {
             block: "start",
             inline: "end",
           });
+          this.onClickHandler(targetNode);
         })
       })
     })

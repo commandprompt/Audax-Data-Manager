@@ -810,6 +810,7 @@ export default {
             block: "start",
             inline: "end",
           });
+          this.onClickHandler(updatedDatabaseNode);
           return;
         }
 
@@ -836,6 +837,7 @@ export default {
             block: "start",
             inline: "end",
           });
+          this.onClickHandler(updatedSchemaNode);
           return;
         }
 
@@ -864,6 +866,7 @@ export default {
               block: "start",
               inline: "end",
             });
+            this.onClickHandler(targetNode);
           });
         });
       }

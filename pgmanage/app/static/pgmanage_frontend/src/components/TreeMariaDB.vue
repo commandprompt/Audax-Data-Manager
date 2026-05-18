@@ -682,6 +682,7 @@ export default {
           block: "start",
           inline: "end",
         });
+        this.onClickHandler(updatedDatabaseNode);
         return;
       }
 
@@ -705,6 +706,7 @@ export default {
             block: "start",
             inline: "start",
           });
+          this.onClickHandler(targetNode);
         })
       })
     });
