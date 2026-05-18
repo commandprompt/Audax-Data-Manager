@@ -1,4 +1,4 @@
-import { describe, test, expect, vi, beforeAll } from "vitest";
+import { describe, it, expect, vi, beforeAll } from "vitest";
 import { mount } from "@vue/test-utils";
 import "ace-builds";
 import "ace-builds/esm-resolver";
@@ -22,23 +22,73 @@ describe("TreePropertiesDDL.vue", () => {
     settingsStore.setEditorTheme("omnidb");
   });
 
-  test("renders component", () => {
+  it("renders component", () => {
     const wrapper = mount(TreePropertiesDDL);
     expect(wrapper.html()).toContain("Properties");
     expect(wrapper.html()).toContain("DDL");
   });
-  test("emits toggleTreeTabs event on toggle button click", () => {
-    const wrapper = mount(TreePropertiesDDL);
+  it("emits hideTreeTabs event when hide button is clicked", async () => {
+    const wrapper = mount(TreePropertiesDDL, {
+      props: {
+        workspaceId: "workspace-1",
+        isVisible: true,
+      },
+    });
 
-    wrapper.find('[data-testid="tree-tabs-toggler"]').trigger("click");
+    await wrapper
+      .find('[data-testid="tree-tabs-hide-button"]')
+      .trigger("click");
 
-    expect(wrapper.emitted()).toHaveProperty("toggleTreeTabs");
+    expect(wrapper.emitted("hideTreeTabs")).toBeTruthy();
   });
-  test("shows loading spinner when showLoading prop is true", async () => {
+
+  it("emits showTreeTabs event when show button is clicked", async () => {
+    const wrapper = mount(TreePropertiesDDL, {
+      props: {
+        workspaceId: "workspace-1",
+        isVisible: false,
+      },
+    });
+
+    await wrapper
+      .find('[data-testid="tree-tabs-show-button"]')
+      .trigger("click");
+
+    expect(wrapper.emitted("showTreeTabs")).toBeTruthy();
+  });
+  it("shows loading spinner when showLoading prop is true", async () => {
     const wrapper = mount(TreePropertiesDDL);
 
     await wrapper.setProps({ showLoading: true });
 
     expect(wrapper.html()).toContain("Loading...");
+  });
+
+  it("emits showTreeTabs event when Properties tab is clicked", async () => {
+    const wrapper = mount(TreePropertiesDDL, {
+      props: {
+        workspaceId: "workspace-1",
+        isVisible: false,
+      },
+    });
+
+    await wrapper
+      .find(`[href="#workspace-1_tree_properties"]`)
+      .trigger("click");
+
+    expect(wrapper.emitted("showTreeTabs")).toBeTruthy();
+  });
+
+  it("emits showTreeTabs event when DDL tab is clicked", async () => {
+    const wrapper = mount(TreePropertiesDDL, {
+      props: {
+        workspaceId: "workspace-1",
+        isVisible: false,
+      },
+    });
+
+    await wrapper.find(`[href="#workspace-1_tree_ddl"]`).trigger("click");
+
+    expect(wrapper.emitted("showTreeTabs")).toBeTruthy();
   });
 });
