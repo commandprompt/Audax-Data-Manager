@@ -145,7 +145,6 @@
                         <SearchableDropdown
                           placeholder="type to search"
                           :options="existingRoleOptions"
-                          :maxItem=20
                           v-model="member.name"
                         />
                       </div>
@@ -184,7 +183,6 @@
                         <SearchableDropdown
                           placeholder="type to search"
                           :options="existingRoleOptions"
-                          :maxItem=20
                           v-model="member.name"
                         />
                       </div>

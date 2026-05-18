@@ -38,7 +38,6 @@
               placeholder="type to search"
               :options="dataTypes"
               :default="{ name: 'integer' }"
-              :maxItem=20
               v-model="column.dataType"
               :disabled="!column.editable"
             />

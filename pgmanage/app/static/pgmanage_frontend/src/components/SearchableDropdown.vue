@@ -66,7 +66,7 @@
       maxItem: {
         type: Number,
         required: false,
-        default: 6,
+        default: 30,
         note: 'Max items showing'
       },
       modelValue: {

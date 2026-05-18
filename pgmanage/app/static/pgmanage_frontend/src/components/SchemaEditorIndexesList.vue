@@ -72,7 +72,6 @@
         <SearchableDropdown
           placeholder="type to search"
           :options="columns"
-          :maxItem="20"
           v-model="index.columns"
           :multi-select="true"
           :disabled="!index.new"
