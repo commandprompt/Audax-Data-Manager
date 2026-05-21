@@ -288,7 +288,7 @@ export default {
       this.setupDateRangePicker();
     });
 
-    this.$refs.historyModal.addEventListener("hide.bs.modal", () => {
+    this.$refs.historyModal.addEventListener("hidden.bs.modal", () => {
       commandsHistoryStore.reset();
       $(this.$refs.timeRange).data("daterangepicker").remove();
     });
