@@ -484,36 +484,48 @@ class PostgreSQL:
 
     @lock_required
     def QuerySchemas(self):
-        return self.connection.Query('''
-            select schema_name,
-                    quote_ident(schema_name) as name_raw,
-                   oid
-            from (
-            select schema_name,
-                   row_number() over() as sort,
-                   oid
-            from (
-            select nspname as schema_name,
-                   oid
-            from pg_catalog.pg_namespace
-            where nspname in ('public', 'pg_catalog', 'information_schema')
-            order by nspname desc
-            ) x
-            union all
-            select schema_name,
-                   3 + row_number() over() as sort,
-                   oid
-            from (
-            select nspname as schema_name,
-                   oid
-            from pg_catalog.pg_namespace
-            where nspname not in ('public', 'pg_catalog', 'information_schema', 'pg_toast')
-              and nspname not like 'pg%%temp%%'
-            order by nspname
-            ) x
+        return self.connection.Query(
+            '''
+            SELECT
+            schema_name,
+            quote_ident(schema_name) AS name_raw,
+            oid
+            FROM
+            (
+                SELECT
+                schema_name,
+                oid
+                FROM
+                (
+                    SELECT
+                    nspname AS schema_name,
+                    oid
+                    FROM
+                    pg_catalog.pg_namespace
+                    WHERE
+                    nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast')
+                    AND nspname NOT LIKE 'pg%%temp%%'
+                    ORDER BY
+                    nspname
+                ) x
+                UNION ALL
+                SELECT
+                schema_name,
+                oid
+                FROM
+                (
+                    SELECT
+                    nspname AS schema_name,
+                    oid
+                    FROM
+                    pg_catalog.pg_namespace
+                    WHERE
+                    nspname IN ('pg_catalog', 'information_schema')
+                    ORDER BY
+                    nspname DESC
+                ) x
             ) y
-            order by sort
-        ''', True)
+            ''', True)
 
     @lock_required
     def QueryCurrentSchema(self):
