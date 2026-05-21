@@ -304,7 +304,7 @@ export default {
       }
     },
     scrollIntoViewIfPossible(node) {
-      const nodeElement = this.getNodeEl(node.path).querySelector('.vue-power-tree-title');
+      const nodeElement = this.getNodeEl(node.path).querySelector('.vue-power-tree-row');
       const nodeRect = nodeElement.getBoundingClientRect();
       const parentElement = this.$refs.tree.$el.parentElement
 
