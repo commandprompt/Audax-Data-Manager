@@ -285,6 +285,16 @@ export default {
               mode: node.data.type,
             })
             .then((resp) => {
+              // Checking if there is a tab for this snippet.
+              let snippetPanel = tabsStore.tabs.find((tab) => tab.name === "Snippets");
+              let existing_tab = snippetPanel.metaData.secondaryTabs.find(
+                (snippet_tab) => {
+                  return snippet_tab.metaData?.snippetObject?.id === node.data.id;
+                }
+              );
+              if (existing_tab) {
+                tabsStore.removeTab(existing_tab);
+              } 
               this.refreshTree(this.getParentNode(node));
 
               this.$emit("treeUpdated");
