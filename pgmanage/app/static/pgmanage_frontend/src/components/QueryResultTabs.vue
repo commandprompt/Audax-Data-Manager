@@ -53,9 +53,7 @@
               class="badge rounder-pill"
               :class="noticeClass('EXCEPTION')"
               >Exception</span>
-              <pre>
-                {{ errorMessage }}
-              </pre>
+              <pre>{{ errorMessage }}</pre>
             </div>
               <div v-for="notice in notices">
                 <span
