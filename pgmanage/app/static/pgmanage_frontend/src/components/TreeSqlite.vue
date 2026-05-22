@@ -347,22 +347,12 @@ export default {
 
       const updatedContainerNode = this.$refs.tree.getNode(containerNode.path)
 
-
        // Step 2: Find the target node
       const targetNode = findNode(updatedContainerNode, node => node.title === name && node.data.type === type);
       if (!targetNode) return;
 
       // Step 3: Select and scroll to it
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          this.$refs.tree.select(targetNode.path);
-          this.getNodeEl(targetNode.path).scrollIntoView({
-            block: "start",
-            inline: "end",
-          });
-          this.onClickHandler(targetNode);
-        })
-      })
+      this.goToNodeAndSelect(targetNode);
     })
   },
   unmounted() {
