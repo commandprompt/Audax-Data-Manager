@@ -19,7 +19,7 @@
       v-if="isVisible"
       data-testid="tree-tabs-hide-button"
       type="button"
-      class="btn btn-icon btn-icon-secondary omnidb__tree-tabs__toggler me-2"
+      class="btn-icon omnidb__tree-tabs__toggler me-2"
       @click="$emit('hideTreeTabs')"
     >
       <i class="fas fa-chevron-down px-2"></i>
@@ -29,7 +29,7 @@
       v-else
       data-testid="tree-tabs-show-button"
       type="button"
-      class="btn btn-icon btn-icon-secondary omnidb__tree-tabs__toggler me-2"
+      class="btn-icon omnidb__tree-tabs__toggler me-2"
       @click="$emit('showTreeTabs')"
     >
       <i class="fas fa-chevron-up px-2"></i>
