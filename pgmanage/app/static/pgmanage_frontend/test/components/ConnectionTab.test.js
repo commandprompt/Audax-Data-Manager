@@ -137,25 +137,6 @@ describe("ConnectionTab.vue", () => {
     expect(handleError).toHaveBeenCalled();
   });
 
-  it("toggles pane open and calls getProperties when reopening", async () => {
-    const getPropertiesSpy = vi
-      .spyOn(wrapper.vm, "getProperties")
-      .mockResolvedValue();
-    wrapper.vm.treeTabsPaneSize = 2;
-    wrapper.vm.lastTreeTabsView = "/v";
-    wrapper.vm.lastTreeTabsData = {};
-    await wrapper.vm.toggleTreeTabPane();
-    expect(wrapper.vm.treeTabsPaneSize).not.toBe(2);
-    expect(getPropertiesSpy).toHaveBeenCalled();
-  });
-
-  it("toggles pane closed and stores last size", async () => {
-    wrapper.vm.treeTabsPaneSize = 40;
-    wrapper.vm.toggleTreeTabPane();
-    expect(wrapper.vm.treeTabsPaneSize).toBe(2);
-    expect(wrapper.vm.lastTreeTabsPaneSize).toBe(40);
-  });
-
   it("computes correct tree component by technology", async () => {
     const map = {
       postgresql: "TreePostgresql",
@@ -169,5 +150,49 @@ describe("ConnectionTab.vue", () => {
       wrapper.vm.connectionTab.metaData.selectedDBMS = tech;
       expect(wrapper.vm.treeComponent).toBe(comp);
     }
+  });
+
+  it("shows tree tabs pane and calls getProperties when previous tab data exists", async () => {
+    const getPropertiesSpy = vi
+      .spyOn(wrapper.vm, "getProperties")
+      .mockResolvedValue();
+
+    wrapper.vm.treeTabsPaneSize = 2;
+    wrapper.vm.lastTreeTabsPaneSize = 35;
+    wrapper.vm.lastTreeTabsView = "/v";
+    wrapper.vm.lastTreeTabsData = { id: 1 };
+
+    await wrapper.vm.showTreeTabPane();
+
+    expect(wrapper.vm.treeTabsPaneSize).toBe(35);
+    expect(getPropertiesSpy).toHaveBeenCalledWith({
+      data: { id: 1 },
+      view: "/v",
+    });
+  });
+
+  it("hides tree tabs pane and stores last size", () => {
+    wrapper.vm.treeTabsPaneSize = 40;
+
+    wrapper.vm.hideTreeTabpane();
+
+    expect(wrapper.vm.treeTabsPaneSize).toBe(2);
+    expect(wrapper.vm.lastTreeTabsPaneSize).toBe(40);
+  });
+
+  it("handles database tree resize and collapses small tree tabs pane size", () => {
+    wrapper.vm.lastTreeTabsPaneSize = 40;
+
+    wrapper.vm.handleDatabaseTreeResize([{ size: 95 }, { size: 4 }]);
+
+    expect(wrapper.vm.treeTabsPaneSize).toBe(2);
+    expect(wrapper.vm.lastTreeTabsPaneSize).toBe(40);
+  });
+
+  it("handles database tree resize and stores visible tree tabs pane size", () => {
+    wrapper.vm.handleDatabaseTreeResize([{ size: 70 }, { size: 30 }]);
+
+    expect(wrapper.vm.treeTabsPaneSize).toBe(30);
+    expect(wrapper.vm.lastTreeTabsPaneSize).toBe(30);
   });
 });

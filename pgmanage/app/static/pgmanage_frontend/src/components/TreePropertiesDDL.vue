@@ -16,13 +16,25 @@
     </Transition>
 
     <button
-      data-testid="tree-tabs-toggler"
+      v-if="isVisible"
+      data-testid="tree-tabs-hide-button"
       type="button"
-      class="btn btn-icon btn-icon-secondary omnidb__tree-tabs__toggler me-2"
-      @click="$emit('toggleTreeTabs')"
+      class="btn-icon omnidb__tree-tabs__toggler me-2"
+      @click="$emit('hideTreeTabs')"
     >
-      <i class="fas fa-arrows-alt-v px-2"></i>
+      <i class="fas fa-chevron-down px-2"></i>
     </button>
+
+    <button
+      v-else
+      data-testid="tree-tabs-show-button"
+      type="button"
+      class="btn-icon omnidb__tree-tabs__toggler me-2"
+      @click="$emit('showTreeTabs')"
+    >
+      <i class="fas fa-chevron-up px-2"></i>
+    </button>
+
     <div
       class="omnidb__tree-tabs__container omnidb__tab-menu--container h-100 position-relative"
     >
@@ -38,6 +50,7 @@
               ref="treePropertiesNav"
               :href="`#${workspaceId}_tree_properties`"
               :aria-controls="`${workspaceId}_tree_properties`"
+              @click="$emit('showTreeTabs')"
               >Properties</a
             >
             <a
@@ -48,6 +61,7 @@
               aria-selected="false"
               :href="`#${workspaceId}_tree_ddl`"
               :aria-controls="`${workspaceId}_tree_ddl`"
+              @click="$emit('showTreeTabs')"
               >DDL</a
             >
           </div>
@@ -104,8 +118,9 @@ export default {
       type: Boolean,
       default: false,
     },
+    isVisible: Boolean,
   },
-  emits: ["toggleTreeTabs"],
+  emits: ["showTreeTabs", "hideTreeTabs"],
   data() {
     return {
       table: null,

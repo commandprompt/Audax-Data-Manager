@@ -48,7 +48,7 @@
                 <splitpanes
                   class="left-div-panes default-theme"
                   horizontal
-                  @resize="treeTabsPaneSize = $event[1].size"
+                  @resized="handleDatabaseTreeResize"
                 >
                   <pane :size="100 - treeTabsPaneSize">
                     <div :id="`${workspaceId}_tree`" class="database-tree">
@@ -73,7 +73,9 @@
                       :ddl-data="ddlData"
                       :properties-data="propertiesData"
                       :show-loading="showTreeTabsLoading"
-                      @toggle-tree-tabs="toggleTreeTabPane"
+                      :is-visible="isTreeTabsVisible"
+                      @show-tree-tabs="showTreeTabPane"
+                      @hide-tree-tabs="hideTreeTabpane"
                     />
                   </pane>
                 </splitpanes>
@@ -306,22 +308,27 @@ export default {
           this.showTreeTabsLoading = false;
         });
     },
-    toggleTreeTabPane() {
-      if (this.treeTabsPaneSize === 2) {
-        this.treeTabsPaneSize = this.lastTreeTabsPaneSize || 40;
-        if (!!this.lastTreeTabsData && !!this.lastTreeTabsView)
-          this.getProperties({
-            data: this.lastTreeTabsData,
-            view: this.lastTreeTabsView,
-          });
-      } else {
-        this.lastTreeTabsPaneSize = this.treeTabsPaneSize;
-        this.treeTabsPaneSize = 2;
-      }
-    },
     clearTreeTabsData() {
       this.ddlData='';
       this.propertiesData=[];
+    },
+    showTreeTabPane() {
+      this.treeTabsPaneSize = this.lastTreeTabsPaneSize || 40;
+      if (!!this.lastTreeTabsData && !!this.lastTreeTabsView)
+        this.getProperties({
+          data: this.lastTreeTabsData,
+          view: this.lastTreeTabsView,
+        });
+    },
+    hideTreeTabpane() {
+      this.lastTreeTabsPaneSize = this.treeTabsPaneSize;
+      this.treeTabsPaneSize = 2;
+    },
+    handleDatabaseTreeResize(event) {
+      this.treeTabsPaneSize = event[1].size < 5 ? 2 : event[1].size;
+      if (this.treeTabsPaneSize !== 2)  {
+        this.lastTreeTabsPaneSize = this.treeTabsPaneSize;
+      }
     },
     showQuickSearch(event) {
       emitter.emit(`${this.workspaceId}_show_quick_search`, event);
