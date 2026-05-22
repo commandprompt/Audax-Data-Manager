@@ -432,6 +432,7 @@ a:not([href]):not([tabindex]){
   position: absolute;
   right: 0px;
   z-index: 1;
+  transition: 0.35s;
   color: $secondaryGrey;
 
   &:hover {
