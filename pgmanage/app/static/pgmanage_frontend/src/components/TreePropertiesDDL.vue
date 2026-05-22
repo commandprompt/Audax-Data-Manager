@@ -22,7 +22,7 @@
       class="btn btn-icon btn-icon-secondary omnidb__tree-tabs__toggler me-2"
       @click="$emit('hideTreeTabs')"
     >
-      <i class="fas fa-arrow-down px-2"></i>
+      <i class="fas fa-chevron-down px-2"></i>
     </button>
 
     <button
@@ -32,7 +32,7 @@
       class="btn btn-icon btn-icon-secondary omnidb__tree-tabs__toggler me-2"
       @click="$emit('showTreeTabs')"
     >
-      <i class="fas fa-arrow-up px-2"></i>
+      <i class="fas fa-chevron-up px-2"></i>
     </button>
 
     <div
