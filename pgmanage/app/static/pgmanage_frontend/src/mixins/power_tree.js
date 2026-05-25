@@ -269,6 +269,16 @@ export default {
     getRootNode() {
       return this.$refs.tree.getFirstNode();
     },
+    goToNodeAndSelect(node) {
+      this.$refs.tree.select(node.path);
+      const nodeElement = this.getNodeEl(node.path).querySelector('.vue-power-tree-row');
+      nodeElement.scrollIntoView({
+        block: "start",
+        inline: "start",
+        behavior: "smooth",
+      });
+      this.onClickHandler(node);
+    },
     refreshTreeRecursive(node_type) {
       const rootNode = this.getRootNode();
       const getInnerNode = (node, node_type) => {

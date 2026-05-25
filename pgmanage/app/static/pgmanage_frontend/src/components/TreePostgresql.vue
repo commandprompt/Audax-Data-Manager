@@ -2692,12 +2692,7 @@ export default {
 
       // If target is a database, stop here
       if (type === 'database') {
-        this.$refs.tree.select(updatedDatabaseNode.path);
-        this.getNodeEl(updatedDatabaseNode.path).scrollIntoView({
-          block: "start",
-          inline: "end",
-        });
-        this.onClickHandler(updatedDatabaseNode);
+        this.goToNodeAndSelect(updatedDatabaseNode);
         return;
       }
 
@@ -2716,12 +2711,7 @@ export default {
 
       // If target is a schema, stop here
       if (type === 'schema') {
-        this.$refs.tree.select(updatedSchemaNode.path);
-        this.getNodeEl(updatedSchemaNode.path).scrollIntoView({
-          block: "start",
-          inline: "end",
-        });
-        this.onClickHandler(updatedSchemaNode);
+        this.goToNodeAndSelect(updatedSchemaNode);
         return;
       }
 
@@ -2737,17 +2727,7 @@ export default {
       const targetNode = findNode(updatedContainerNode, node => node.title === name && node.data.type === type);
       if (!targetNode) return;
 
-      // Step 5: Select and scroll to it
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          this.$refs.tree.select(targetNode.path);
-          this.getNodeEl(targetNode.path).scrollIntoView({
-            block: "start",
-            inline: "end",
-          });
-          this.onClickHandler(targetNode);
-        })
-      })
+      this.goToNodeAndSelect(targetNode);
     });
   },
   unmounted() {

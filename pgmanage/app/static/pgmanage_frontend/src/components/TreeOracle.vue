@@ -673,16 +673,7 @@ export default {
       if (!targetNode) return;
 
       // Step 3: Select and scroll to it
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          this.$refs.tree.select(targetNode.path);
-          this.getNodeEl(targetNode.path).scrollIntoView({
-            block: "start",
-            inline: "end",
-          });
-          this.onClickHandler(targetNode);
-        })
-      })
+      this.goToNodeAndSelect(targetNode);
     })
   },
   unmounted() {

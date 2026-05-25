@@ -648,12 +648,7 @@ export default {
 
       // If target is a database, stop here
       if (type === 'database') {
-        this.$refs.tree.select(updatedDatabaseNode.path);
-        this.getNodeEl(updatedDatabaseNode.path).scrollIntoView({
-          block: "start",
-          inline: "end",
-        });
-        this.onClickHandler(updatedDatabaseNode);
+        this.goToNodeAndSelect(updatedDatabaseNode);
         return;
       }
 
@@ -670,16 +665,7 @@ export default {
       if (!targetNode) return;
 
       // Step 5: Select and scroll to it
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          this.$refs.tree.select(targetNode.path);
-          this.getNodeEl(targetNode.path).scrollIntoView({
-            block: "start",
-            inline: "start",
-          });
-          this.onClickHandler(targetNode);
-        })
-      })
+      this.goToNodeAndSelect(targetNode);
     });
   },
   unmounted() {
