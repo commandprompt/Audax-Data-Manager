@@ -1532,7 +1532,7 @@ def get_inheriteds_parents(request, database):
         tables = database.QueryTablesInheritedsParents(False, schema)
         for table in tables.Rows:
             table_data = {
-                "name": f'{table["table_schema"]}.{table["table_name"]}',
+                "name": table["table_name"],
                 "name_raw": f'{table["table_schema_raw"]}.{table["name_raw"]}',
             }
             list_tables.append(table_data)
