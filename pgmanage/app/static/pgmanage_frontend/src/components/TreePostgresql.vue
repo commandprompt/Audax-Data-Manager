@@ -4181,17 +4181,25 @@ export default {
           title: `Partitioned Tables (${response.data.length})`,
         });
   
-        response.data.forEach((el) => {
-          this.insertNode(node, el.name, {
-            icon: "fas node-all fa-layer-group node-ptable",
-            type: "partitioned_parent",
-            contextMenu: "cm_partitioned_parent",
-            schema: node.data.schema,
-            schema_raw: node.data.schema_raw,
-            raw_value: el.name_raw,
-            name: el.name,
-          });
+        let childNodes = response.data.map((el) => {
+          return {
+            title: el.name,
+            isLeaf: false,
+            isExpanded: false,
+            isDraggable: false,
+            data: {
+              icon: "fas node-all fa-layer-group node-ptable",
+              type: "partitioned_parent",
+              contextMenu: "cm_partitioned_parent",
+              schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
+              raw_value: el.name_raw,
+              name: el.name,
+            },
+          };
         });
+
+        this.insertNodes(node, childNodes);
       } catch(error) {
         throw error;
       } 
