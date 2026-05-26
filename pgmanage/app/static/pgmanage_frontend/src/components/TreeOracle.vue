@@ -1067,15 +1067,6 @@ export default {
             title: `Foreign Keys (${resp.data.length})`,
           });
 
-<<<<<<< HEAD
-          resp.data.reduceRight((_, el) => {
-            this.insertNode(node, el.constraint_name, {
-              icon: "fas node-all fa-key node-fkey",
-              type: "foreign_key",
-              contextMenu: "cm_fk",
-            });
-          }, null);
-=======
           let childNodes = resp.data.map((el) => {
             return {
               title: el,
@@ -1091,7 +1082,6 @@ export default {
           })
 
           this.insertNodes(node, childNodes);
->>>>>>> 837_support_lots_of_tables
         })
         .catch((error) => {
           this.nodeOpenError(error, node);
