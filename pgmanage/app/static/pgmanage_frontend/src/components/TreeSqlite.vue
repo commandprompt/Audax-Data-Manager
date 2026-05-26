@@ -457,18 +457,26 @@ export default {
         const response = await this.api.post("/get_tables_sqlite/")
 
         this.removeChildNodes(node);
-          this.$refs.tree.updateNode(node.path, {
-            title: `Tables (${response.data.length})`,
-          });
+        this.$refs.tree.updateNode(node.path, {
+          title: `Tables (${response.data.length})`,
+        });
 
-          response.data.reduceRight((_, el) => {
-            this.insertNode(node, el.name, {
+        let childNodes = response.data.map((el) => {
+          return {
+            title: el.name,
+            isLeaf: false,
+            isExpanded: false,
+            isDraggable: false,
+            data: {
               icon: "fas node-all fa-table node-table",
               type: "table",
               contextMenu: "cm_table",
               raw_value: el.name_raw,
-            });
-          }, null);
+            },
+          }
+        });
+      
+        this.insertNodes(node, childNodes);
       } catch(error) {
         this.nodeOpenError(error, node);
       }
@@ -481,61 +489,110 @@ export default {
         .then((resp) => {
           this.removeChildNodes(node);
 
-          this.insertNode(node, "Triggers", {
-            icon: "fas node-all fa-bolt node-trigger",
-            type: "trigger_list",
-            contextMenu: "cm_triggers",
+          let columnsData = resp.data.map((el) => {
+            return {
+              title: el.column_name,
+              isLeaf: false,
+              isExpanded: false,
+              isDraggable: false,
+              data: {
+                icon: "fas node-all fa-columns node-column",
+                type: "table_field",
+              },
+              children: [
+                {
+                  title: `Type: ${el.data_type}`,
+                  isLeaf: true,
+                  isExpanded: false,
+                  isDraggable: false,
+                  data: {
+                    icon: "fas node-all fa-ellipsis-h node-bullet",
+                  },
+                },
+                {
+                  title: `Nullable: ${el.nullable}`,
+                  isLeaf: true,
+                  isExpanded: false,
+                  isDraggable: false,
+                  data: {
+                    icon: "fas node-all fa-ellipsis-h node-bullet",
+                  },
+                },
+              ],
+            }
           });
-          this.insertNode(node, "Indexes", {
-            icon: "fas node-all fa-thumbtack node-index",
-            type: "indexes",
-            contextMenu: "cm_indexes",
-          });
-          this.insertNode(node, "Uniques", {
-            icon: "fas node-all fa-key node-unique",
-            type: "uniques",
-            contextMenu: "cm_uniques",
-          });
-          this.insertNode(node, "Foreign Keys", {
-            icon: "fas node-all fa-key node-fkey",
-            type: "foreign_keys",
-            contextMenu: "cm_fks",
-          });
-          this.insertNode(node, "Primary Key", {
-            icon: "fas node-all fa-key node-pkey",
-            type: "primary_key",
-            contextMenu: "cm_pks",
-          });
-          this.insertNode(node, `Columns (${resp.data.length})`, {
-            icon: "fas node-all fa-columns node-column",
-            type: "column_list",
-            contextMenu: "cm_columns",
-          });
-          const columns_node = this.getFirstChildNode(node);
-          resp.data.reduceRight((_, el) => {
-            this.insertNode(columns_node, el.column_name, {
-              icon: "fas node-all fa-columns node-column",
-              type: "table_field",
-            });
-            const table_field = this.getFirstChildNode(columns_node);
 
-            this.insertNode(
-              table_field,
-              `Nullable: ${el.nullable}`,
-              {
-                icon: "fas node-all fa-ellipsis-h node-bullet",
+          let tableEntities = [
+            {
+              title: `Columns (${resp.data.length})`,
+              isLeaf: false,
+              isExpanded: false,
+              isDraggable: false,
+              data: {
+                icon: "fas node-all fa-columns node-column",
+                type: "column_list",
+                contextMenu: "cm_columns",
               },
-              true
-            );
-            this.insertNode(
-              table_field,
-              `Type: ${el.data_type}`,
-              {
-                icon: "fas node-all fa-ellipsis-h node-bullet",
+              children: columnsData,
+            },
+            {
+              title: "Primary Key",
+              isLeaf: false,
+              isExpanded: false,
+              isDraggable: false,
+              data: {
+                icon: "fas node-all fa-key node-pkey",
+                type: "primary_key",
+                contextMenu: "cm_pks",
               },
-              true
-            );
-          }, null);
+            },
+            {
+              title: "Foreign Keys",
+              isLeaf: false,
+              isExpanded: false,
+              isDraggable: false,
+              data: {
+                icon: "fas node-all fa-key node-fkey",
+                type: "foreign_keys",
+                contextMenu: "cm_fks",
+              },
+            },
+            {
+              title: "Uniques",
+              isLeaf: false,
+              isExpanded: false,
+              isDraggable: false,
+              data: {
+                icon: "fas node-all fa-key node-unique",
+                type: "uniques",
+                contextMenu: "cm_uniques",
+              },
+            },
+            {
+              title: "Indexes",
+              isLeaf: false,
+              isExpanded: false,
+              isDraggable: false,
+              data: {
+                icon: "fas node-all fa-thumbtack node-index",
+                type: "indexes",
+                contextMenu: "cm_indexes",
+              },
+            },
+            {
+              title: "Triggers",
+              isLeaf: false,
+              isExpanded: false,
+              isDraggable: false,
+              data: {
+                icon: "fas node-all fa-bolt node-trigger",
+                type: "trigger_list",
+                contextMenu: "cm_triggers",
+              },
+            },
+          ];
+          
+          this.insertNodes(node, tableEntities);
         })
         .catch((error) => {
           this.nodeOpenError(error, node);
@@ -593,13 +650,22 @@ export default {
           this.$refs.tree.updateNode(node.path, {
             title: `Foreign Keys (${resp.data.length})`,
           });
-          resp.data.reduceRight((_, el) => {
-            this.insertNode(node, el.constraint_name, {
-              icon: "fas node-all fa-key node-fkey",
-              type: "foreign_key",
-              contextMenu: "cm_fk",
-            });
-          }, null);
+
+          let childNodes = resp.data.map((el) => {
+            return {
+              title: el.constraint_name,
+              isLeaf: false,
+              isExpanded: false,
+              isDraggable: false,
+              data: {
+                icon: "fas node-all fa-key node-fkey",
+                type: "foreign_key",
+                contextMenu: "cm_fk",
+              },
+            }
+          });
+          
+          this.insertNodes(node, childNodes);
         })
         .catch((error) => {
           this.nodeOpenError(error, node);
@@ -779,15 +845,22 @@ export default {
             title: `Views (${response.data.length})`,
           });
 
-          response.data.reduceRight((_, el) => {
-            this.insertNode(node, el.name, {
+        let childNodes = response.data.map((el) => {
+          return {
+            title: el.name,
+            isLeaf: false,
+            isExpanded: false,
+            isDraggable: false,
+            data: {
               icon: "fas node-all fa-eye node-view",
               type: "view",
               contextMenu: "cm_view",
               raw_value: el.name_raw
-            });
-          }, null)
+            },
+          }
+        });
 
+        this.insertNodes(node, childNodes);
       } catch(error) {
         this.nodeOpenError(error, node);
       }
@@ -800,31 +873,55 @@ export default {
         .then((resp) => {
           this.removeChildNodes(node);
 
-          this.insertNode(node, "Triggers", {
-            icon: "fas node-all fa-bolt node-trigger",
-            type: "trigger_list",
-          });
-          this.insertNode(node, `Columns (${resp.data.length})`, {
-            icon: "fas node-all fa-columns node-column",
-          });
-          const columns_node = this.getFirstChildNode(node);
-
-          resp.data.reduceRight((_, el) => {
-            this.insertNode(columns_node, el.column_name, {
-              icon: "fas node-all fa-columns node-column",
-              type: "table_field",
-            });
-            const table_field = this.getFirstChildNode(columns_node);
-
-            this.insertNode(
-              table_field,
-              `Type: ${el.data_type}`,
-              {
-                icon: "fas node-all fa-ellipsis-h node-bullet",
+          let columnsData = resp.data.map((el) => {
+            return {
+              title: el.column_name,
+              isLeaf: false,
+              isExpanded: false,
+              isDraggable: false,
+              data: {
+                icon: "fas node-all fa-columns node-column",
+                type: "table_field",
               },
-              true
-            );
-          }, null);
+              children: [
+                {
+                  title: `Type: ${el.data_type}`,
+                  isLeaf: true,
+                  isExpanded: false,
+                  isDraggable: false,
+                  data: {
+                    icon: "fas node-all fa-ellipsis-h node-bullet",
+                  },
+                },
+              ],
+            }
+          });
+
+          let viewEntities = [
+            {
+              title: `Columns (${resp.data.length})`,
+              isLeaf: false,
+              isExpanded: false,
+              isDraggable: false,
+              data: {
+                icon: "fas node-all fa-columns node-column",
+              },
+              children: columnsData,
+            },
+            {
+              title: "Triggers",
+              isLeaf: false,
+              isExpanded: false,
+              isDraggable: false,
+              data: {
+                icon: "fas node-all fa-bolt node-trigger",
+                type: "trigger_list",
+              },
+            },
+          ];
+
+          this.insertNodes(node, viewEntities);
+
         })
         .catch((error) => {
           this.nodeOpenError(error, node);

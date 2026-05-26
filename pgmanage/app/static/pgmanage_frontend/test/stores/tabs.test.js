@@ -304,6 +304,7 @@ describe("useTabsStore", () => {
     const store = useTabsStore();
     store.createUtilityTab(
       { title: "Test Table", data: { type: "table" } },
+      "testDatabase",
       "Backup",
       "objects"
     );

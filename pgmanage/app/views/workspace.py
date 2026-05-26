@@ -2,7 +2,9 @@ import json
 import os
 import subprocess
 import sys
+
 from datetime import datetime, timezone
+from itertools import groupby
 
 from app.client_manager import client_manager
 from app.include.Session import Session
@@ -452,40 +454,35 @@ def get_database_meta(request, database):
                 "views": [],
             }
 
-            tables = database.QueryTables(False, schema["schema_name"])
-            for table in tables.Rows:
-                table_data = {
-                    "name": table["table_name"],
-                    "columns": []
-                }
-                table_name = table.get('name_raw') or table["table_name"]
-                table_columns = database.QueryTablesFields(
-                    table_name, False, schema["schema_name"]
-                ).Rows
+            # get table fields for ALL tables within given schema; note - this also grabs inherited tables
+            table_columns = database.QueryTablesFields(
+                None, False, schema["schema_name"]
+            ).Rows
 
-                table_data['columns'] = list((c['column_name'] for c in table_columns))
-                schema_data['tables'].append(table_data)
-            
-            if database.has_schema:
-                views = database.QueryViews(all_schemas=False, schema=schema["schema_name"])
+            if hasattr(database, 'QueryTablesInheriteds'):
+                excluded_tables = database.QueryTablesInheriteds(all_schemas=False, schema=schema["schema_name"]).Rows
+                excluded_table_names = [t["child_table"] for t in excluded_tables]
             else:
-                views = database.QueryViews()
+                excluded_table_names = []
 
-            for view in views.Rows:
-                view_data = {
-                    "name": view["table_name"],
-                    "columns": []
-                }
-                view_name = view.get('name_raw') or view["table_name"]
+            # group the rows by the table_name key
+            for table_name, group in groupby(table_columns, lambda x: x["table_name"]):
+                # don't add inherited tables
+                if(table_name in excluded_table_names):
+                    continue
+                schema_data['tables'].append({
+                    "name": table_name,
+                    "columns": [row["column_name"] for row in group]
+                })
 
-                if database.has_schema:
-                    view_columns = database.QueryViewFields(table=view_name, all_schemas=False, schema=schema["schema_name"])
-                else:
-                    view_columns = database.QueryViewFields(table_name=view_name)
-
-                view_data['columns'] = list((c['column_name'] for c in view_columns.Rows))
-                schema_data['views'].append(view_data)
-
+            view_columns = database.QueryViewFields(
+                table=None, all_schemas=False, schema=schema["schema_name"]
+            ).Rows
+            for view_name, group in groupby(view_columns, lambda x: x["table_name"]):
+                schema_data['views'].append({
+                    "name": view_name,
+                    "columns": [row["column_name"] for row in group]
+                })
             schema_list.append(schema_data)
 
         response_data["schemas"] = schema_list

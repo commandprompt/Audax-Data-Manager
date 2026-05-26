@@ -193,7 +193,6 @@ export default {
           isExpanded: false,
           isDraggable: false,
           data: {
-            database: this.selectedDatabase,
             ...data,
           },
         }
@@ -291,7 +290,9 @@ export default {
           for (let i = 0; i < node.children.length; i++) {
             let childNode = node.children[i];
 
-            if (childNode.data?.database === this.selectedDatabase) {
+            const childDatabase = this.getNodeDatabase(childNode);
+
+            if (childDatabase === this.selectedDatabase) {
               if (
                 childNode.data.type === "database" &&
                 node_type === "extension_list"
@@ -519,6 +520,21 @@ export default {
       if (!node) return;
 
       this.doubleClickNode(node);
+    },
+    getNodeDatabase(node) {
+      if (node.data?.type === "database") return node.title;
+
+      let current = node;
+
+      while (current?.path?.length > 1) {
+        current = this.getParentNode(current);
+
+        if (current?.data?.type === 'database') {
+          return current.title;
+        }
+      }
+
+      return null
     },
   },
 };
