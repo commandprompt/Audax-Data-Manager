@@ -83,8 +83,9 @@ cd $HOME
 # Building app
 cd /deploy
 curl -C - -LO $NWJS_URL
-# get appimagetool v13
-curl -C - -LO https://github.com/AppImage/AppImageKit/releases/download/13/appimagetool-x86_64.AppImage && chmod +x /deploy/appimagetool-x86_64.AppImage
+# get appimagetool
+curl -C - -LO https://github.com/AppImage/appimagetool/releases/download/1.9.1/appimagetool-x86_64.AppImage && chmod +x /deploy/appimagetool-x86_64.AppImage
+
 cd -
 tar -xzvf /deploy/$NWJS_ARCHIVE
 mv $NWJS_DIR pgmanage-app_$VERSION

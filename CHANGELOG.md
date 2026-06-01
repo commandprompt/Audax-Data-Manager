@@ -1,3 +1,20 @@
+# PgManage 1.4.1 Bugfix Release
+
+## Release Date: Jan 20 2025
+
+## Release Notes
+
+  - Bugs fixed:
+    - fixed unwanted change of last used database when when Databases tree node is clicked in DB Explorer #806
+    - fixed Postgres DB connection close when Cancel Query is clicked in Query tab #802
+    - fixed incorrect tab displayed in Settings modal when clicking Shortcuts icon on the Welcome screen #801
+    - fixed selected database not always changing when using Quick Search #814
+    
+  - Other Changes
+    - migrate to appimagetool 1.9.1 for Linux builds
+    - update copyright years in Windows installer
+
+
 # PgManage 1.4 Release
 
 ## Release Date: Nov 18 2025

@@ -827,6 +827,11 @@ export default {
       }
     },
     getProperties(node) {
+      this.checkCurrentDatabase(node, true, () => {
+        this.getPropertiesConfirm(node);
+      });
+    },
+    getPropertiesConfirm(node) {
       const handledTypes = [
         "table",
         "sequence",
@@ -868,6 +873,7 @@ export default {
             icon: "fas node-all fa-users node-user-list",
             type: "role_list",
             contextMenu: "cm_roles",
+            database: false,
           });
         }
 
@@ -875,6 +881,7 @@ export default {
           icon: "fas node-all fa-database node-database-list",
           type: "database_list",
           contextMenu: "cm_databases",
+          database: false,
         });
         this.cm_server_extra = [{
           label: "Monitoring",

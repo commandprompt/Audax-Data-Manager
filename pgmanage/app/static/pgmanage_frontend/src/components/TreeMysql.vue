@@ -795,6 +795,11 @@ export default {
       }
     },
     getProperties(node) {
+      this.checkCurrentDatabase(node, true, () => {
+        this.getPropertiesConfirm(node);
+      });
+    },
+    getPropertiesConfirm(node) {
       const handledTypes = ["table", "view", "function", "procedure", "index"];
       if (handledTypes.includes(node.data.type)) {
         const table = node.data.table ?? null
@@ -829,12 +834,14 @@ export default {
             icon: "fas node-all fa-users node-user-list",
             type: "role_list",
             contextMenu: "cm_roles",
+            database: false,
           });
         }
         this.insertNode(node, "Databases", {
           icon: "fas node-all fa-database node-database-list",
           type: "database_list",
           contextMenu: "cm_databases",
+          database: false,
         });
         this.cm_server_extra = [
           {

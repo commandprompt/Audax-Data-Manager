@@ -354,6 +354,7 @@ export default {
         this.expandNode(node);
       } else {
         this.expandNode(node);
+        this.onClickHandler(node);
       }
     },
     handleTreeKeyboardNavigation(event) {

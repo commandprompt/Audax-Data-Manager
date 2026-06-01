@@ -330,7 +330,7 @@ def create_request(request: HttpRequest, session: Session) -> JsonResponse:
                     if workspace_context["thread"]:
                         workspace_context["thread"].stop()
                     try:
-                        workspace_context["omnidatabase"].connection.Cancel(False)
+                        workspace_context["omnidatabase"].connection.Cancel(keep_connection=True)
                     except Exception as exc:
                         logger.error(exc)
 
