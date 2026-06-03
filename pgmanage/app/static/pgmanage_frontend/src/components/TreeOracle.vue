@@ -880,7 +880,7 @@ export default {
 
         let childNodes = response.data.map((el) => {
           return {
-            title: el,
+            title: el.name,
             isLeaf: false,
             isExpanded: false,
             isDraggable: false,
@@ -888,6 +888,8 @@ export default {
               icon: "fas node-all fa-table node-table",
               type: "table",
               contextMenu: "cm_table",
+              raw_value: el.name_raw,
+              schema: node.data.schema,
             },
           }
         });

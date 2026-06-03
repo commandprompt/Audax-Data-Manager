@@ -427,7 +427,7 @@ class Oracle:
             if table and schema:
                 query_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' and (case when upper(replace(\"table_name\", ' ', '')) <> \"table_name\" then '"' || \"table_name\" || '"' else \"table_name\" end) = '{1}' ".format(schema, table)
             elif table:
-                query_filter = "and table_schema = '{0}' and table_name = '{1}' ".format(self.schema, table)
+                query_filter = """and "table_schema" = '{0}' and "table_name" = '{1}' """.format(self.schema, table)
             elif schema:
                 query_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' ".format(schema)
             else:
@@ -463,7 +463,7 @@ class Oracle:
             if table and schema:
                 query_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' and (case when upper(replace(\"table_name\", ' ', '')) <> \"table_name\" then '"' || \"table_name\" || '"' else \"table_name\" end) = '{1}' ".format(schema, table)
             elif table:
-                query_filter = "and table_schema = '{0}' and table_name = '{1}' ".format(self.schema, table)
+                query_filter = """and "table_schema" = '{0}' and "table_name" = '{1}' """.format(self.schema, table)
             elif schema:
                 query_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' ".format(schema)
             else:
