@@ -80,7 +80,7 @@
 
 # PgManage 1.4.1 Bugfix Release
 
-## Release Date: Jan 20 2025
+## Release Date: Jan 20 2026
 
 ## Release Notes
 
