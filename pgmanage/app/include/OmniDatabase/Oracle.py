@@ -298,11 +298,16 @@ class Oracle:
     @lock_required
     def QueryTablesFields(self, table=None, all_schemas=False, schema=None):
         query_filter = ''
+
+        normalized_table = self.normalize_oracle_identifier(table)
+        normalized_schema = self.normalize_oracle_identifier(schema)
+        normalized_self_schema = self.normalize_oracle_identifier(self.schema)
+
         if not all_schemas:
             if table and schema:
-                query_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' and (case when upper(replace(table_name, ' ', '')) <> table_name then '"' || table_name || '"' else table_name end) = '{1}' ".format(schema, table)
+                query_filter = "and owner = '{0}' and table_name = '{1}' ".format(normalized_schema, normalized_table)
             elif table:
-                query_filter = "and owner = '{0}' and table_name = '{1}' ".format(self.schema, table)
+                query_filter = "and owner = '{0}' and table_name = '{1}' ".format(normalized_self_schema, normalized_table)
             elif schema:
                 query_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' ".format(schema)
             else:
@@ -1298,3 +1303,16 @@ select * from all_objects
             AND c.table_name = '{1}'
             ORDER BY c.column_id
         '''.format(in_schema, table), False)
+    
+    def normalize_oracle_identifier(self, identifier):
+        if identifier is None:
+            return None
+
+        identifier = identifier.strip()
+
+        # Quoted identifier: remove quotes and preserve exact case
+        if len(identifier) >= 2 and identifier[0] == '"' and identifier[-1] == '"':
+            return identifier[1:-1].replace('""', '"')
+
+        # Unquoted identifier: Oracle stores it uppercase
+        return identifier.upper()

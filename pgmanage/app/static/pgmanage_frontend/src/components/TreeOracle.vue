@@ -127,7 +127,7 @@ export default {
                 onClick: () => {
                   TemplateInsertOracle(
                     this.templates.username,
-                    this.selectedNode.title
+                    this.selectedNode.data.raw_value
                   );
                 },
               },
@@ -137,7 +137,7 @@ export default {
                 onClick: () => {
                   TemplateUpdateOracle(
                     this.templates.username,
-                    this.selectedNode.title
+                    this.selectedNode.data.raw_value
                   );
                 },
               },
@@ -149,7 +149,7 @@ export default {
                     "Delete Records",
                     this.templates.delete.replace(
                       "#table_name#",
-                      `${this.templates.username}.${this.selectedNode.title}`
+                      `${this.templates.username}.${this.selectedNode.data.raw_value}`
                     )
                   );
                 },
@@ -902,7 +902,7 @@ export default {
     getColumnsOracle(node) {
       this.api
         .post("/get_columns_oracle/", {
-          table: node.title,
+          table: node.data.raw_value,
         })
         .then((resp) => {
           this.removeChildNodes(node);
