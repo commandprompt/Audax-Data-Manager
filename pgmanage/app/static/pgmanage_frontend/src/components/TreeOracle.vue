@@ -98,7 +98,7 @@ export default {
             onClick: () => {
               TemplateSelectOracle(
                 this.templates.username,
-                this.selectedNode.title
+                this.selectedNode.data.raw_value
               );
             },
           },
