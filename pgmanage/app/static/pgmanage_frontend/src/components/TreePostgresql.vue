@@ -3009,6 +3009,9 @@ export default {
         case "user_mapping":
           schema = node.data.foreign_server;
           break;
+        case "table":
+          table = node.data.raw_value;
+          break;
       }
 
       if (handledTypes.includes(node.data.type)) {
