@@ -27,8 +27,9 @@
             }
         }
 
-        &:hover:not(.disabled), &.open {
+        &:hover:not(.disabled), &.open, &.keyboard-focus {
             background-color: rgba($primaryBlue, 0.15);
+            outline: none;
         }
 
         .mx-right-arrow {
@@ -67,5 +68,35 @@
                 background-color: themed($borderColor);
             }
         }
+    }
+
+    @keyframes collapseSafeOverlay {
+        0% {
+            left: -80px;
+        }
+        85% {
+            left: -80px;
+        }
+        100% {
+            left: 0;
+        }
+    }
+
+    // the following block allos to move mouse pointer diagonally
+    // from the parent menu to submenu, the idea is that
+    // we have an overlay pseudoelement near submenu which blocks hover
+    // events over other parent menu items. the overlay shrinks after a delay
+    // so that it does not get in the way for hovering over parent menu items
+    .mx-context-menu.diagonal-safe-menu:not(.mx-menu-host)::before {
+        content: '';
+        position: absolute;
+        top: -30px;
+        bottom: -30px;
+        left: -80px;
+        right: 15px;
+        z-index: -1;
+        background: transparent; 
+        animation: collapseSafeOverlay 0.5s forwards linear;
+        pointer-events: auto !important;
     }
 }
