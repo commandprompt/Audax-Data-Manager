@@ -563,7 +563,14 @@ export default {
 
       if (params?.sort && params.sort.length === 1) {
         let sortColumnName = this.columnNames[params.sort[0].field];
-        const updatedOrderClause = `ORDER BY ${sortColumnName} ${params.sort[0].dir}`;
+        let updatedOrderClause = '';
+        if (this.dialect === 'oracle') {
+          // sort column should be quoted
+          let quotedColumnName = this.knex.raw("?", [sortColumnName]).toQuery()
+          updatedOrderClause = `ORDER BY ${quotedColumnName} ${params.sort[0].dir}`;
+        } else {
+          updatedOrderClause = `ORDER BY ${sortColumnName} ${params.sort[0].dir}`;
+        }
         this.updatedRawQuery = `${queryFilterCleaned} ${updatedOrderClause}`;
         return updatedOrderClause;
       }

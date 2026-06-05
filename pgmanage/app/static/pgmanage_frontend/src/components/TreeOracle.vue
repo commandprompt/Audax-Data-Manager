@@ -106,7 +106,7 @@ export default {
             label: "Edit Data",
             icon: "fas fa-table",
             onClick: () => {
-              tabsStore.createDataEditorTab(this.selectedNode.title, this.templates.username)
+              tabsStore.createDataEditorTab(this.selectedNode.data.raw_value, this.templates.username)
             },
           },
           {
@@ -1012,7 +1012,7 @@ export default {
     getPKOracle(node) {
       this.api
         .post("/get_pk_oracle/", {
-          table: this.getParentNode(node).title,
+          table: this.getParentNode(node).data.raw_value,
         })
         .then((resp) => {
           this.removeChildNodes(node);
@@ -1037,7 +1037,7 @@ export default {
       this.api
         .post("/get_pk_columns_oracle/", {
           key: node.title,
-          table: this.getParentNodeDeep(node, 2).title,
+          table: this.getParentNodeDeep(node, 2).data.raw_value,
         })
         .then((resp) => {
           this.removeChildNodes(node);
