@@ -271,11 +271,15 @@ export default {
       emitter.emit("connection-save", connection);
     },
     getProperties({ view, data }) {
-      if (!this.isTreeTabsVisible) {
-        this.lastTreeTabsData = data;
-        this.lastTreeTabsView = view;
+      // remember last DB object to load properties for
+      // use this data later when properties/ddl is expanded
+      this.lastTreeTabsData = data;
+      this.lastTreeTabsView = view;
+
+      // don't load anything if properties/ddl panel is hidden
+      if (!this.isTreeTabsVisible)
         return;
-      }
+
       let loadingTimeout = setTimeout(() => {
         this.showTreeTabsLoading = true;
       }, 1000);
