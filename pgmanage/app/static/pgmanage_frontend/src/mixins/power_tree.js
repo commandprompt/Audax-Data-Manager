@@ -99,6 +99,7 @@ export default {
       this.toggleNode(node);
     },
     showContextMenu(node, e) {
+      this.treeContextMenuOpen = true;
       ContextMenu.showContextMenu(
         {
           theme: "pgmanage",
@@ -407,7 +408,6 @@ export default {
             });
 
             this.onContextMenu(selectedNode, fakeEvent);
-            this.treeContextMenuOpen = true;
             return;
           }
           return;
