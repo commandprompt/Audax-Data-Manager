@@ -147,6 +147,7 @@ export default {
       showTreeTabsLoading: false,
       lastTreeTabsData: null,
       lastTreeTabsView: null,
+      skipTransitions: null,
     };
   },
   computed: {
@@ -176,6 +177,9 @@ export default {
         return truncateText(this.connectionTab.metaData.selectedDatabase, 10);
       }
       return this.connectionTab.metaData.selectedDatabase;
+    },
+    paneTransitionStyle() {
+      return this.skipTransitions ? 'none' : '0.35s';
     },
     treeComponent() {
       const treeTechnologiesMap = {
@@ -321,6 +325,8 @@ export default {
       this.propertiesData=[];
     },
     showTreeTabPane() {
+      this.skipTransitions = false
+      setTimeout(() => { this.skipTransitions = true }, 350); ;
       this.treeTabsPaneSize = this.lastTreeTabsPaneSize || 40;
       if (!!this.lastTreeTabsData && !!this.lastTreeTabsView)
         this.getProperties({
@@ -329,6 +335,8 @@ export default {
         });
     },
     hideTreeTabpane() {
+      this.skipTransitions = false
+      setTimeout(() => { this.skipTransitions = true }, 350); ;
       this.lastTreeTabsPaneSize = this.treeTabsPaneSize;
       this.treeTabsPaneSize = 2;
     },
@@ -361,6 +369,6 @@ export default {
 }
 
 .splitpanes .splitpanes__pane {
-  transition: none;
+  transition: v-bind(paneTransitionStyle);
 }
 </style>
