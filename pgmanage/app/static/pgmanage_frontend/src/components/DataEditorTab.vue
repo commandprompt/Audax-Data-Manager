@@ -16,7 +16,7 @@
         <label class="fw-bold mb-2" :for="`${tabId}_rowLimit`">Limit</label>
         <div class="d-flex">
           <select :id="`${tabId}_rowLimit`" v-model="rowLimit" class="form-select">
-            <option v-for="(option, index) in [10, 100, 1000]"
+            <option v-for="(option, index) in [25, 100, 1000]"
               :key=index
               :value="option">
                 {{option}} rows
@@ -110,7 +110,7 @@ export default {
       tableData: [],
       tableDataLocal: [],
       queryFilters: [{ column: "", operator: "=", value: "" }],
-      rowLimit: 10,
+      rowLimit: 25,
       dataLoaded: false,
       heightSubtract: 200, //default safe value, recalculated in handleResize
       tabulator: null,
