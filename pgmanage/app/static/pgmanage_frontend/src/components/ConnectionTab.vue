@@ -117,7 +117,7 @@ import TabTitleUpdateMixin from "../mixins/sidebar_title_update_mixin";
 import { Tooltip } from "bootstrap";
 import { handleError } from "../logging/utils";
 import SearchModal from "./SearchModal.vue";
-import throttle from 'lodash/throttle'
+import debounce from 'lodash/debounce'
 
 export default {
   name: "ConnectionTab",
@@ -271,7 +271,7 @@ export default {
       let connection = connectionsStore.getConnection(this.databaseIndex);
       emitter.emit("connection-save", connection);
     },
-    throttledFetchProperties: throttle(function(view, data) {
+    debouncedFetchProperties: debounce(function(view, data) {
       let loadingTimeout = setTimeout(() => {
         this.showTreeTabsLoading = true;
       }, 1000);
@@ -303,7 +303,7 @@ export default {
           }
           this.showTreeTabsLoading = false;
         });
-    }, 500),
+    }, 200),
     getProperties({ view, data }) {
       // remember last DB object to load properties for
       // use this data later when properties/ddl is expanded
@@ -314,7 +314,7 @@ export default {
       if (!this.isTreeTabsVisible)
         return;
 
-      this.throttledFetchProperties(view, data);
+      this.debouncedFetchProperties(view, data);
     },
     clearTreeTabsData() {
       this.ddlData='';
