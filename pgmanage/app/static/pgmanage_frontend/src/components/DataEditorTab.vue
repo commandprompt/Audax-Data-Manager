@@ -670,6 +670,9 @@ export default {
       if(this.$refs === null)
         return
 
+      if(this.tabulator)
+        this.tabulator.redraw();
+
       this.heightSubtract =
         this.$refs.bottomToolbar.getBoundingClientRect().height +
         this.$refs.topToolbar.getBoundingClientRect().bottom
