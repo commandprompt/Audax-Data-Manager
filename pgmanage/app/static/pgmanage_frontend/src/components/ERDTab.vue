@@ -137,7 +137,7 @@ export default {
                 columns: node.columns.map((column) => (
                   {
                     name: column.name,
-                    type: this.shortDataType(column.type),
+                    type: column.type,
                     cgid: column.cgid,
                     is_pk: column.is_pk,
                     is_fk: column.is_fk,
@@ -170,18 +170,6 @@ export default {
         handleError(error);
       })
     },
-    shortDataType(typename) {
-      const TYPEMAP = {
-        'character varying': 'varchar',
-        'timestamp with time zone': 'timestamptz',
-        'timestamp without time zone': 'timestamp',
-        'time without time zone': 'time',
-        'time with time zone': 'timetz',
-        'character': 'char',
-        'boolean': 'bool'
-      }
-      return TYPEMAP[typename] || typename
-    },
     columnClass(column) {
       let classes = []
       if(column.is_pk)
@@ -211,7 +199,7 @@ export default {
               columns: node.columns.map((column) => (
                   {
                     name: column.name,
-                    type: this.shortDataType(column.type),
+                    type: column.type,
                     cgid: column.cgid,
                     is_pk: column.is_pk,
                     is_fk: column.is_fk,

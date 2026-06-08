@@ -234,6 +234,18 @@ def draw_graph(request, database):
     edge_dict = {}
     node_dict = {}
 
+    def short_data_type(column_type: str)-> str:
+        type_map = {
+            'character varying': 'varchar',
+            'timestamp with time zone': 'timestamptz',
+            'timestamp without time zone': 'timestamp',
+            'time without time zone': 'time',
+            'time with time zone': 'timetz',
+            'character': 'char',
+            'boolean': 'bool'
+        }
+        return type_map.get(column_type, column_type)
+
     try:
         tables = database.QueryTables(False, schema)
 
@@ -251,7 +263,7 @@ def draw_graph(request, database):
 
             node_data['columns'] = list(({
                 'name': c['column_name'],
-                'type': c['data_type'],
+                'type': short_data_type(c['data_type']),
                 'cgid': None,
                 'is_pk': False,
                 'is_fk': False,
@@ -312,12 +324,23 @@ def draw_graph(request, database):
             layout_nodes = {node["data"]["id"]: node for node in layout_data.get('elements', {}).get('nodes', [])}
             layout_edges = {edge["data"]["cgid"]: edge for edge in layout_data.get("elements", {}).get("edges", []) if edge["data"]["cgid"] is not None}
 
-
             current_node_ids = set(node_dict.keys())
             current_edge_ids = set(edge_dict.keys())
 
             filtered_nodes = [node for id_, node in layout_nodes.items() if id_ in current_node_ids]
 
+            for layout_node in filtered_nodes:
+                layout_node["data"]["columns"] = [
+                    {
+                    "name" : column["name"],
+                    "type" : column["type"],
+                    "cgid": column["cgid"],
+                    "is_pk": column["is_pk"],
+                    "is_fk": column["is_fk"],
+                    "is_highlighted": False
+                    }
+                    for column in node_dict[layout_node["data"]["id"]]["columns"]
+                ]
 
             new_nodes = [v for k, v in node_dict.items() if k not in layout_nodes.keys()]
 
