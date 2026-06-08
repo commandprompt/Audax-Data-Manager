@@ -1071,7 +1071,7 @@ export default {
 
           let childNodes = resp.data.map((el) => {
             return {
-              title: el,
+              title: el.constraint_name,
               isLeaf: false,
               isExpanded: false,
               isDraggable: false,
