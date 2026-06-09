@@ -419,8 +419,9 @@ def get_table_columns(request, database):
         pk_column_names = []
         if pk is not None and len(pk.Rows) > 0:
             if database.has_schema:
+                pk_name = pk.Rows[0].get("name_raw") or pk.Rows[0]["constraint_name"]
                 pk_cols = database.QueryTablesPrimaryKeysColumns(
-                    pk.Rows[0]["constraint_name"], table, False, schema
+                    pk_name, table, False, schema
                 )
             else:
                 pk_cols = database.QueryTablesPrimaryKeysColumns(table)
