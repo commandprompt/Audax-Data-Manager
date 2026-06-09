@@ -147,7 +147,7 @@ export default {
       showTreeTabsLoading: false,
       lastTreeTabsData: null,
       lastTreeTabsView: null,
-      skipTransitions: null,
+      skipTransitions: true,
     };
   },
   computed: {
