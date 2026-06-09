@@ -106,7 +106,7 @@ export default {
             label: "ER Diagram",
             icon: "fab fa-hubspot",
             onClick: () => {
-              tabsStore.createERDTab(this.selectedDatabase)
+              tabsStore.createERDTab(this.selectedNode.title);
             },
           },
           {
@@ -705,11 +705,20 @@ export default {
     onContextMenu(node, e) {
       this.$refs.tree.select(node.path);
       e.preventDefault();
-      if (!!node.data.contextMenu) {
-        this.checkCurrentDatabase(node, true, () => {
-          this.showContextMenu(node, e)
-        });
+      const contextMenu = node?.data?.contextMenu;
+
+      if (!contextMenu) {
+        return;
       }
+      
+      if (contextMenu === "cm_database") {
+        this.showContextMenu(node, e);
+        return;
+      }
+
+      this.checkCurrentDatabase(node, true, () => {
+        this.showContextMenu(node, e);
+      });
     },
     checkCurrentDatabase(
       node,
