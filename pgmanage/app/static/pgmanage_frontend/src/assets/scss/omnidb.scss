@@ -409,11 +409,8 @@ a:not([href]):not([tabindex]){
 }
 
 /* Workspace Connection Info */
-.omnidb__workspace__connection-details b {
-  font-weight: normal;
-}
-.omnidb__workspace__connection-details i {
-  font-size: 0.9em;
+.omnidb__workspace__connection-details button i {
+  font-size: 0.875rem;
 }
 
 .omnidb__tree-tabs {
@@ -738,7 +735,7 @@ label.omnidb__switch--label span {
   display: flex;
   flex-basis: 24px;
   flex-shrink: 0;
-  font-size: 12px;
+  font-size: 0.75rem;
   line-height: 12px;
   justify-content: center;
   height: 24px;
@@ -760,6 +757,7 @@ label.omnidb__switch--label span {
 .omnidb__switch--sm label.omnidb__switch--label {
   width: 30px;
 }
+// FIXME: make autocomplete toggle switch zoomable on font size change
 .omnidb__switch--sm label.omnidb__switch--label span {
   width: 18px;
   height: 18px;
