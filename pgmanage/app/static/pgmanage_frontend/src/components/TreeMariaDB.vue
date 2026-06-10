@@ -702,24 +702,6 @@ export default {
     emitter.all.delete(`goToNode_${this.workspaceId}`);
   },
   methods: {
-    onContextMenu(node, e) {
-      this.$refs.tree.select(node.path);
-      e.preventDefault();
-      const contextMenu = node?.data?.contextMenu;
-
-      if (!contextMenu) {
-        return;
-      }
-      
-      if (contextMenu === "cm_database") {
-        this.showContextMenu(node, e);
-        return;
-      }
-
-      this.checkCurrentDatabase(node, true, () => {
-        this.showContextMenu(node, e);
-      });
-    },
     checkCurrentDatabase(
       node,
       complete_check,
