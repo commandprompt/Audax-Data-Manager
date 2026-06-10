@@ -97,6 +97,7 @@ export default {
     tabId: String,
     workspaceId: String,
     databaseIndex: Number,
+    databaseName: String,
   },
   data() {
     return {
@@ -328,7 +329,8 @@ export default {
           database_index: this.databaseIndex,
           workspace_id: this.workspaceId,
           schema: this.schema,
-          table: this.table
+          table: this.table,
+          database_name: this.databaseName,
         })
         .then((response) => {
           this.tableColumns = response.data.columns
@@ -615,6 +617,7 @@ export default {
         count: this.rowLimit,
         workspace_id: this.workspaceId,
         tab_id: this.tabId,
+        database_name: this.databaseName,
       };
 
       var context = {
@@ -890,6 +893,7 @@ export default {
         workspace_id: this.workspaceId,
         tab_id: this.tabId,
         tab_db_id: this.databaseIndex,
+        database_name: this.databaseName,
       }
 
       let context = {

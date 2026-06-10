@@ -276,6 +276,7 @@ export default {
           table: tab.metaData.table,
           schema: tab.metaData.schema,
           dialect: tab.metaData.dialect,
+          databaseName: tab.metaData.databaseName
         },
         SchemaEditorTab: {
           workspaceId: tab.parentId,

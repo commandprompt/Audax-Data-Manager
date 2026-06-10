@@ -293,10 +293,12 @@ export default {
             label: "Query Data",
             icon: "fas fa-search",
             onClick: () => {
+              const nodeDatabase = this.getNodeDatabase(this.selectedNode);
               TemplateSelectPostgresql(
                 this.selectedNode.data.schema_raw,
                 this.selectedNode.data.raw_value,
-                "t"
+                "t",
+                nodeDatabase
               );
             },
           },
@@ -304,7 +306,8 @@ export default {
             label: "Edit Data",
             icon: "fas fa-table",
             onClick: () => {
-              tabsStore.createDataEditorTab(this.selectedNode.data.raw_value, this.selectedNode.data.schema_raw)
+              const nodeDatabase = this.getNodeDatabase(this.selectedNode);
+              tabsStore.createDataEditorTab(this.selectedNode.data.raw_value, this.selectedNode.data.schema_raw, nodeDatabase)
             },
           },
           {
@@ -2743,24 +2746,24 @@ export default {
     emitter.all.delete(`goToNode_${this.workspaceId}`);
   },
   methods: {
-    onContextMenu(node, e) {
-      this.$refs.tree.select(node.path);
-      e.preventDefault();
-      const contextMenu = node?.data?.contextMenu;
+    // onContextMenu(node, e) {
+    //   this.$refs.tree.select(node.path);
+    //   e.preventDefault();
+    //   const contextMenu = node?.data?.contextMenu;
 
-      if (!contextMenu) {
-        return;
-      }
+    //   if (!contextMenu) {
+    //     return;
+    //   }
       
-      if (contextMenu === "cm_database") {
-        this.showContextMenu(node, e);
-        return;
-      }
+    //   if (contextMenu === "cm_database") {
+    //     this.showContextMenu(node, e);
+    //     return;
+    //   }
 
-      this.checkCurrentDatabase(node, true, () => {
-        this.showContextMenu(node, e);
-      });
-    },
+    //   this.checkCurrentDatabase(node, true, () => {
+    //     this.showContextMenu(node, e);
+    //   });
+    // },
     refreshTreePostgresqlConfirm(node) {
       if (node.data.type == "server") {
         return this.getTreeDetailsPostgresql(node)

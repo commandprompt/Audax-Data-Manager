@@ -7,19 +7,20 @@ function tabSQLTemplate(tab_name, template, showTip = true) {
   tabsStore.createQueryTab(tab_name, null, null, template);
 }
 
-function TemplateSelectPostgresql(schema, table, kind) {
+function TemplateSelectPostgresql(schema, table, kind, databaseName) {
   axios
     .post("/template_select_postgresql/", {
       database_index:
         tabsStore.selectedPrimaryTab.metaData.selectedDatabaseIndex,
       workspace_id: tabsStore.selectedPrimaryTab.id,
+      database_name: databaseName,
       table: table,
       schema: schema,
       kind: kind,
     })
     .then((resp) => {
-      let tab_name = `${tabsStore.selectedPrimaryTab.metaData.selectedDatabase}@${schema}.${table}`;
-      tabsStore.createQueryTab(tab_name, null, null, resp.data.template)
+      let tab_name = `${databaseName}@${schema}.${table}`;
+      tabsStore.createQueryTab(tab_name, null, databaseName, resp.data.template)
       .then((tab) => {
         emitter.emit(`${tab.id}_run_query`);
       });

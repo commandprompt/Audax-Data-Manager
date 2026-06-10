@@ -624,7 +624,7 @@ const useTabsStore = defineStore("tabs", {
 
       this.selectTab(tab);
     },
-    createDataEditorTab(table, schema = "") {
+    createDataEditorTab(table, schema = "", databaseName) {
       let tabName = schema
         ? `Edit data: ${schema}.${table}`
         : `Edit data: ${table}`;
@@ -652,6 +652,7 @@ const useTabsStore = defineStore("tabs", {
       tab.metaData.schema = schema;
       tab.metaData.databaseIndex =
         this.selectedPrimaryTab?.metaData?.selectedDatabaseIndex;
+      tab.metaData.databaseName = databaseName
 
       this.selectTab(tab);
     },
