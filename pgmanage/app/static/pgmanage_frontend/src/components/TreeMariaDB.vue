@@ -141,7 +141,8 @@ export default {
             label: "Create Table",
             icon: "fas fa-plus",
             onClick: () => {
-              tabsStore.createSchemaEditorTab(this.selectedNode, operationModes.CREATE)
+              const nodeDatabase = this.getNodeDatabase(this.selectedNode);
+              tabsStore.createSchemaEditorTab(this.selectedNode.title, nodeDatabase, operationModes.CREATE);
             },
           },
         ],
@@ -168,7 +169,8 @@ export default {
             label: "Alter Table",
             icon: "fas fa-edit",
             onClick: () => {
-              tabsStore.createSchemaEditorTab(this.selectedNode, operationModes.UPDATE)
+              const nodeDatabase = this.getNodeDatabase(this.selectedNode);
+              tabsStore.createSchemaEditorTab(this.selectedNode.title, nodeDatabase, operationModes.UPDATE);
             },
           },
           {

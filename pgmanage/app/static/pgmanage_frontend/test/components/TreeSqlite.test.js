@@ -154,7 +154,8 @@ describe("TreeSqlite.vue", () => {
     wrapper.vm.contextMenu.cm_tables[1].onClick();
 
     expect(tabsStore.createSchemaEditorTab).toHaveBeenCalledWith(
-      wrapper.vm.selectedNode,
+      wrapper.vm.selectedNode.title,
+      null,
       operationModes.CREATE,
     );
   });
@@ -201,7 +202,8 @@ describe("TreeSqlite.vue", () => {
     wrapper.vm.contextMenu.cm_table[3].onClick();
 
     expect(tabsStore.createSchemaEditorTab).toHaveBeenCalledWith(
-      wrapper.vm.selectedNode,
+      wrapper.vm.selectedNode.title,
+      null,
       operationModes.UPDATE,
     );
   });

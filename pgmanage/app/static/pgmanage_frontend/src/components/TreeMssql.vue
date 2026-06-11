@@ -213,7 +213,8 @@ export default {
             icon: "fas fa-plus",
             onClick: () => {
               tabsStore.createSchemaEditorTab(
-                this.selectedNode,
+                this.selectedNode.title,
+                this.selectedNode.data.schema,
                 operationModes.CREATE,
               );
             },
@@ -256,7 +257,8 @@ export default {
             icon: "fas fa-edit",
             onClick: () => {
               tabsStore.createSchemaEditorTab(
-                this.selectedNode,
+                this.selectedNode.title,
+                this.selectedNode.data.schema,
                 operationModes.UPDATE,
               );
             },
