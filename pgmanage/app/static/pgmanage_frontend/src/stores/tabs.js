@@ -655,9 +655,9 @@ const useTabsStore = defineStore("tabs", {
 
       this.selectTab(tab);
     },
-    createSchemaEditorTab(node, mode) {
+    createSchemaEditorTab(title, schema, mode) {
       const isCreate = mode === operationModes.CREATE;
-      const tableName = node.title.replace(/^"(.*)"$/, "$1");
+      const tableName = title.replace(/^"(.*)"$/, "$1");
       const tabTitle = isCreate ? "New Table" : `Alter: ${tableName}`;
       const iconClass = isCreate ? "fa-plus" : "fa-edit";
 
@@ -683,7 +683,7 @@ const useTabsStore = defineStore("tabs", {
         editMode: mode,
         databaseIndex: metaData.selectedDatabaseIndex,
         table: isCreate ? null : tableName,
-        schema: node.data.schema || node.data.database,
+        schema: schema,
         databaseName: metaData.selectedDatabase
       });
 
