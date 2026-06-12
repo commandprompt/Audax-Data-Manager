@@ -35,7 +35,7 @@
       >
         <i class="fas fa-magnifying-glass fa-light"></i>
       </button>
-      <div class="col-1">
+      <div>
         <div class="form-check form-switch pt-1">
           <input
             :id="`${tabId}-logs-autoscroll`"
