@@ -300,14 +300,12 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              // FIXME: this template does not work
               let template = this.templates.drop_primarykey
                   .replace(
                     "#table_name#",
                     `${this.getParentNodeDeep(this.selectedNode, 4).title}.${this.getParentNodeDeep(this.selectedNode, 2).title
                     }`
                   )
-                  .replace("#constraint_name#", this.selectedNode.title)
               this.prepareDropModal(this.selectedNode, template)
             },
           },
