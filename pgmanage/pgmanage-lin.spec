@@ -53,12 +53,22 @@ pyz = PYZ(a.pure, a.zipped_data,
 exe = EXE(pyz,
          a.scripts,
          [],
-         a.binaries,
-         a.zipfiles,
-         a.datas,
+         exclude_binaries=True,
          name='pgmanage-server',
          debug=False,
          strip=False,
          upx=True,
          runtime_tmpdir=None,
          console=True )
+
+
+coll = COLLECT(
+    exe,
+    a.binaries,
+    a.zipfiles,
+    a.datas,
+    strip=False,
+    upx=True,
+    upx_exclude=[],
+    name='pgmanage-server',
+)
