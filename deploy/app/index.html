@@ -729,6 +729,9 @@
     });
 
     v_webview.addEventListener('loadstop', () => {
+      // quit this part if it is not initial loading screen and v_loading_data_container style display is 'none'
+      if (!!v_loading_data_container.getAttribute("style")) return;
+
       // Prevent intermediate frames from being displayed.
       win.hide();
 
