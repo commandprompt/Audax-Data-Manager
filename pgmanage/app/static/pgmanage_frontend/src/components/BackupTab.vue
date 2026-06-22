@@ -6,7 +6,7 @@
           <div class="card flex-grow-1">
             <h4 class="card-header fw-bold px-3 py-2">General</h4>
             <div class="card-body d-flex flex-column px-3 py-2">
-              <div class="form-group mb-1">
+              <div class="form-group mb-2">
                 <label :for="`${backupTabId}_backupFileName`" class="fw-bold mb-1">File name</label>
                   <div class="input-group">
                       <button class="btn btn-secondary" @click="openFileManagerModal">Select</button>
@@ -14,69 +14,90 @@
                           placeholder="backup file" disabled>
                     </div>
                   </div>
-                  <div v-if="isObjectsType" class="form-group mb-1">
+                  <div v-if="isObjectsType" class="form-group mb-2">
                     <label for="backupFormat" class="fw-bold mb-1">Format</label>
                     <select id="backupFormat" class="form-select" v-model="backupOptions.format">
                       <option v-for="(value, key) in formats" :value="key" :key="key">{{ value }}</option>
                     </select>
                   </div>
                   <div class="row mt-1">
-                    <div class="form-group col-6 d-flex flex-column justify-content-end">
-                      <label for="backupCompressionRatio" class="fw-bold mb-1">Compression ratio</label>
+                    <div
+                      v-tooltip
+                      data-bs-toggle="tooltip"
+                      data-bs-placement="bottom"
+                      data-bs-title="Backup compression level. 0 is faster with minimal space saving; 9 provides maximum space savings, but is slower."
+                      class="form-group col-6 d-flex flex-column justify-content-end mb-1">
+                      <label for="backupCompressionRatio" class="fw-bold mb-1">Compression level</label>
                       <select id="backupCompressionRatio" class="form-select" v-model="backupOptions.compression_ratio" :disabled="isTarFormat || (isServerType && !backupOptions.pigz)">
                         <option value="" disabled>Select an item...</option>
                         <option v-for="compress_ratio in compressionRatioValues" :value="compress_ratio" :key="compress_ratio">{{ compress_ratio }}</option>
                       </select>
                     </div>
-                    <div class="form-group col-6 d-flex flex-column justify-content-end">
+
+                    <div
+                      v-tooltip
+                      data-bs-toggle="tooltip"
+                      data-bs-placement="bottom"
+                      data-bs-title="Sets parallel processes to speed up backups. Controls pg_dump workers for Directory format, or pigz compressor threads if Pigz is enabled."
+                      class="form-group col-6 d-flex flex-column justify-content-end mb-1">
                       <label for="backupNumberOfJobs" class="fw-bold mb-1">Number of jobs</label>
                       <select id="backupNumberOfJobs" class="form-select" v-model="backupOptions.number_of_jobs" :disabled="isTarFormat || (isServerType && !backupOptions.pigz)">
                         <option value="" disabled>Select an item...</option>
                         <option v-for="number_of_jobs in numberOfJobs" :value="number_of_jobs" :key="number_of_jobs">{{ number_of_jobs }}</option>
                       </select>
                     </div>
-    
-                  </div>
-                  <div class="form-group mb-1">
-                    <label for="backupEncoding" class="fw-bold mb-1">Encoding</label>
-                    <select id="backupEncoding" class="form-select" v-model="backupOptions.encoding">
-                      <option value="">Use database encoding</option>
-                      <option v-for="encoding in encodingList" :key="encoding" :value="encoding">{{ encoding }}</option>
-                    </select>
-                  </div>
-                  <div class="form-group mb-1">
-                    <label for="backupRoleName" class="fw-bold mb-1">Backup as:</label>
-                    <select id="backupRoleName" class="form-select" v-model="backupOptions.role">
-                      <option value="" disabled>Select an item...</option>
-                      <option v-for="name in roleNames" :value="name" :key="name">{{ name }}</option>
-                    </select>
-                  </div>
 
-                  <div class="row mt-1">
-                    <div
-                      v-if="pgKeys.length"
-                      v-tooltip
-                      class="form-group col-6 d-flex flex-column justify-content-end"
-                      data-bs-toggle="tooltip"
-                      data-bs-placement="bottom"
-                      data-bs-title="The Postgres utility version used to create backup. If not found, the latest available version is used."
-                      >
-                        <label class="fw-bold mb-1">PG version:</label>
-
-                        <select class="form-select" v-model="backupOptions.pg_version">
-                          <option v-for="k in pgKeys" :key="k" :value="k">
-                            {{ k }}
-                          </option>
-                        </select>
-                    </div>
-
-                    <div v-if="!isWindowsOS" class="form-group col-6 align-content-end">
+                    <div v-if="!isWindowsOS" class="form-group col align-content-end mb-1">
                       <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" :id="`${backupTabId}_backupOptionsPigz`" v-model="backupOptions.pigz" :disabled="isDirectoryFormat || isTarFormat">
                         <label class="form-check-label" :for="`${backupTabId}_backupOptionsPigz`">
                           Compress with Pigz
                         </label>
                       </div>
+                    </div>
+                  </div>
+
+                  <div 
+                    v-tooltip
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="bottom"
+                    data-bs-title="The character set encoding to use for the backup file."
+                    class="form-group my-1">
+                    <label for="backupEncoding" class="fw-bold mb-1">Encoding</label>
+                    <select id="backupEncoding" class="form-select" v-model="backupOptions.encoding">
+                      <option value="">Use database encoding</option>
+                      <option v-for="encoding in encodingList" :key="encoding" :value="encoding">{{ encoding }}</option>
+                    </select>
+                  </div>
+
+                  <div class="row mt-1">
+                    <div
+                      v-tooltip
+                      data-bs-toggle="tooltip"
+                      data-bs-placement="bottom"
+                      data-bs-title="The database role to use when creating the backup."
+                      class="form-group col-6 d-flex flex-column justify-content-end"
+                      >
+                      <label for="backupRoleName" class="fw-bold mb-1">Backup as:</label>
+                      <select id="backupRoleName" class="form-select" v-model="backupOptions.role">
+                        <option value="" disabled>Select an item...</option>
+                        <option v-for="name in roleNames" :value="name" :key="name">{{ name }}</option>
+                      </select>
+                    </div>
+                    <div
+                      v-if="pgKeys.length"
+                      v-tooltip
+                      class="form-group col-6 d-flex flex-column justify-content-end"
+                      data-bs-toggle="tooltip"
+                      data-bs-placement="bottom"
+                      data-bs-title="The Postgres client binary version used for the backup. A version matching the database server is preferred; otherwise, the latest available version is used."
+                      >
+                        <label class="fw-bold mb-1">PG version:</label>
+                        <select class="form-select" v-model="backupOptions.pg_version">
+                          <option v-for="k in pgKeys" :key="k" :value="k">
+                            {{ k }}
+                          </option>
+                        </select>
                     </div>
                   </div>
 
