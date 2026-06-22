@@ -245,10 +245,10 @@ export default {
           spacingFactor: 0.85,
         })
         
-        setTimeout(() => {
-          this.adjustSizes()
-        }, 100)
       }
+      setTimeout(() => {
+        this.adjustSizes();
+      }, 100);
     
       this.setupEvents();
 
