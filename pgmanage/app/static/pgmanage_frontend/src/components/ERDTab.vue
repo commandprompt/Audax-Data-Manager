@@ -36,6 +36,7 @@ import cytoscape from 'cytoscape';
 import nodeHtmlLabel from 'cytoscape-node-html-label'
 import { handleError } from '../logging/utils';
 import debounce from 'lodash/debounce'
+import isEmpty from 'lodash/isEmpty';
 
 
 export default {
@@ -289,8 +290,10 @@ export default {
           node.style('height', el.parentElement.clientHeight + padding)
         }
       })
-      this.layout.run()
-      this.cy.fit()
+      if (!isEmpty(this.layout)) {
+        this.layout.run();
+        this.cy.fit();
+      }
     },
     saveGraphState() {
       const layoutData = this.cy.json(); 
