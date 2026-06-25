@@ -246,7 +246,7 @@ JOIN sys.tables tbl
 JOIN sys.schemas s
     ON tbl.schema_id = s.schema_id
 {0}
-ORDER BY c.column_id;
+ORDER BY s.name, tbl.name, c.column_id;
 """.format(
                 query_filter
             ),
