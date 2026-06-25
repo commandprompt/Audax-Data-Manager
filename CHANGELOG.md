@@ -50,6 +50,12 @@
     - fixed hotkey conflicts by disallowing the registration of certain standard key combinations #748
     - fixed right-click on the Databases node in MySQL/MariaDB changing the selected database #806
     - fixed Data Editor cell data being fully cleared when cell is being edited and Backspace key is used
+    - fixed Oracle DB Tree APIs when working with quoted tables #839
+    - fixed SQL templates not working with quoted tables #859
+    - fixed ERD tab not showing columns of tables with quoted name #858
+    - fixed Query data context menu item doesn't work with quoted tables #860
+    - fixed Data Editor not working with quoted tables #861
+    - fixed Data Editor not recognizing record changes when editing data in quoted tables (postgresql) #866
     - made pigz and postgres native backup compression options mutually exclusive to prevent double compression of DB backups #832
     - fixed deadlocks in QueryTablesFields when working with SQLite3 databases #837
     - fixed Schema editor -> Foreign keys -> Column dropdown not showing all values #845
