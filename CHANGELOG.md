@@ -1,4 +1,4 @@
-# PgManage 1.5 Release
+# Audax Data Manager 1.5 Release
 
 ## Release Date: Jun 16 2026
 
@@ -9,7 +9,7 @@
     - implemented support for opening context menu with keyboard "Context Menu" key in Data Editor and Query Tabs #745
     - implemented support for copying/pasting cell regions in the Data Editor #782
     - implemented hotkey support for Copy/Paste and Clear actions in data grids #749
-    - implemented full-screen mode support for Data Editor and ERD tabs #803
+    - implemented full-screen mode support for Data Editor and ERD tabs #791
     - implemented quick access to theme and font size settings in the app sidebar #787
     - implemented the "unsaved data" warning when user tries to close a workspace or tab #779
     - implemented command history deduplication to hide identical subsequent commands from history #780
@@ -34,7 +34,7 @@
     - prevent slight tab width shifts between active and inactive tab states #789
     - use more subtle colors for Database Explorer tree view toggle controls #788
     - increased default UI font size from 12px to 16px to match modern display pixel density #817
-    - scroll newly opened tab into view #662
+    - adjusted database tabs UI to scroll the newly opened tab into view #662
     - move database query error messages the Messages tab; automatically activate Messages tab it if error occurs. Thanks @ccurvey for reporting the issue #700
     - improved Database Explorer responsiveness and loading speed when working with thousands of tables #837
     - improved DB explorer expanded node positioning to fully remain in the view port after node is auto-scrolled #847
@@ -43,6 +43,7 @@
     - added helpful tooltips to Settings, Backup and Restore tabs #824
     - reorganized context menus in Snippets module to be consistent with the rest of the app #809
     - unify data grid context menu styles to be consistent with the rest of the app #807
+    - improved Database Explorer layout scaling when font size change #868
 
   - Bugs fixed:
     - fixed color markers not showing in the Data Editor after clipboard copy was used on that row #765
