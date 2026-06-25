@@ -1,7 +1,7 @@
 <template>
   <div data-testid="connection-tab" class="container-fluid position-relative g-0">
     <div class="row g-0">
-      <splitpanes class="default-theme">
+      <splitpanes @resized="handleDatabaseTreeWidthChange" class="default-theme">
         <pane min-size="18" size="25">
           <div
             :id="`${workspaceId}_div_left`"
@@ -74,6 +74,7 @@
                       :properties-data="propertiesData"
                       :show-loading="showTreeTabsLoading"
                       :is-visible="isTreeTabsVisible"
+                      :db-explorer-width="dbExplorerWidth"
                       @show-tree-tabs="showTreeTabPane"
                       @hide-tree-tabs="hideTreeTabpane"
                     />
@@ -141,6 +142,7 @@ export default {
   data() {
     return {
       ddlData: "",
+      dbExplorerWidth: 18,
       propertiesData: [],
       treeTabsPaneSize: 2,
       lastTreeTabsPaneSize: null,
@@ -345,6 +347,9 @@ export default {
       if (this.treeTabsPaneSize !== 2)  {
         this.lastTreeTabsPaneSize = this.treeTabsPaneSize;
       }
+    },
+    handleDatabaseTreeWidthChange(event) {
+      this.dbExplorerWidth = event[1].size;
     },
     showQuickSearch(event) {
       emitter.emit(`${this.workspaceId}_show_quick_search`, event);
