@@ -12,6 +12,7 @@ import { setupAceDragDrop, setupAceSelectionHighlight } from "../ace_extras/plug
 import { editorModeMap, maxLinesForIndentSQL, sqlFormatterDialectMap } from "../constants";
 import { showToast } from "../notification_control";
 import { SQLAutocomplete, SQLDialect } from 'sql-autocomplete';
+import { readClipboardText } from "@src/utils/clipboard";
 
 export default {
   props: {
@@ -225,14 +226,14 @@ export default {
         {
           label: "Paste",
           icon: "fas fa-paste",
-          onClick: () => {
-            try {
-              navigator.clipboard.readText().then((text) => {
-                this.editor.execCommand("paste", text)
-              })  
-            } catch (error) {
-              // may throw NotAllowedError in some cases
+          onClick: async () => {
+            const text = await readClipboardText();
+
+            if (!text) {
+              return;
             }
+
+            this.editor.execCommand("paste", text);
           },
         },
         {
