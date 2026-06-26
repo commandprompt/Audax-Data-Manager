@@ -71,6 +71,7 @@ import { dataEditorFilterModes } from '../constants';
 import { handleError } from '../logging/utils';
 import dialects from './dialect-data';
 import { extractOrderByClause } from '../utils';
+import { readClipboardText } from "@src/utils/clipboard";
 
 // TODO: run query in transaction
 
@@ -399,12 +400,11 @@ export default {
               {
                 label: '<i class="fas fa-paste"></i><span>Paste</span>',
                 action: async () => {
-                  if (!navigator.clipboard || !navigator.clipboard.readText) {
+                  const text = await readClipboardText();
+
+                  if (!text) {
                     return;
                   }
-
-                  const text = await navigator.clipboard.readText();
-                  if (!text) return;
 
                   const clip = this.tabulator.modules.clipboard;
 
