@@ -236,8 +236,15 @@ def draw_graph(request, database):
         tables = database.QueryTables(False, schema)
 
         for table in tables.Rows:
+            # Use the quoted identifier (name_raw) as the node id so it matches
+            # the quote_ident()-formatted table names returned for foreign keys.
+            # Otherwise nodes and FK edges disagree for names that require
+            # quoting (e.g. uppercase), producing edges that point at a
+            # non-existent node. Fall back to table_name for backends that don't
+            # provide name_raw.
+            node_id = table.get('name_raw') or table["table_name"]
             node_data = {
-                "id": table["table_name"],
+                "id": node_id,
                 "label": table["table_name"],
                 "group": 1,
                 "columns": []
@@ -255,15 +262,21 @@ def draw_graph(request, database):
                 'is_fk': False,
                 } for c in table_columns))
 
-            node_dict[table["table_name"]] = node_data
+            node_dict[node_id] = node_data
 
         q_fks = database.QueryTablesForeignKeys(None, False, schema)
 
         for fk in q_fks.Rows:
-            # ensure that the new edge stays within the same schema and points to an existing table
+            # ensure that the new edge stays within the same schema and that both
+            # endpoints reference an existing node; otherwise the graph would
+            # contain an edge pointing at a non-existent node and fail to render
             # table partitions are *not* included in the node list
             # FIXME: resolve FKs of partitioned table from its partitions
-            if fk["r_table_schema"] == schema and fk["table_name"] in node_dict.keys():
+            if (
+                fk["r_table_schema"] == schema
+                and fk["table_name"] in node_dict
+                and fk["r_table_name"] in node_dict
+            ):
                 edge_dict[fk["constraint_name"]] = {
                     "from": fk["table_name"],
                     "to": fk["r_table_name"],
