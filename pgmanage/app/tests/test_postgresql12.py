@@ -1493,6 +1493,20 @@ CREATE MATERIALIZED VIEW public.mvw_omnidb_test AS
         # produce a graph edge that points at a non-existent node, which broke
         # ER Diagram rendering with 'Can not create edge with nonexistant target'.
         conn = self.database.connection
+        # draw_graph resolves the saved ERD layout by treating database_index
+        # as a Connection id; the class fixture posts database_index 0, so a
+        # Connection row with that id must exist for the request to succeed.
+        Connection.objects.create(
+            id=0,
+            user=User.objects.get(username="admin"),
+            technology=Technology.objects.filter(name=self.db_type).first(),
+            server=self.host,
+            port=self.port,
+            database=self.service,
+            username=self.role,
+            password=self.encrypted_password,
+            alias="ERD layout lookup (issue #882)",
+        )
         conn.Execute('CREATE SCHEMA IF NOT EXISTS "erd_test_882"')
         try:
             conn.Execute('CREATE TABLE "erd_test_882"."TestTable882" (id integer PRIMARY KEY)')
