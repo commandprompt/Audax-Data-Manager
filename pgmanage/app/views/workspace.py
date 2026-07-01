@@ -266,20 +266,30 @@ def draw_graph(request, database):
 
         q_fks = database.QueryTablesForeignKeys(None, False, schema)
 
+        # Some backends return unquoted table names in their foreign-key
+        # metadata while name_raw is quoted (e.g. SQLite), so an endpoint may
+        # not be a node id itself; fall back to the unquoted display label.
+        node_ids_by_label = {
+            node["label"]: node_id for node_id, node in node_dict.items()
+        }
+
+        def resolve_node_id(name):
+            if name in node_dict:
+                return name
+            return node_ids_by_label.get(name)
+
         for fk in q_fks.Rows:
             # ensure that the new edge stays within the same schema and that both
             # endpoints reference an existing node; otherwise the graph would
             # contain an edge pointing at a non-existent node and fail to render
             # table partitions are *not* included in the node list
             # FIXME: resolve FKs of partitioned table from its partitions
-            if (
-                fk["r_table_schema"] == schema
-                and fk["table_name"] in node_dict
-                and fk["r_table_name"] in node_dict
-            ):
+            from_id = resolve_node_id(fk["table_name"])
+            to_id = resolve_node_id(fk["r_table_name"])
+            if fk["r_table_schema"] == schema and from_id and to_id:
                 edge_dict[fk["constraint_name"]] = {
-                    "from": fk["table_name"],
-                    "to": fk["r_table_name"],
+                    "from": from_id,
+                    "to": to_id,
                     "from_col": None,
                     "to_col": None,
                     "label": "",
@@ -294,8 +304,8 @@ def draw_graph(request, database):
             edge['from_col'] = fkcol['column_name']
             edge['to_col'] = fkcol['r_column_name']
             edge['cgid'] = cgid
-            table = node_dict.get(fkcol['table_name'])
-            r_table = node_dict.get(fkcol['r_table_name'])
+            table = node_dict.get(resolve_node_id(fkcol['table_name']))
+            r_table = node_dict.get(resolve_node_id(fkcol['r_table_name']))
             if table and r_table:
                 for col in table['columns']:
                     if col['name'] == fkcol['column_name']:

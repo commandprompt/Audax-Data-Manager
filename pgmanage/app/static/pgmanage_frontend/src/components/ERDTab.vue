@@ -126,7 +126,7 @@ export default {
             {
               data: {
                 id: node.id,
-                html_id: node.id.replace(/[^a-zA-Z_.-:]+/, '_'),
+                html_id: node.id.replace(/[^a-zA-Z0-9_-]+/g, '_'),
                 label: node.label,
                 columns: node.columns.map((column) => (
                   {
@@ -200,7 +200,7 @@ export default {
             group: 'nodes',
             data: {
               id: node.id,
-              html_id: node.id.replace(/[^a-zA-Z_.-:]+/, '_'),
+              html_id: node.id.replace(/[^a-zA-Z0-9_-]+/g, '_'),
               label: node.label,
               columns: node.columns.map((column) => (
                   {
