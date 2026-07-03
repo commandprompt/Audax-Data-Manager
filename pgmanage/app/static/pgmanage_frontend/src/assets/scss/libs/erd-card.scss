@@ -70,23 +70,33 @@
           flex-shrink: 0
         }
 
-        &.fk-column, &.pk-column {
-          &:before {
-            font: var(--fa-font-solid);
-            font-size: 10px;
-            content: "\f084";
-            left: -14px;
-            position: absolute;
+
+        &.pk-column {
+          i {
+            color: $primaryBlue;
           }
-
         }
 
-        &.pk-column:before {
-          color: $primaryBlue;
+        &.fk-column {
+          i {
+            color: $primaryMutedColor;
+          }
         }
 
-        &.fk-column:before {
-          color: $primaryMutedColor;
+        &__handle {
+          right: -5px;
+          width: 8px;
+          height: 8px;
+          opacity: 0;
         }
       }
   }
+
+// styles for new erd flow, needs to check
+ .vue-flow__edge .vue-flow__edge-path  {
+  stroke-width: 2;
+ }
+ .vue-flow__edge.selected .vue-flow__edge-path  {
+  stroke: #F76707;
+  stroke-width: 4;
+ }

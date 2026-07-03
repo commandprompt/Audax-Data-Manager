@@ -309,29 +309,51 @@ def draw_graph(request, database):
         if layout_obj:
             layout_data = layout_obj.layout
 
-            layout_nodes = {node["data"]["id"]: node for node in layout_data.get('elements', {}).get('nodes', [])}
-            layout_edges = {edge["data"]["cgid"]: edge for edge in layout_data.get("elements", {}).get("edges", []) if edge["data"]["cgid"] is not None}
-
-
             current_node_ids = set(node_dict.keys())
             current_edge_ids = set(edge_dict.keys())
+            
+            # Vue Flow has separate table and column nodes.
+            # Tables use table id, columns use: table_id + "_" + column_name.
+            for table_id, table_data in node_dict.items():
+                for column in table_data.get("columns", []):
+                    column_name = column.get("name")
+                    if column_name:
+                        current_node_ids.add(f"{table_id}_{column_name}")
+
+            layout_nodes = {node["id"]: node for node in layout_data.get('nodes', []) if node.get("id")}
+
+            layout_edges = {edge["cgid"]: edge for edge in layout_data.get("edges", []) if edge["cgid"] is not None}
+
 
             filtered_nodes = [node for id_, node in layout_nodes.items() if id_ in current_node_ids]
 
-
-            new_nodes = [v for k, v in node_dict.items() if k not in layout_nodes.keys()]
-
             filtered_edges = [edge for id_, edge in layout_edges.items() if id_ in current_edge_ids]
+
+            
+            saved_node_ids = set(layout_nodes.keys())
+
+            new_nodes = []
+
+            for table_id, table_data in node_dict.items():
+                column_ids = {
+                    f"{table_id}_{column['name']}"
+                    for column in table_data.get("columns", [])
+                    if column.get("name")
+                }
+
+                table_is_new = table_id not in saved_node_ids
+                has_new_columns = bool(column_ids - saved_node_ids)
+
+                if table_is_new or has_new_columns:
+                    new_nodes.append(table_data)
 
             new_edges = [
                 edge for edge in edge_dict.values()
-                if  edge['cgid'] not in layout_edges.keys()
+                if edge['cgid'] not in layout_edges.keys()
             ]
 
-            layout_data["elements"] = {
-                "nodes": filtered_nodes,
-                "edges": filtered_edges
-            }
+            layout_data["nodes"] = filtered_nodes
+            layout_data["edges"] = filtered_edges
 
             return JsonResponse(data={
                 "layout": layout_data,
