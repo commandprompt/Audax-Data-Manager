@@ -1486,3 +1486,59 @@ CREATE MATERIALIZED VIEW public.mvw_omnidb_test AS
     def test_get_object_description_postgresql_nosession(self):
         response = self.client_nosession.post('/get_object_description_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 401 == response.status_code
+
+    def test_draw_graph_uppercase_fk_target_postgresql_session(self):
+        # Regression test for issue #882: a foreign key referencing a table whose
+        # name requires quoting (e.g. contains uppercase characters) must not
+        # produce a graph edge that points at a non-existent node, which broke
+        # ER Diagram rendering with 'Can not create edge with nonexistant target'.
+        conn = self.database.connection
+        # draw_graph resolves the saved ERD layout by treating database_index
+        # as a Connection id; the class fixture posts database_index 0, so a
+        # Connection row with that id must exist for the request to succeed.
+        Connection.objects.create(
+            id=0,
+            user=User.objects.get(username="admin"),
+            technology=Technology.objects.filter(name=self.db_type).first(),
+            server=self.host,
+            port=self.port,
+            database=self.service,
+            username=self.role,
+            password=self.encrypted_password,
+            alias="ERD layout lookup (issue #882)",
+        )
+        conn.Execute('CREATE SCHEMA IF NOT EXISTS "erd_test_882"')
+        try:
+            conn.Execute('CREATE TABLE "erd_test_882"."TestTable882" (id integer PRIMARY KEY)')
+            conn.Execute(
+                'CREATE TABLE "erd_test_882"."child_882" ('
+                'id integer PRIMARY KEY, '
+                'parent_id integer REFERENCES "erd_test_882"."TestTable882" (id))'
+            )
+
+            response = self.client_session.post(
+                '/draw_graph/',
+                {'data': '{"database_index": 0, "workspace_id": 0, "schema": "erd_test_882"}'},
+            )
+            assert 200 == response.status_code
+            data = json.loads(response.content.decode())
+
+            node_ids = {node['id'] for node in data['nodes']}
+            # both tables are present as nodes; the uppercase name is quoted
+            assert '"TestTable882"' in node_ids
+            assert 'child_882' in node_ids
+
+            # every edge endpoint must reference an existing node (no dangling target)
+            for edge in data['edges']:
+                assert edge['from'] in node_ids, \
+                    "edge source {!r} is not a known node".format(edge['from'])
+                assert edge['to'] in node_ids, \
+                    "edge target {!r} is not a known node".format(edge['to'])
+
+            # the foreign key edge pointing at the uppercase table is present
+            assert any(
+                edge['from'] == 'child_882' and edge['to'] == '"TestTable882"'
+                for edge in data['edges']
+            ), 'expected FK edge child_882 -> "TestTable882" in graph'
+        finally:
+            conn.Execute('DROP SCHEMA IF EXISTS "erd_test_882" CASCADE')
