@@ -1,10 +1,10 @@
-.erd-card {
+$baseWidth: 300px;
+
+.vue-flow__node-table {
     width: auto;
     min-width: 160px;
-    max-width: 300px;
+    max-width: $baseWidth;
     min-height: 70px;
-    display: flex;
-    flex-direction: column;
     text-align: left;
     justify-content: center;
     -moz-box-shadow: $primaryBlue 0px 1px 2px, $primaryBlue 0px 0px 0px 2px;
@@ -20,12 +20,22 @@
     }
 
     &__wrap {
-        padding: 10px 15px 10px 20px;
         background-color: rgba($primaryBlue, 0.15);
     }
 
     &__title {
-      font-weight: $fontWeightBold;
+      padding: 0 0 0 1.5rem;
+      width: $baseWidth;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      cursor: move;
+
+        p {
+          font-weight: $fontWeightBold;
+          font-size: 1rem;
+          margin-bottom: 0;
+        }
     }
 
     &__column {
@@ -33,16 +43,31 @@
         justify-content: space-between;
         align-items: center;
         position: relative;
+        width: 100%;
+        padding-right: 1rem;
 
-        &_name {
-          flex-shrink: 0;
-          padding-right: 5px;
-          margin-bottom: 0;
+        &_wrap {
+          display: flex;
+          width: $baseWidth;
         }
 
-        a.erd-card__column_name {
+        &_name {
+          margin-bottom: 0;
+          min-width: 0;
+          display: block;
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+        }
+
+        a.vue-flow__node-table__column_name {
           color: inherit;
           position: relative;
+          text-decoration: none;
+          span {
+            text-decoration: underline;
+            margin-left: 0.25rem;
+          }
         }
 
         &.highlighted {
@@ -50,24 +75,29 @@
 
           &::after {
             content: "";
-            width: 100%;
+            width: calc(100% - 1.5rem);
             height: 4px;
             position: absolute;
-            left: 0;
-            bottom: -3px;
+            left: 1.5rem;
+            top: 1rem;
             background-color: $warningColor;
             border-radius: $borderRadius;
 
           }
 
-          .erd-card__column_name {
+          .vue-flow__node-table__column_name span {
             text-decoration: none;
           }
         }
 
         &_type {
           color: $primaryMutedColor;
-          flex-shrink: 0
+          flex-shrink: 0;
+          margin-left: auto;
+        }
+
+        i {
+          padding-left: 0.35rem;
         }
 
 
@@ -84,7 +114,6 @@
         }
 
         &__handle {
-          right: -5px;
           width: 8px;
           height: 8px;
           opacity: 0;

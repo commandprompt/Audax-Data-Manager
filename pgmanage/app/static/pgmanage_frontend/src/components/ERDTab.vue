@@ -15,7 +15,7 @@
       :nodes="nodes"
       :edges="edges"
       min-zoom="0.1"
-      @nodes-initialized="()=> {if (!jsonLayout) this.$refs.vueFlow.fitView();}"
+      @nodes-initialized="onNodesInitialized"
       @viewport-change-end="saveGraphState"
       @node-drag-stop="onNodeDragStop"
       @node-drag="scheduleRerouteEdges"
@@ -31,7 +31,7 @@
 <script>
 import axios from 'axios'
 import { handleError } from '../logging/utils';
-import { VueFlow, MarkerType } from '@vue-flow/core';
+import { VueFlow, MarkerType, getConnectedEdges } from '@vue-flow/core';
 import { Background } from '@vue-flow/background'
 import { markRaw } from 'vue';
 import { capture } from '@src/erd_plugins/screenshot';
@@ -39,7 +39,6 @@ import TableNode from '@src/erd_plugins/TableNode.vue';
 import ColumnNode from '@src/erd_plugins/ColumnNode.vue';
 import Controls from '@src/erd_plugins/Controls.vue';
 import {
-  TABLE_WIDTH,
   TABLE_HEADER_HEIGHT,
   COLUMN_HEIGHT,
   getLayoutedNodes,
@@ -79,11 +78,21 @@ export default {
     this.loadSchemaGraph()
   },
   methods: {
+    onNodesInitialized() {
+      if (!this.jsonLayout) {
+        this.nodes = getLayoutedNodes(this.nodes, this.$refs.vueFlow.nodes,);
+
+        this.$nextTick(() => {
+          this.$refs.vueFlow.fitView()
+          this.rerouteEdgesByTableDistance();
+        })
+      }
+    },
     doScreenshot() {
       capture(this.$refs.vueFlow.vueFlowRef, { shouldDownload: true });
     },
     resetToDefault() {
-      this.nodes = getLayoutedNodes(this.$refs.vueFlow.nodes);
+      this.nodes = getLayoutedNodes(this.nodes, this.$refs.vueFlow.nodes);
 
       this.$nextTick(() => {
         this.rerouteEdgesByTableDistance();
@@ -110,11 +119,7 @@ export default {
             {
               id: node.id,
               type: 'table',
-              class: 'erd-card d-block text-center',
-              style: {
-                width: `${TABLE_WIDTH}px`,
-                height: `${TABLE_HEADER_HEIGHT + node.columns.length * COLUMN_HEIGHT}px`,
-              },
+              position: { x: 0, y:0 },
               data: {
                 label: node.label,
               },
@@ -128,21 +133,8 @@ export default {
               columnNodes.push(col);
             })
           })
-            
+          this.nodes = [...tableNodes, ...columnNodes]
           this.edges = response.data.edges.map((edge) => this.createEdge(edge))
-
-          this.nodes = getLayoutedNodes(
-            [...tableNodes, ...columnNodes],
-            this.edges,
-            {
-              padding: 50,
-              spacingFactor: 0.85,
-                columnsPerRow: 5,
-            }
-          )
-          this.$nextTick(() => {
-            this.rerouteEdgesByTableDistance();
-          })
         }
       })
       .catch((error) => {
@@ -207,11 +199,6 @@ export default {
 
             return {
               ...node,
-              style: {
-                ...(node.style || {}),
-                width: `${TABLE_WIDTH}px`,
-                height: `${TABLE_HEADER_HEIGHT + tableData.columns.length * COLUMN_HEIGHT}px`,
-              },
               data: {
                 ...(node.data || {}),
                 label: tableData.label,
@@ -258,11 +245,6 @@ export default {
         id: node.id,
         type: 'table',
         position,
-        class: 'erd-card d-block text-center',
-        style: {
-          width: `${TABLE_WIDTH}px`,
-          height: `${TABLE_HEADER_HEIGHT + node.columns.length * COLUMN_HEIGHT}px`,
-        },
         data: {
           label: node.label,
         },
@@ -278,10 +260,6 @@ export default {
         position: {
           x: 0,
           y: TABLE_HEADER_HEIGHT + index * COLUMN_HEIGHT,
-        },
-        style: {
-          width: `${TABLE_WIDTH}px`,
-          height: `${COLUMN_HEIGHT}px`,
         },
         data: {
           label: columnNode.name,
@@ -320,7 +298,8 @@ export default {
     },
     clearErdSelection() {
       this.edges.forEach((edge) => {
-        edge.selected = false;
+        let storedEdge = this.$refs.vueFlow.findEdge(edge.id);
+        storedEdge.selected = false;
       });
       this.nodes.forEach((node) => {
         node.data.is_highlighted = false;
@@ -331,33 +310,34 @@ export default {
       this.selectErdEdges([edge]);
     },
     onNodeClick({ node }) {
-      if (node.type !== "column") {
-        this.clearErdSelection();
-        return;
+      if (node.type === 'table') {
+
+        const edgesToSelect = [];
+        this.nodes.forEach((nodeObj) => {
+          if (nodeObj.parentNode == node.id) {
+            this.$refs.vueFlow.updateNode(nodeObj.id, {selected: true});
+            let relatedEdges = getConnectedEdges([nodeObj], this.edges);
+            if (relatedEdges.length) {
+              edgesToSelect.push(...relatedEdges);
+              return;
+            }
+          }
+        })
+        if (!edgesToSelect.length) {
+          this.clearErdSelection();
+          return;
+        }
+        this.selectErdEdges(edgesToSelect);
+      } else if (node.type === 'column') {
+        const relatedEdges = getConnectedEdges([node], this.edges);
+  
+        if (!relatedEdges.length) {
+          this.clearErdSelection();
+          return;
+        }
+  
+        this.selectErdEdges(relatedEdges);
       }
-
-      const relatedEdges = this.getRelatedEdgesForColumn(node);
-
-      if (!relatedEdges.length) {
-        this.clearErdSelection();
-        return;
-      }
-
-      this.selectErdEdges(relatedEdges);
-    },
-    getRelatedEdgesForColumn(columnNode) {
-      const columnId = columnNode.id;
-      const columnCgid = columnNode.data?.cgid;
-
-      return this.edges.filter((edge) => {
-        const edgeCgid = edge?.cgid;
-
-        return (
-          edge.source === columnId ||
-          edge.target === columnId ||
-          Boolean(columnCgid && edgeCgid && columnCgid === edgeCgid)
-        );
-      });
     },
     selectErdEdges(edgesToSelect) {
       const selectedEdgeKeys = new Set(edgesToSelect.map((edge) => edge.id));
@@ -375,8 +355,9 @@ export default {
 
       this.edges.forEach((edge) => {
         const shouldBeSelected = selectedEdgeKeys.has(edge.id);
-        if (edge.selected !== shouldBeSelected) {
-          edge.selected = shouldBeSelected;
+        let storedEdge = this.$refs.vueFlow.findEdge(edge.id);
+        if (storedEdge.selected !== shouldBeSelected) {
+          storedEdge.selected = shouldBeSelected;
         }
       });
 
@@ -387,24 +368,20 @@ export default {
 
         const shouldBeHighlighted = highlightedColumnIds.has(node.id);
 
-        if (!node.data) {
-          node.data = {};
+        let storedNode = this.$refs.vueFlow.findNode(node.id);
+
+        if (!storedNode.data) {
+          storedNode.data = {};
         }
 
-        if (node.data.is_highlighted !== shouldBeHighlighted) {
-          node.data.is_highlighted = shouldBeHighlighted;
+        if (storedNode.data.is_highlighted !== shouldBeHighlighted) {
+          storedNode.data.is_highlighted = shouldBeHighlighted;
         }
       });
-      this.edges = [...this.edges];
-    },
-    getCurrentFlowNodes() {
-      const flowState = this.$refs.vueFlow?.toObject?.();
-    
-      return flowState?.nodes;
-    },  
+    }, 
     getTableBounds(tableNode) {
-      const width = parseInt(tableNode.style.width, 10);
-      const height = parseInt(tableNode.style.height, 10);
+      const width = tableNode.dimensions.width;
+      const height = tableNode.dimensions.height;
       const x = tableNode.position?.x || 0;
       const y = tableNode.position?.y || 0;
     
@@ -451,29 +428,24 @@ export default {
       };
     },
     rerouteEdgesByTableDistance() {
-      const currentNodes = this.getCurrentFlowNodes();
-      let changed = false;
+      const currentNodes = this.$refs.vueFlow.nodes;
     
       this.edges.forEach((edge) => {
-        const route = this.getBestHorizontalRoute(edge, currentNodes);
+        let storedEdge = this.$refs.vueFlow.findEdge(edge.id);
+        const route = this.getBestHorizontalRoute(storedEdge, currentNodes);
     
         if (!route) {
           return;
         }
     
         if (
-          edge.sourceHandle !== route.sourceHandle ||
-          edge.targetHandle !== route.targetHandle
+          storedEdge.sourceHandle !== route.sourceHandle ||
+          storedEdge.targetHandle !== route.targetHandle
         ) {
-          edge.sourceHandle = route.sourceHandle;
-          edge.targetHandle = route.targetHandle;
-          changed = true;
+          storedEdge.sourceHandle = route.sourceHandle;
+          storedEdge.targetHandle = route.targetHandle;
         }
       })
-    
-      if (changed) {
-        this.edges = [...this.edges];
-      }
     },
     onNodeDragStop() {
       this.rerouteEdgesByTableDistance();

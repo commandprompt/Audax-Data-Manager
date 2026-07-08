@@ -49,7 +49,7 @@
     "daterangepicker": "^3.1.0",
     "events": "^3.3.0",
     "fuse.js": "^7.1.0",
-    "html-to-image": "^1.11.13",
+    "html-to-image": "^1.11.11",
     "jaro-winkler": "^0.2.8",
     "jquery": "^3.7.0",
     "knex": "^3.1.0",

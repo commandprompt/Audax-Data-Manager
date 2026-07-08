@@ -1,9 +1,9 @@
 <template>
-
-    <div class="erd-card__wrap">
-      <h3 class="erd-card__title clipped-text">{{ data.label }}</h3>
+    <div class="vue-flow__node-table__wrap">
+      <div class="vue-flow__node-table__title">
+        <p class="clipped-text">{{ data.label }}</p>
+      </div>
     </div>
-
 </template>
 
 <script>

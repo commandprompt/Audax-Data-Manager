@@ -1,6 +1,7 @@
-const TABLE_WIDTH = 260;
-const TABLE_HEADER_HEIGHT = 44;
-const COLUMN_HEIGHT = 34;
+const COLUMN_PADDING = 5;
+const TABLE_HEADER_HEIGHT = 40 + COLUMN_PADDING;
+const COLUMN_HEIGHT = 24;
+
 
 const DEFAULT_LAYOUT_OPTIONS = {
   padding: 50,
@@ -10,42 +11,29 @@ const DEFAULT_LAYOUT_OPTIONS = {
   tableGapY: 80,
 };
 
-function getCssNumber(value, fallback) {
-  if (typeof value === "number") {
-    return value;
-  }
-
-  if (typeof value === "string") {
-    const parsed = parseInt(value, 10);
-
-    if (!Number.isNaN(parsed)) {
-      return parsed;
-    }
-  }
-
-  return fallback;
-}
 
 function getNodeSize(node) {
   return {
-    width: getCssNumber(node.style?.width, TABLE_WIDTH),
-    height: getCssNumber(node.style?.height, TABLE_HEADER_HEIGHT),
+    width: node.dimensions?.width,
+    height: node.dimensions?.height,
   };
 }
 
-function getLayoutedNodes(nodes, edges = [], options = {}) {
+function getLayoutedNodes(nodes, internalNodes, options = {}) {
   const layoutOptions = {
     ...DEFAULT_LAYOUT_OPTIONS,
     ...options,
   };
 
   const tableNodes = nodes.filter((node) => node.type === "table");
+  const tableReadNodes = internalNodes.filter((node) => node.type === "table");
   const tablePositions = {};
 
   const gapX = layoutOptions.tableGapX * layoutOptions.spacingFactor;
   const gapY = layoutOptions.tableGapY * layoutOptions.spacingFactor;
 
   let currentY = layoutOptions.padding;
+  let index = 0;
 
   for (
     let rowStart = 0;
@@ -61,15 +49,17 @@ function getLayoutedNodes(nodes, edges = [], options = {}) {
     let rowHeight = 0;
 
     rowNodes.forEach((node) => {
-      const { width, height } = getNodeSize(node);
-
+      let internalNode = tableReadNodes[index]
+      const { width, height } = getNodeSize(internalNode);
+      
       tablePositions[node.id] = {
         x: currentX,
         y: currentY,
       };
-
+      
       currentX += width + gapX;
       rowHeight = Math.max(rowHeight, height);
+      index++
     });
 
     currentY += rowHeight + gapY;
@@ -82,9 +72,9 @@ function getLayoutedNodes(nodes, edges = [], options = {}) {
 
     return {
       ...node,
-      position: tablePositions[node.id] || node.position,
+      position: tablePositions[node.id],
     };
   });
 }
 
-export { TABLE_WIDTH, TABLE_HEADER_HEIGHT, COLUMN_HEIGHT, getLayoutedNodes };
+export {  TABLE_HEADER_HEIGHT, COLUMN_HEIGHT, getLayoutedNodes };

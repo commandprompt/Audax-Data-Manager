@@ -1,57 +1,72 @@
 <template>
-  <div
-    class="erd-card__column p-3"
-    :class="{
-      'pk-column': isPk,
-      'fk-column': isFk,
-      highlighted: Boolean(this.data?.is_highlighted),
-    }"
-  >
-    <a class="erd-card__column_name">
-      <i v-if="isPk || isFk" class="fa-solid fa-key ms-2 me-1"></i>
-      {{ nodeLabel }}
-    </a>
+  <div class="vue-flow__node-table__column_wrap">
+    <div
+      class="vue-flow__node-table__column"
+      :class="{
+        'pk-column': isPk,
+        'fk-column': isFk,
+        highlighted: Boolean(this.data?.is_highlighted),
+      }"
+    >
 
-    <span v-if="data.type" class="erd-card-column__type">
-      {{ data.type }}
-    </span>
+      <a v-if="isFk" class="vue-flow__node-table__column_name" href="#">
+        <i class="fa-solid fa-key"></i>
+        <span>{{ nodeLabel }}</span>
+      </a>
 
-    <Handle
-      v-if="hasRelationship"
-      id="source-left"
-      type="source"
-      :position="leftPosition"
-      :connectable="connectable"
-      class="erd-card__column__handle"
-    />
+      <span v-else-if="isPk" class="vue-flow__node-table__column_name">
+        <i class="fa-solid fa-key"></i>
+        {{ nodeLabel }}
+      </span>
 
-    <Handle
-      v-if="hasRelationship"
-      id="source-right"
-      type="source"
-      :position="rightPosition"
-      :connectable="connectable"
-      class="erd-card__column__handle"
-    />
+      <span v-else class="vue-flow__node-table__column_name">
+        <!-- icon placeholder -->
+        <i class="fa-solid fa-key" style="visibility: hidden;" aria-hidden="true"></i>
+        {{ nodeLabel }}
+      </span>
 
-    <Handle
-      v-if="hasRelationship"
-      id="target-left"
-      type="target"
-      :position="leftPosition"
-      :connectable="connectable"
-      class="erd-card__column__handle"
-    />
+      <span v-if="data.type" class="vue-flow__node-table__column_type">
+        {{ data.type }}
+      </span>
 
-    <Handle
-      v-if="hasRelationship"
-      id="target-right"
-      type="target"
-      :position="rightPosition"
-      :connectable="connectable"
-      class="erd-card__column__handle"
-    />
+      <Handle
+        v-if="hasRelationship"
+        id="source-left"
+        type="source"
+        :position="leftPosition"
+        :connectable="connectable"
+        class="vue-flow__node-table__column__handle"
+      />
+
+      <Handle
+        v-if="hasRelationship"
+        id="source-right"
+        type="source"
+        :position="rightPosition"
+        :connectable="connectable"
+        class="vue-flow__node-table__column__handle"
+      />
+
+      <Handle
+        v-if="hasRelationship"
+        id="target-left"
+        type="target"
+        :position="leftPosition"
+        :connectable="connectable"
+        class="vue-flow__node-table__column__handle"
+      />
+
+      <Handle
+        v-if="hasRelationship"
+        id="target-right"
+        type="target"
+        :position="rightPosition"
+        :connectable="connectable"
+        class="vue-flow__node-table__column__handle"
+      />
+    </div>
   </div>
+
 </template>
 
 <script>
