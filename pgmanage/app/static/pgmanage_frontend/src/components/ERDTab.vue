@@ -1,5 +1,24 @@
 <template>
   <div ref="erdContainer">
+
+    <Transition>
+      <div
+        v-if="showLoading"
+        class="div_loading d-block"
+        :style="loadingOverlayStyle"
+      >
+        <div class="div_loading_cover"></div>
+        <div class="div_loading_content">
+          <span>Loading screenshot...</span>
+          <div
+            class="spinner-border spinner-size text-primary"
+            role="status"
+          >
+            <span class="sr-only">Loading...</span>
+          </div>
+        </div>
+      </div>
+    </Transition>
     <Controls 
     :in-fullscreen="inFullscreen"
     @screenshot="doScreenshot"
@@ -8,12 +27,40 @@
     @zoom-out="this.$refs.vueFlow.zoomOut()"
     @toggle-fullscreen="toggleFullScreen"
       />
+
+    <svg :style="{ position: 'absolute', top: 0, left: '-1000px' }">
+      <defs>
+        <marker id="erd-one-only" viewBox="0 0 20 20" refX="18" refY="10" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
+          <line x1="6" y1="3" x2="6" y2="17" stroke="context-stroke" stroke-width="2" />
+          <line x1="12" y1="3" x2="12" y2="17" stroke="context-stroke" stroke-width="2" />
+        </marker>
+
+        <marker id="erd-zero-one" viewBox="0 0 20 20" refX="18" refY="10" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
+          <!-- fill="context-fill" lets you change the inside color via CSS if needed, or leave fill="white" for a hollow ring -->
+          <circle cx="6" cy="10" r="3.5" fill="white" stroke="context-stroke" stroke-width="2" />
+          <line x1="14" y1="3" x2="14" y2="17" stroke="context-stroke" stroke-width="2" />
+        </marker>
+
+        <marker id="erd-one-many" viewBox="0 0 20 20" refX="18" refY="10" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
+          <line x1="4" y1="3" x2="4" y2="17" stroke="context-stroke" stroke-width="2" />
+          <path d="M 10 10 L 18 3 M 10 10 L 18 17 M 4 10 L 18 10" stroke="context-stroke" stroke-width="2" stroke-linecap="round" fill="none" />
+        </marker>
+
+        <marker id="erd-zero-many" viewBox="0 0 20 20" refX="18" refY="10" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
+          <circle cx="4" cy="10" r="3.5" fill="white" stroke="context-stroke" stroke-width="2" />
+          <path d="M 10 10 L 18 3 M 10 10 L 18 17 M 4 10 L 18 10" stroke="context-stroke" stroke-width="2" stroke-linecap="round" fill="none" />
+        </marker>
+      </defs>
+    </svg>
+
     <VueFlow
       class="vh-100"
       ref="vueFlow"
       :node-types="nodeTypes"
       :nodes="nodes"
       :edges="edges"
+      :snap-to-grid="true"
+      :snap-grid="[10, 10]"
       min-zoom="0.1"
       @nodes-initialized="onNodesInitialized"
       @viewport-change-end="saveGraphState"
@@ -43,9 +90,7 @@ import {
   COLUMN_HEIGHT,
   getLayoutedNodes,
 } from '@src/erd_plugins/layout';
-
-// TODO:
-// 8.Crowfoot notation markers
+import { settingsStore } from '../stores/stores_initializer';
 
 export default {
   name: "ERDTab",
@@ -72,10 +117,34 @@ export default {
       inFullscreen: false,
       jsonLayout: false,
       rerouteFrame: null,
+      showLoading: false,
+      loadingOverlayTop: 0,
     };
   },
   mounted() {
-    this.loadSchemaGraph()
+    this.loadSchemaGraph();
+
+    this.updateLoadingOverlayTop();
+
+    settingsStore.$onAction((action) => {
+      if(action.name === "setFontSize") {
+        action.after(() => {
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              this.updateLoadingOverlayTop();
+            })
+          })
+        })
+      }
+    })
+  },
+  computed: {
+    loadingOverlayStyle() {
+      return {
+        zIndex: 10,
+        top: `${this.loadingOverlayTop}px`,
+      }
+    },
   },
   methods: {
     onNodesInitialized() {
@@ -83,18 +152,26 @@ export default {
         this.nodes = getLayoutedNodes(this.nodes, this.$refs.vueFlow.nodes,);
 
         this.$nextTick(() => {
-          this.$refs.vueFlow.fitView()
+          this.$refs.vueFlow.fitView();
           this.rerouteEdgesByTableDistance();
+          this.applyGroupedZIndexes();
         })
       }
     },
     doScreenshot() {
-      capture(this.$refs.vueFlow.vueFlowRef, { shouldDownload: true });
+      this.showLoading = true;
+
+      requestAnimationFrame(()=> {
+        requestAnimationFrame(() => {
+          capture(this.$refs.vueFlow.vueFlowRef, { shouldDownload: true }).then(() => this.showLoading = false)
+        })
+      })
     },
     resetToDefault() {
       this.nodes = getLayoutedNodes(this.nodes, this.$refs.vueFlow.nodes);
 
       this.$nextTick(() => {
+        this.applyGroupedZIndexes();
         this.rerouteEdgesByTableDistance();
         this.$refs.vueFlow.fitView()
         this.saveGraphState();
@@ -230,6 +307,7 @@ export default {
       ]
 
       this.$nextTick(() => {
+        this.applyGroupedZIndexes();
         this.rerouteEdgesByTableDistance();
         if (savedViewport && this.$refs.vueFlow?.setViewport) {
           this.$refs.vueFlow.setViewport(savedViewport)
@@ -281,14 +359,8 @@ export default {
         label: edge.label,
         cgid: edge.cgid,
         type: 'smoothstep',
-        markerEnd: {
-          type: MarkerType.ArrowClosed,
-          color: '#ff0072',
-        },
-        markerStart: {
-          type: MarkerType.ArrowClosed,
-          color: '#ff0072',
-        },
+        markerEnd: 'erd-one-only',
+        markerStart: 'erd-one-many',
         data: {
           cgid: edge.cgid,
           sourceTableId: edge.from,
@@ -300,6 +372,7 @@ export default {
       this.edges.forEach((edge) => {
         let storedEdge = this.$refs.vueFlow.findEdge(edge.id);
         storedEdge.selected = false;
+        storedEdge.zIndex = 1;
       });
       this.nodes.forEach((node) => {
         node.data.is_highlighted = false;
@@ -357,6 +430,7 @@ export default {
         const shouldBeSelected = selectedEdgeKeys.has(edge.id);
         let storedEdge = this.$refs.vueFlow.findEdge(edge.id);
         if (storedEdge.selected !== shouldBeSelected) {
+          storedEdge.zIndex = 2;
           storedEdge.selected = shouldBeSelected;
         }
       });
@@ -460,6 +534,32 @@ export default {
         this.rerouteEdgesByTableDistance();
         this.rerouteFrame = null;
       })
+    },
+    applyGroupedZIndexes() {
+      const tableNodes = this.nodes.filter((node) => node.type === 'table');
+
+      const tableZIndexById = {};
+
+      tableNodes.forEach((tableNode, index) => {
+        tableZIndexById[tableNode.id] = index * 10;
+      })
+
+      this.nodes.forEach((node) => {
+        if (node.type === 'table') {
+          this.$refs.vueFlow.updateNode(node.id, {zIndex: tableZIndexById[node.id] ?? 0});
+          return;
+        }
+
+        if (node.type === 'column') {
+          const tableId = node.parentNode;
+          const tableZIndex = tableZIndexById[tableId] ?? 0;
+          this.$refs.vueFlow.updateNode(node.id, {zIndex: tableZIndex + 1});
+        }
+      })
+    },
+    updateLoadingOverlayTop() {
+      const tabMenu = document.querySelector(`a[id="${this.tabId}"].nav-item`);
+      this.loadingOverlayTop = tabMenu?.offsetHeight;
     },
   },
 };

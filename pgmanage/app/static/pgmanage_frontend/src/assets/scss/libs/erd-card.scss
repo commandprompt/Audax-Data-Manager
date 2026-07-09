@@ -75,11 +75,11 @@ $baseWidth: 300px;
 
           &::after {
             content: "";
-            width: calc(100% - 1.5rem);
+            width: calc(100% - 2.5rem);
             height: 4px;
             position: absolute;
             left: 1.5rem;
-            top: 1rem;
+            top: calc(1rem + 1px);
             background-color: $warningColor;
             border-radius: $borderRadius;
 
@@ -127,5 +127,4 @@ $baseWidth: 300px;
  }
  .vue-flow__edge.selected .vue-flow__edge-path  {
   stroke: #F76707;
-  stroke-width: 4;
  }
