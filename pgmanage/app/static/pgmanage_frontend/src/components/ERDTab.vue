@@ -28,50 +28,56 @@
     @toggle-fullscreen="toggleFullScreen"
       />
 
-    <svg :style="{ position: 'absolute', top: 0, left: '-1000px' }">
-      <defs>
-        <marker id="erd-one-only" viewBox="0 0 20 20" refX="18" refY="10" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
-          <line x1="6" y1="3" x2="6" y2="17" stroke="context-stroke" stroke-width="2" />
-          <line x1="12" y1="3" x2="12" y2="17" stroke="context-stroke" stroke-width="2" />
-        </marker>
+    <div ref="vueFlowWrap">
+      <svg :style="{ position: 'absolute', top: 0, left: '-1000px' }">
+        <defs>
+          <marker id="erd-one-only" viewBox="0 0 20 20" refX="18" refY="10" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
+            <line x1="6" y1="3" x2="6" y2="17" stroke="context-stroke" stroke-width="2" />
+            <line x1="12" y1="3" x2="12" y2="17" stroke="context-stroke" stroke-width="2" />
+          </marker>
 
-        <marker id="erd-zero-one" viewBox="0 0 20 20" refX="18" refY="10" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
-          <!-- fill="context-fill" lets you change the inside color via CSS if needed, or leave fill="white" for a hollow ring -->
-          <circle cx="6" cy="10" r="3.5" fill="white" stroke="context-stroke" stroke-width="2" />
-          <line x1="14" y1="3" x2="14" y2="17" stroke="context-stroke" stroke-width="2" />
-        </marker>
+          <marker id="erd-zero-one" viewBox="0 0 20 20" refX="18" refY="10" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
+            <!-- fill="context-fill" lets you change the inside color via CSS if needed, or leave fill="white" for a hollow ring -->
+            <circle cx="6" cy="10" r="3.5" fill="white" stroke="context-stroke" stroke-width="2" />
+            <line x1="14" y1="3" x2="14" y2="17" stroke="context-stroke" stroke-width="2" />
+          </marker>
 
-        <marker id="erd-one-many" viewBox="0 0 20 20" refX="18" refY="10" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
-          <line x1="4" y1="3" x2="4" y2="17" stroke="context-stroke" stroke-width="2" />
-          <path d="M 10 10 L 18 3 M 10 10 L 18 17 M 4 10 L 18 10" stroke="context-stroke" stroke-width="2" stroke-linecap="round" fill="none" />
-        </marker>
+          <marker id="erd-one-many" viewBox="0 0 20 20" refX="18" refY="10" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
+            <line x1="4" y1="3" x2="4" y2="17" stroke="context-stroke" stroke-width="2" />
+            <path d="M 10 10 L 18 3 M 10 10 L 18 17 M 4 10 L 18 10" stroke="context-stroke" stroke-width="2" stroke-linecap="round" fill="none" />
+          </marker>
 
-        <marker id="erd-zero-many" viewBox="0 0 20 20" refX="18" refY="10" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
-          <circle cx="4" cy="10" r="3.5" fill="white" stroke="context-stroke" stroke-width="2" />
-          <path d="M 10 10 L 18 3 M 10 10 L 18 17 M 4 10 L 18 10" stroke="context-stroke" stroke-width="2" stroke-linecap="round" fill="none" />
-        </marker>
-      </defs>
-    </svg>
+          <marker id="erd-zero-many" viewBox="0 0 20 20" refX="18" refY="10" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
+            <circle cx="4" cy="10" r="3.5" fill="white" stroke="context-stroke" stroke-width="2" />
+            <path d="M 10 10 L 18 3 M 10 10 L 18 17 M 4 10 L 18 10" stroke="context-stroke" stroke-width="2" stroke-linecap="round" fill="none" />
+          </marker>
+        </defs>
+      </svg>
 
-    <VueFlow
-      class="vh-100"
-      ref="vueFlow"
-      :node-types="nodeTypes"
-      :nodes="nodes"
-      :edges="edges"
-      :snap-to-grid="true"
-      :snap-grid="[10, 10]"
-      min-zoom="0.1"
-      @nodes-initialized="onNodesInitialized"
-      @viewport-change-end="saveGraphState"
-      @node-drag-stop="onNodeDragStop"
-      @node-drag="scheduleRerouteEdges"
-      @edge-click="onEdgeClick"
-      @node-click="onNodeClick"
-      @pane-click="clearErdSelection"
-    >
-      <Background variant="dots" />
-    </VueFlow>
+      <VueFlow
+        class="vh-100"
+        ref="vueFlow"
+        :node-types="nodeTypes"
+        :nodes="nodes"
+        :edges="edges"
+        :snap-to-grid="true"
+        :snap-grid="[10, 10]"
+        min-zoom="0.1"
+        @nodes-initialized="onNodesInitialized"
+        @viewport-change-end="saveGraphState"
+        @node-drag-stop="onNodeDragStop"
+        @node-drag="scheduleRerouteEdges"
+        @edge-click="onEdgeClick"
+        @node-click="onNodeClick"
+        @pane-click="clearErdSelection"
+      >
+        <Background variant="dots" />
+
+        <template #edge-bezierOrSmoothstep="edgeProps">
+          <ErdRelationEdge v-bind="edgeProps"/>
+        </template>
+      </VueFlow>
+    </div>
   </div>
 </template>
 
@@ -85,6 +91,7 @@ import { capture } from '@src/erd_plugins/screenshot';
 import TableNode from '@src/erd_plugins/TableNode.vue';
 import ColumnNode from '@src/erd_plugins/ColumnNode.vue';
 import Controls from '@src/erd_plugins/Controls.vue';
+import ErdRelationEdge from '@src/erd_plugins/ErdRelationEdge.vue';
 import {
   TABLE_HEADER_HEIGHT,
   COLUMN_HEIGHT,
@@ -98,6 +105,7 @@ export default {
     VueFlow,
     Background,
     Controls,
+    ErdRelationEdge,
   },
   props: {
     schema: String,
@@ -156,6 +164,11 @@ export default {
           this.rerouteEdgesByTableDistance();
           this.applyGroupedZIndexes();
         })
+      } else {
+        this.$nextTick(() => {
+          this.rerouteEdgesByTableDistance();
+          this.applyGroupedZIndexes();
+        })
       }
     },
     doScreenshot() {
@@ -163,7 +176,7 @@ export default {
 
       requestAnimationFrame(()=> {
         requestAnimationFrame(() => {
-          capture(this.$refs.vueFlow.vueFlowRef, { shouldDownload: true }).then(() => this.showLoading = false)
+          capture(this.$refs.vueFlowWrap, { shouldDownload: true }).then(() => this.showLoading = false)
         })
       })
     },
@@ -307,8 +320,6 @@ export default {
       ]
 
       this.$nextTick(() => {
-        this.applyGroupedZIndexes();
-        this.rerouteEdgesByTableDistance();
         if (savedViewport && this.$refs.vueFlow?.setViewport) {
           this.$refs.vueFlow.setViewport(savedViewport)
         } else {
@@ -358,7 +369,10 @@ export default {
         targetHandle: 'target-left',
         label: edge.label,
         cgid: edge.cgid,
-        type: 'smoothstep',
+        type: 'bezierOrSmoothstep',
+        pathOptions: {
+          offset: 30,
+        },
         markerEnd: 'erd-one-only',
         markerStart: 'erd-one-many',
         data: {
@@ -485,19 +499,38 @@ export default {
 
       const sourceBounds = this.getTableBounds(sourceTable);
       const targetBounds = this.getTableBounds(targetTable);
-    
-      const rightToLeftDistance = Math.abs(sourceBounds.right - targetBounds.left);
-      const leftToRightDistance = Math.abs(sourceBounds.left - targetBounds.right);
-    
-      if (rightToLeftDistance <= leftToRightDistance) {
+
+      let target_switch_margin = 30;
+
+      const targetIsRightOfSource = targetBounds.left >= sourceBounds.right + target_switch_margin;
+      const targetIsLeftOfSource = targetBounds.right <= sourceBounds.left - target_switch_margin;
+
+      if (targetIsRightOfSource) {
         return {
           sourceHandle: 'source-right',
           targetHandle: 'target-left',
         };
       }
+
+      if (targetIsLeftOfSource) {
+        return {
+          sourceHandle: 'source-left',
+          targetHandle: 'target-right',
+        };
+      }
     
+      const leftToLeftDistance = Math.abs(sourceBounds.left - targetBounds.left);
+      const rightToRightDistance = Math.abs(sourceBounds.right - targetBounds.right);
+    
+       if (leftToLeftDistance <= rightToRightDistance) {
+        return {
+          sourceHandle: 'source-left',
+          targetHandle: 'target-left',
+        };
+      }
+
       return {
-        sourceHandle: 'source-left',
+        sourceHandle: 'source-right',
         targetHandle: 'target-right',
       };
     },
@@ -541,18 +574,18 @@ export default {
       const tableZIndexById = {};
 
       tableNodes.forEach((tableNode, index) => {
-        tableZIndexById[tableNode.id] = index * 10;
+        tableZIndexById[tableNode.id] = (index + 1) * 10;
       })
 
       this.nodes.forEach((node) => {
         if (node.type === 'table') {
-          this.$refs.vueFlow.updateNode(node.id, {zIndex: tableZIndexById[node.id] ?? 0});
+          this.$refs.vueFlow.updateNode(node.id, {zIndex: tableZIndexById[node.id] ?? 10});
           return;
         }
 
         if (node.type === 'column') {
           const tableId = node.parentNode;
-          const tableZIndex = tableZIndexById[tableId] ?? 0;
+          const tableZIndex = tableZIndexById[tableId] ?? 10;
           this.$refs.vueFlow.updateNode(node.id, {zIndex: tableZIndex + 1});
         }
       })
