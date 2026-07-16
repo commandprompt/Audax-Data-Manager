@@ -57,7 +57,7 @@
     "loglevel-plugin-remote": "0.6.8",
     "mitt": "3.0.1",
     "moment": "2.30.1",
-    "pev2": "git://github.com/commandprompt/pev2.git#46efd3916f72ab19b4cb8abc183629fe633b8d88",
+    "pev2": "git://github.com/commandprompt/pev2.git#4e6fa30cad192bc76b1419d7bcb34e94b85e3190",
     "pinia": "2.2.2",
     "short-unique-id": "4.4.4",
     "splitpanes": "3.2",
