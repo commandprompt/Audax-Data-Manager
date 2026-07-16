@@ -30,6 +30,7 @@ import math
 import re
 from abc import ABC, abstractmethod
 from collections import OrderedDict
+from pathlib import Path
 from urllib.parse import urlparse
 
 import app.include.Spartacus as Spartacus
@@ -956,16 +957,17 @@ class SQLite(Generic):
 
     def Open(self, autocommit=True):
         try:
+            full_path = Path(self.service).expanduser()
             if autocommit:
                 self.con = sqlite3.connect(
-                    self.service,
+                    full_path,
                     self.timeout,
                     isolation_level=None,
                     check_same_thread=False,
                 )
             else:
                 self.con = sqlite3.connect(
-                    self.service, self.timeout, check_same_thread=False
+                    full_path, self.timeout, check_same_thread=False
                 )
             # self.con.row_factory = sqlite3.Row
             self.cur = self.con.cursor()
