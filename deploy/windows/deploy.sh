@@ -87,7 +87,7 @@ cp $TEMP_DIR/deploy/app/audaxdm_icon.png release_$APP_VERSION
 sed -i "s/version_placeholder/v$APP_VERSION/" release_$APP_VERSION/index.html
 # install resource hacker with default path, then uncomment these lines to replace the default pyinstaller and nwjs exe icons
 
-/cygdrive/c/Program\ Files\ \(x86\)/Resource\ Hacker/ResourceHacker.exe -open release_$APP_VERSION/audaxdm-app.exe -save release_$APP_VERSION/pgmanage-app.exe -action addoverwrite -res ./win-icon.ico -mask ICONGROUP,IDR_MAINFRAME,
+/cygdrive/c/Program\ Files\ \(x86\)/Resource\ Hacker/ResourceHacker.exe -open release_$APP_VERSION/audaxdm-app.exe -save release_$APP_VERSION/audaxdm-app.exe -action addoverwrite -res ./win-icon.ico -mask ICONGROUP,IDR_MAINFRAME,
 /cygdrive/c/Program\ Files\ \(x86\)/Resource\ Hacker/ResourceHacker.exe -open release_$APP_VERSION/audaxdm-server/audaxdm-server.exe -save release_$APP_VERSION/audaxdm-server/audaxdm-server.exe -action addoverwrite -res ./win-icon.ico -mask ICONGROUP,IDR_MAINFRAME,
 
 
