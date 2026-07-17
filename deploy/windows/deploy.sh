@@ -82,7 +82,7 @@ mv $TEMP_DIR/$NWJS_DIR/* release_$APP_VERSION/
 mv release_$APP_VERSION/nw.exe release_$APP_VERSION/audaxdm-app.exe
 cp $TEMP_DIR/deploy/app/index.html release_$APP_VERSION
 cp $TEMP_DIR/deploy/app/package.json release_$APP_VERSION
-cp $TEMP_DIR/deploy/app/audaxdm.png release_$APP_VERSION
+cp $TEMP_DIR/deploy/app/audaxdm_icon.png release_$APP_VERSION
 
 sed -i "s/version_placeholder/v$APP_VERSION/" release_$APP_VERSION/index.html
 # install resource hacker with default path, then uncomment these lines to replace the default pyinstaller and nwjs exe icons
