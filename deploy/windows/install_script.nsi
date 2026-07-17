@@ -6,10 +6,13 @@
 
 ;--------------------------------
 ;General
+  !ifndef VERSION
+    !define VERSION "dev"
+  !endif
 
   ;Name and file
-  Name "PgManage"
-  OutFile "pgmanage_setup.exe"
+  Name "Audax Data Manager"
+  OutFile "audaxdm-${VERSION}_setup_win64.exe"
   Unicode True
 
   ;Default installation folder
@@ -21,6 +24,7 @@
   ;Request application privileges for Windows Vista
   RequestExecutionLevel user
   ManifestDPIAware true
+
 ;--------------------------------
 ;Interface Configuration
 
@@ -37,8 +41,8 @@
   !insertmacro MUI_PAGE_DIRECTORY
   !insertmacro MUI_PAGE_INSTFILES
 
-  !define MUI_FINISHPAGE_RUN "$InstDir\pgmanage-app.exe"
-  !define MUI_FINISHPAGE_RUN_TEXT "Run PgManage"
+  !define MUI_FINISHPAGE_RUN "$InstDir\audaxdm-app.exe"
+  !define MUI_FINISHPAGE_RUN_TEXT "Run Audax Data Manager"
   !insertmacro MUI_PAGE_FINISH
 
   !insertmacro MUI_UNPAGE_COMPONENTS
@@ -62,9 +66,8 @@ Section "Program" AppFiles
   ${EndIf}
 
   ;Add check for directory existence and delete if it exists
-  IfFileExists "$INSTDIR\pgmanage-server" 0 +2
-    RMDir /r "$INSTDIR\pgmanage-server"
-
+  IfFileExists "$INSTDIR\audaxdm-server" 0 +2
+    RMDir /r "$INSTDIR\audaxdm-server"
 
   SetOutPath "$INSTDIR"
 
@@ -76,15 +79,19 @@ Section "Program" AppFiles
   ;Create uninstaller
   WriteUninstaller "$INSTDIR\Uninstall.exe"
 
+  IfFileExists "$PROFILE\.pgmanage" 0 +3
+    DetailPrint "Migrating PgManage user data (copying)..."
+    CopyFiles /SILENT "$PROFILE\.pgmanage\*.*" "$PROFILE\.audaxdm"
+
 SectionEnd
 
 
 Section "Start menu shortcut"
-  CreateShortcut "$SMPrograms\$(^Name).lnk" "$InstDir\pgmanage-app.exe"
+  CreateShortcut "$SMPrograms\$(^Name).lnk" "$InstDir\audaxdm-app.exe"
 SectionEnd
 
 Section "Desktop shortcut"
-  CreateShortcut "$Desktop\$(^Name).lnk" "$InstDir\pgmanage-app.exe"
+  CreateShortcut "$Desktop\$(^Name).lnk" "$InstDir\audaxdm-app.exe"
 SectionEnd
 
 
@@ -114,5 +121,5 @@ Section "un.Application Files"
 SectionEnd
 
 Section "un.Application Data"
-  RMDir /r "$PROFILE\.pgmanage"
+  RMDir /r "$PROFILE\.audaxdm"
 SectionEnd

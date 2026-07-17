@@ -69,17 +69,17 @@ cd $TEMP_DIR/pgmanage
 
 echo "running pyinstaller"
 touch pgmanage.db
-pyinstaller ./pgmanage-win.spec
+pyinstaller ./audaxdm-win.spec
 pyinstaller ./process_executor-win.spec
-mv dist/pgmanage-server $DEPLOY_DIR/release_$APP_VERSION/
-mv dist/process_executor $DEPLOY_DIR/release_$APP_VERSION/pgmanage-server/
+mv dist/audaxdm-server $DEPLOY_DIR/release_$APP_VERSION/
+mv dist/process_executor $DEPLOY_DIR/release_$APP_VERSION/audaxdm-server/
 
 cd $DEPLOY_DIR
 curl -C - -LO $NWJS_URL
 unzip -o $NWJS_ARCHIVE -d $TEMP_DIR/
 
 mv $TEMP_DIR/$NWJS_DIR/* release_$APP_VERSION/
-mv release_$APP_VERSION/nw.exe release_$APP_VERSION/pgmanage-app.exe
+mv release_$APP_VERSION/nw.exe release_$APP_VERSION/audaxdm-app.exe
 cp $TEMP_DIR/deploy/app/index.html release_$APP_VERSION
 cp $TEMP_DIR/deploy/app/package.json release_$APP_VERSION
 cp $TEMP_DIR/deploy/app/pgmanage_icon.png release_$APP_VERSION
@@ -87,11 +87,11 @@ cp $TEMP_DIR/deploy/app/pgmanage_icon.png release_$APP_VERSION
 sed -i "s/version_placeholder/v$APP_VERSION/" release_$APP_VERSION/index.html
 # install resource hacker with default path, then uncomment these lines to replace the default pyinstaller and nwjs exe icons
 
-/cygdrive/c/Program\ Files\ \(x86\)/Resource\ Hacker/ResourceHacker.exe -open release_$APP_VERSION/pgmanage-app.exe -save release_$APP_VERSION/pgmanage-app.exe -action addoverwrite -res ./win-icon.ico -mask ICONGROUP,IDR_MAINFRAME,
-/cygdrive/c/Program\ Files\ \(x86\)/Resource\ Hacker/ResourceHacker.exe -open release_$APP_VERSION/pgmanage-server/pgmanage-server.exe -save release_$APP_VERSION/pgmanage-server/pgmanage-server.exe -action addoverwrite -res ./win-icon.ico -mask ICONGROUP,IDR_MAINFRAME,
+/cygdrive/c/Program\ Files\ \(x86\)/Resource\ Hacker/ResourceHacker.exe -open release_$APP_VERSION/audaxdm-app.exe -save release_$APP_VERSION/pgmanage-app.exe -action addoverwrite -res ./win-icon.ico -mask ICONGROUP,IDR_MAINFRAME,
+/cygdrive/c/Program\ Files\ \(x86\)/Resource\ Hacker/ResourceHacker.exe -open release_$APP_VERSION/audaxdm-server/audaxdm-server.exe -save release_$APP_VERSION/audaxdm-server/audaxdm-server.exe -action addoverwrite -res ./win-icon.ico -mask ICONGROUP,IDR_MAINFRAME,
 
 
-/cygdrive/c/Program\ Files\ \(x86\)/NSIS/makensisw.exe /DSRCDIR=release_$APP_VERSION install_script.nsi
+/cygdrive/c/Program\ Files\ \(x86\)/NSIS/makensisw.exe /DSRCDIR=release_$APP_VERSION /DVERSION=$APP_VERSION install_script.nsi
 
 echo "deactivating virtual env and cleaning temp folder"
 

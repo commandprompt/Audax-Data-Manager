@@ -852,7 +852,7 @@
     }
 
     setTimeout(function() {
-      django = child_process.spawn(path.join(global.__dirname,'pgmanage-server/pgmanage-server'),['-A'], { detached: false });
+      django = child_process.spawn(path.join(global.__dirname,'audaxdm-server/audaxdm-server'),['-A'], { detached: false });
 
       django.stderr.on('data', (data) => {
         outputContainer.innerHTML += `<p class="splash__output_text">${data}</p>`
@@ -876,7 +876,7 @@
             }
           } else {
               document.getElementById('stages_item_description').innerHTML = '';
-              document.getElementById('stages_item_title').innerHTML = 'Opening PGManage...';
+              document.getElementById('stages_item_title').innerHTML = 'Opening Audax Data Manager...';
 
               (function(value) { setTimeout( function() {
                 v_loading_data_container.style.display = 'none';
