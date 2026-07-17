@@ -101,7 +101,7 @@ sed -i "s/X-AppImage-Version=dev/X-AppImage-Version=$VERSION/" audaxdm.desktop
 # rename nwjs runtime as audaxdm-app
 mv nw audaxdm-app && ln -s ./audaxdm-app AppRun
 cd $HOME
-/deploy/appimagetool-x86_64.AppImage --appimage-extract-and-run pgmanage-app_$VERSION/ audaxdm-$VERSION.AppImage
+/deploy/appimagetool-x86_64.AppImage --appimage-extract-and-run audaxdm-app_$VERSION/ audaxdm-$VERSION.AppImage
 # tar -czvf pgmanage-app_$VERSION-linux-x64.tar.gz pgmanage-app_$VERSION/
 # mv pgmanage-app_$VERSION-linux-x64.tar.gz /tmp/
 mv audaxdm-$VERSION.AppImage /deploy
