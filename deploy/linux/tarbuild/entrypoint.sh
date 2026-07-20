@@ -52,7 +52,7 @@ sed -i -e 's/DESKTOP_MODE = False/DESKTOP_MODE = True/g' pgmanage/custom_setting
 echo "Done."
 
 # setting up versions in custom_settins.py
-sed -i "s/Dev/PgManage $VERSION/" pgmanage/custom_settings.py
+sed -i "s/Dev/Audax Data Manager $VERSION/" pgmanage/custom_settings.py
 sed -i "s/dev/$VERSION/" pgmanage/custom_settings.py
 
 # building vite bundle

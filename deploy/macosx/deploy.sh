@@ -84,7 +84,7 @@ find ./ -name "*.scss" -delete
 touch pgmanage.db
 
 # set up versions in custom_settins.py
-sed -i '' "s/Dev/PgManage $APP_VERSION/" pgmanage/custom_settings.py
+sed -i '' "s/Dev/Audax Data Manager $APP_VERSION/" pgmanage/custom_settings.py
 sed -i '' "s/dev/$APP_VERSION/" pgmanage/custom_settings.py
 
 echo "running pyinstaller"

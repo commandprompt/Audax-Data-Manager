@@ -53,7 +53,7 @@ cd pgmanage/
 
 # set up versions in custom_settins.py
 echo "setting app version in sources to $APP_VERSION"
-sed -i "s/Dev/PgManage $APP_VERSION/" pgmanage/custom_settings.py
+sed -i "s/Dev/Audax Data Manager $APP_VERSION/" pgmanage/custom_settings.py
 sed -i "s/dev/$APP_VERSION/" pgmanage/custom_settings.py
 
 # building vite bundle
