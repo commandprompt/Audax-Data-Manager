@@ -2,8 +2,8 @@
   <BaseEdge
     :id="id"
     :path="edgePath"
-    :marker-start="markerStart"
-    :marker-end="markerEnd"
+    :marker-start="scopedMarkerStart"
+    :marker-end="scopedMarkerEnd"
   />
 </template>
 
@@ -33,6 +33,7 @@ export default {
     data: { type: Object, required: false },
     markerEnd: { type: [String, Object], required: false },
     markerStart: { type: [String, Object], required: false },
+    tabId: { type: String, required: false },
     sourceHandleId: {
       type: String,
       default: "",
@@ -43,6 +44,12 @@ export default {
     },
   },
   computed: {
+    scopedMarkerStart() {
+      return this.scopeMarker(this.markerStart);
+    },
+    scopedMarkerEnd() {
+      return this.scopeMarker(this.markerEnd);
+    },
     shouldUseSmoothStep() {
       const sourceSide = this.getHandleSide(this.sourceHandleId);
       const targetSide = this.getHandleSide(this.targetHandleId);
@@ -93,6 +100,13 @@ export default {
     },
   },
   methods: {
+    scopeMarker(marker) {
+      if (typeof marker !== "string" || !this.tabId) {
+        return marker;
+      }
+
+      return marker.replace(/#([^')]+)/, `#$1-${this.tabId}`);
+    },
     getHandleSide(handleId) {
       if (handleId?.endsWith("left")) {
         return "left";

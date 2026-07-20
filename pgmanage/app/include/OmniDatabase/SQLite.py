@@ -331,7 +331,7 @@ class SQLite:
                     p.*
                     FROM
                         sqlite_master m
-                        JOIN pragma_foreign_key_list(m.name) p ON m.name != p."table"
+                        JOIN pragma_foreign_key_list(m.name) p
                     WHERE m.type = 'table'
                     ORDER BY m.name
                 '''

@@ -31,23 +31,23 @@
     <div ref="vueFlowWrap">
       <svg :style="{ position: 'absolute', top: 0, left: '-1000px' }">
         <defs>
-          <marker id="erd-one-only" viewBox="0 0 20 20" refX="18" refY="10" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
+          <marker :id="`erd-one-only-${tabId}`" viewBox="0 0 20 20" refX="18" refY="10" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
             <line x1="6" y1="3" x2="6" y2="17" stroke="context-stroke" stroke-width="2" />
             <line x1="12" y1="3" x2="12" y2="17" stroke="context-stroke" stroke-width="2" />
           </marker>
 
-          <marker id="erd-zero-one" viewBox="0 0 20 20" refX="18" refY="10" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
+          <marker :id="`erd-zero-one-${tabId}`" viewBox="0 0 20 20" refX="18" refY="10" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
             <!-- fill="context-fill" lets you change the inside color via CSS if needed, or leave fill="white" for a hollow ring -->
             <circle cx="6" cy="10" r="3.5" fill="white" stroke="context-stroke" stroke-width="2" />
             <line x1="14" y1="3" x2="14" y2="17" stroke="context-stroke" stroke-width="2" />
           </marker>
 
-          <marker id="erd-one-many" viewBox="0 0 20 20" refX="18" refY="10" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
+          <marker :id="`erd-one-many-${tabId}`" viewBox="0 0 20 20" refX="18" refY="10" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
             <line x1="4" y1="3" x2="4" y2="17" stroke="context-stroke" stroke-width="2" />
             <path d="M 10 10 L 18 3 M 10 10 L 18 17 M 4 10 L 18 10" stroke="context-stroke" stroke-width="2" stroke-linecap="round" fill="none" />
           </marker>
 
-          <marker id="erd-zero-many" viewBox="0 0 20 20" refX="18" refY="10" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
+          <marker :id="`erd-zero-many-${tabId}`" viewBox="0 0 20 20" refX="18" refY="10" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
             <circle cx="4" cy="10" r="3.5" fill="white" stroke="context-stroke" stroke-width="2" />
             <path d="M 10 10 L 18 3 M 10 10 L 18 17 M 4 10 L 18 10" stroke="context-stroke" stroke-width="2" stroke-linecap="round" fill="none" />
           </marker>
@@ -74,7 +74,7 @@
         <Background variant="dots" />
 
         <template #edge-bezierOrSmoothstep="edgeProps">
-          <ErdRelationEdge v-bind="edgeProps"/>
+          <ErdRelationEdge v-bind="edgeProps" :tab-id="tabId"/>
         </template>
       </VueFlow>
     </div>
