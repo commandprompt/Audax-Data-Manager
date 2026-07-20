@@ -20,7 +20,7 @@ exclude_patterns = [
 block_cipher = None
 
 data_files = [
-  ('pgmanage.db','.'),
+  ('audaxdm.db','.'),
   ('config.py','.'),
   ('app/static/dist','app/static/dist'),
   ('app/static/plugins','app/static/plugins'),
