@@ -432,7 +432,7 @@ if platform.system() != 'Windows':
         lockfile_pointer = os.open(pgmanage.custom_settings.HOME_DIR, os.O_RDONLY)
         fcntl.flock(lockfile_pointer, fcntl.LOCK_EX | fcntl.LOCK_NB)
     except Exception as exc:
-        print("PgManage is already running pointing to directoy '{0}'.".format(pgmanage.custom_settings.HOME_DIR))
+        print("Audax Data Manager is already running pointing to directoy '{0}'.".format(pgmanage.custom_settings.HOME_DIR))
         sys.exit()
 
 import html.parser
@@ -574,7 +574,7 @@ class DjangoApplication(object):
             cherrypy.engine.start()
 
             if not app_version:
-                print ("Open PgManage in your favorite browser",flush=True)
+                print ("Open Audax Data Manager in your favorite browser",flush=True)
                 if platform.system() != 'Windows':
                     print ("Press Ctrl+C to exit",flush=True)
             else:
@@ -587,8 +587,8 @@ class DjangoApplication(object):
             print('Tried 20 different ports without success, closing...',flush=True)
             logger.info('Tried 20 different ports without success, closing...')
 
-print('''Starting PGManage server...''',flush=True)
-logger.info('''Starting PGManage server...''')
+print('''Starting Audax Data Manager server...''',flush=True)
+logger.info('''Starting Audax Data Manager server...''')
 
 #Removing Expired Sessions
 SessionStore.clear_expired()
