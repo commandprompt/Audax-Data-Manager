@@ -19,7 +19,7 @@ exclude_patterns = [
 block_cipher = None
 
 data_files_server = [
-  ('pgmanage.db','.'),
+  ('audaxdm.db','.'),
   ('config.py','.'),
   ('app/static/dist','app/static/dist'),
   ('app/static/plugins','app/static/plugins'),
@@ -53,7 +53,7 @@ exe = EXE(pyz,
           a.scripts,
           [],
           exclude_binaries=True,
-          name='pgmanage-server',
+          name='audaxdm-server',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,
@@ -74,5 +74,5 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='pgmanage-server',
+    name='audaxdm-server',
 )
