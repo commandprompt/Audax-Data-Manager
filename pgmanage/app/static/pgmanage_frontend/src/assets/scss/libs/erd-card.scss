@@ -49,6 +49,10 @@ $baseWidth: 300px;
         &_wrap {
           display: flex;
           width: $baseWidth;
+
+          &.last-column {
+            padding-bottom: 10px;
+          }
         }
 
         &_name {

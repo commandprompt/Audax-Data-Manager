@@ -1,26 +1,9 @@
 <template>
   <div ref="erdContainer">
 
-    <Transition>
-      <div
-        v-if="showLoading"
-        class="div_loading d-block"
-        :style="loadingOverlayStyle"
-      >
-        <div class="div_loading_cover"></div>
-        <div class="div_loading_content">
-          <span>Loading screenshot...</span>
-          <div
-            class="spinner-border spinner-size text-primary"
-            role="status"
-          >
-            <span class="sr-only">Loading...</span>
-          </div>
-        </div>
-      </div>
-    </Transition>
-    <Controls 
+    <Controls
     :in-fullscreen="inFullscreen"
+    :capturing-screenshot="capturingScreenshot"
     @screenshot="doScreenshot"
     @reset="resetToDefault"
     @zoom-in="this.$refs.vueFlow.zoomIn()"
@@ -97,7 +80,6 @@ import {
   COLUMN_HEIGHT,
   getLayoutedNodes,
 } from '@src/erd_plugins/layout';
-import { settingsStore } from '../stores/stores_initializer';
 
 export default {
   name: "ERDTab",
@@ -125,34 +107,11 @@ export default {
       inFullscreen: false,
       jsonLayout: false,
       rerouteFrame: null,
-      showLoading: false,
-      loadingOverlayTop: 0,
+      capturingScreenshot: false,
     };
   },
   mounted() {
     this.loadSchemaGraph();
-
-    this.updateLoadingOverlayTop();
-
-    settingsStore.$onAction((action) => {
-      if(action.name === "setFontSize") {
-        action.after(() => {
-          requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-              this.updateLoadingOverlayTop();
-            })
-          })
-        })
-      }
-    })
-  },
-  computed: {
-    loadingOverlayStyle() {
-      return {
-        zIndex: 10,
-        top: `${this.loadingOverlayTop}px`,
-      }
-    },
   },
   methods: {
     onNodesInitialized() {
@@ -172,11 +131,15 @@ export default {
       }
     },
     doScreenshot() {
-      this.showLoading = true;
+      if (this.capturingScreenshot) {
+        return;
+      }
+
+      this.capturingScreenshot = true;
 
       requestAnimationFrame(()=> {
         requestAnimationFrame(() => {
-          capture(this.$refs.vueFlowWrap, { shouldDownload: true }).then(() => this.showLoading = false)
+          capture(this.$refs.vueFlowWrap, { shouldDownload: true }).finally(() => this.capturingScreenshot = false)
         })
       })
     },
@@ -219,7 +182,8 @@ export default {
 
           response.data.nodes.forEach((node) => {
             node.columns.forEach((columnNode, index) => {
-              const col = this.createColumnNode(node, columnNode, index)            
+              const isLast = index === node.columns.length - 1
+              const col = this.createColumnNode(node, columnNode, index, isLast)
               columnNodes.push(col);
             })
           })
@@ -303,7 +267,8 @@ export default {
         }
 
         tableData.columns.forEach((columnNode, index) => {
-          nextNodes.push(this.createColumnNode(tableData, columnNode, index))
+          const isLast = index === tableData.columns.length - 1
+          nextNodes.push(this.createColumnNode(tableData, columnNode, index, isLast))
         })
       })
 
@@ -339,7 +304,7 @@ export default {
         },
       }
     },
-    createColumnNode(tableNode, columnNode, index) {
+    createColumnNode(tableNode, columnNode, index, isLast = false) {
       return {
         id: `${tableNode.id}_${columnNode.name}`,
         type: 'column',
@@ -357,6 +322,7 @@ export default {
           is_pk: columnNode.is_pk,
           is_fk: columnNode.is_fk,
           is_highlighted: false,
+          is_last: isLast,
         },
       }
     },
@@ -589,10 +555,6 @@ export default {
           this.$refs.vueFlow.updateNode(node.id, {zIndex: tableZIndex + 1});
         }
       })
-    },
-    updateLoadingOverlayTop() {
-      const tabMenu = document.querySelector(`a[id="${this.tabId}"].nav-item`);
-      this.loadingOverlayTop = tabMenu?.offsetHeight;
     },
   },
 };

@@ -7,9 +7,17 @@
         <button
           class="btn btn-icon-secondary"
           title="Download a screenshot"
+          :disabled="capturingScreenshot"
           @click="$emit('screenshot')"
         >
-          <i class="fa-solid fa-camera"></i>
+          <i
+            v-if="capturingScreenshot"
+            class="fa-solid fa-spinner fa-spin"
+            role="status"
+          >
+            <span class="sr-only">Capturing screenshot...</span>
+          </i>
+          <i v-else class="fa-solid fa-camera"></i>
         </button>
         <span class="divider"></span>
         <button
@@ -57,6 +65,10 @@ export default {
   name: "Controls",
   props: {
     inFullscreen: {
+      type: Boolean,
+      default: false,
+    },
+    capturingScreenshot: {
       type: Boolean,
       default: false,
     },

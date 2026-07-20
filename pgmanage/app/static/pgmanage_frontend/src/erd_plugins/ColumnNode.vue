@@ -1,5 +1,8 @@
 <template>
-  <div class="vue-flow__node-table__column_wrap">
+  <div
+    class="vue-flow__node-table__column_wrap"
+    :class="{ 'last-column': isLast }"
+  >
     <div
       class="vue-flow__node-table__column"
       :class="{
@@ -97,6 +100,9 @@ export default {
     },
     isFk() {
       return Boolean(this.data?.is_fk);
+    },
+    isLast() {
+      return Boolean(this.data?.is_last);
     },
     nodeLabel() {
       return this.data?.label || this.label;
