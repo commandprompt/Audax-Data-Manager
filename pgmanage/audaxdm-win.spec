@@ -15,6 +15,7 @@ exclude_patterns = [
   'django\\contrib\\sitemaps',
   'django\\contrib\\syndication',
   'django\\contrib\\admindocs',
+  'django\\contrib\\admin',
 ]
 
 block_cipher = None
@@ -37,7 +38,7 @@ a = Analysis(['pgmanage-server.py'],
              hiddenimports=['cheroot.ssl','cheroot.ssl.builtin','psycopg2','paramiko', 'pkg_resources.extern', 'cryptography.hazmat.primitives.kdf.pbkdf2', 'cryptography.x509'],
              hookspath=[],
              runtime_hooks=[],
-             excludes=['django.contrib.gis', 'django.contrib.sitemaps', 'django.contrib.flatpages', 'django.contrib.syndication', 'django.contrib.admindocs', 'django.contrib.humanize'],
+             excludes=['django.contrib.gis', 'django.contrib.sitemaps', 'django.contrib.flatpages', 'django.contrib.syndication', 'django.contrib.admindocs', 'django.contrib.humanize', 'django.contrib.admin'],
              win_no_prefer_redirects=False,
              win_private_assemblies=False,
              cipher=block_cipher,
@@ -47,6 +48,19 @@ a = Analysis(['pgmanage-server.py'],
 # config.py gets removed by the next expression, keep it for restoring later
 configpy = [entry for entry in a.datas if 'config.py' in entry[0]]
 a.datas = [entry for entry in a.datas if not any(pattern in entry[0] for pattern in exclude_patterns)]
+# strip non-English Django locale catalogs; keep 'en' since Django's gettext machinery
+# requires the default language's catalog to exist even though the app never switches languages
+a.datas = [entry for entry in a.datas if '\\locale\\' not in entry[0] or '\\locale\\en\\' in entry[0]]
+# strip unused IANA timezone data; keep only 'UTC' since TIME_ZONE is hardcoded to
+# 'UTC' in settings.py and the app never switches timezones. tzdata is only pulled
+# in on Windows, where Python's zoneinfo module has no system tz database to fall
+# back to (Django declares tzdata as a Windows-only dependency)
+a.datas = [
+    entry for entry in a.datas
+    if 'tzdata\\zoneinfo' not in entry[0]
+    or entry[0].endswith('tzdata\\zoneinfo\\UTC')
+    or entry[0].endswith('tzdata\\zoneinfo\\Etc\\UTC')
+]
 a.datas = a.datas + configpy
 
 pyz = PYZ(a.pure, a.zipped_data,
