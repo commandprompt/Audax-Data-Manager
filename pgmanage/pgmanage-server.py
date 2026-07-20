@@ -116,13 +116,45 @@ if options.homedir!='':
         pgmanage.custom_settings.HOME_DIR = options.homedir
 else:
     if pgmanage.custom_settings.DESKTOP_MODE:
-        pgmanage.custom_settings.HOME_DIR = os.path.join(os.path.expanduser('~'), '.pgmanage', 'pgmanage-app')
+        pgmanage.custom_settings.HOME_DIR = os.path.join(os.path.expanduser('~'), '.audaxdm', 'audaxdm-app')
+        LEGACY_HOME_DIR = os.path.join(os.path.expanduser('~'), '.pgmanage', 'pgmanage-app')
     else:
-        pgmanage.custom_settings.HOME_DIR = os.path.join(os.path.expanduser('~'), '.pgmanage', 'pgmanage-server')
+        pgmanage.custom_settings.HOME_DIR = os.path.join(os.path.expanduser('~'), '.audaxdm', 'audaxdm-server')
+        LEGACY_HOME_DIR = os.path.join(os.path.expanduser('~'), '.pgmanage', 'pgmanage-server')
 
     if not os.path.exists(pgmanage.custom_settings.HOME_DIR):
-        print("Creating home directory.",flush=True)
-        os.makedirs(pgmanage.custom_settings.HOME_DIR)
+        if os.path.exists(LEGACY_HOME_DIR):
+            # Migrate legact pgmanage application data from ~.pgmanage
+            # TODO: this code can be safely removed in 2027, once most of the people stopped using audax < 1.5
+            import shutil
+            import glob
+
+            print("Migrating legacy pgmanage user data to a new home directory:",flush=True)
+            shutil.copytree(LEGACY_HOME_DIR, pgmanage.custom_settings.HOME_DIR, dirs_exist_ok=True)
+            import pgmanage.settings
+            new_db = pgmanage.settings.SQLITE_PATH
+
+            db_dir = os.path.dirname(new_db)
+            new_filename = os.path.basename(new_db)
+            old_filename = new_filename.replace('audaxdm', 'pgmanage', 1)
+            old_db = os.path.join(db_dir, old_filename)
+
+            if os.path.exists(old_db):
+                os.rename(old_db, new_db)
+                print(f"Migrated {old_db} {new_db}", flush=True)
+
+            log_pattern = os.path.join(pgmanage.custom_settings.HOME_DIR, 'pgmanage*.log*')
+            for old_log_path in glob.glob(log_pattern):
+                # Extract the filename, replace the prefix, and rebuild the path
+                filename = os.path.basename(old_log_path)
+                new_filename = filename.replace('pgmanage', 'audaxdm', 1)
+                new_log_path = os.path.join(pgmanage.custom_settings.HOME_DIR, new_filename)
+
+                os.rename(old_log_path, new_log_path)
+                print(f"Migrated {old_log_path} {new_log_path}", flush=True)
+        else:
+            print("Creating home directory.",flush=True)
+            os.makedirs(pgmanage.custom_settings.HOME_DIR)
 
 
 if options.conf!='':

@@ -68,7 +68,7 @@ npm run build
 cd $TEMP_DIR/pgmanage
 
 echo "running pyinstaller"
-touch pgmanage.db
+touch audaxdm.db
 pyinstaller ./audaxdm-win.spec
 pyinstaller ./process_executor-win.spec
 mv dist/audaxdm-server $DEPLOY_DIR/release_$APP_VERSION/

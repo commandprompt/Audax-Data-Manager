@@ -66,8 +66,8 @@ echo "Removing sass and map files"
 find ./ -name "*.map" -delete
 find ./ -name "*.scss" -delete
 
-rm -f pgmanage.db pgmanage.log
-touch pgmanage.db
+rm -f audaxdm.db audaxdm.log
+touch audaxdm.db
 pyinstaller process_executor-lin.spec
 pyinstaller audaxdm-lin.spec
 mv dist/* $HOME
