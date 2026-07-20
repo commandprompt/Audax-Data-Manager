@@ -106,7 +106,7 @@ cd $TEMP_DIR
 mv $NWJS_DIR/nwjs.app $APP_LONG_VERSION.app
 
 mkdir $APP_LONG_VERSION.app/Contents/Resources/app.nw
-mv audaxdm/audaxdm-server $APP_LONG_VERSION.app/Contents/Resources/app.nw/
+mv pgmanage/audaxdm-server $APP_LONG_VERSION.app/Contents/Resources/app.nw/
 
 cp deploy/app/* $APP_LONG_VERSION.app/Contents/Resources/app.nw/
 sed -i '' "s/version_placeholder/v$APP_VERSION/" $APP_LONG_VERSION.app/Contents/Resources/app.nw/index.html
