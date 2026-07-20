@@ -109,6 +109,8 @@ SectionEnd
 ;--------------------------------
 ;Uninstaller Section
 
+
+
 Section "un.Application Files"
   SectionIn RO
   Delete "$INSTDIR\Uninstall.exe"
@@ -120,6 +122,6 @@ Section "un.Application Files"
   Delete "$Desktop\$(^Name).lnk"
 SectionEnd
 
-Section "un.Application Data"
+Section /o "un.Application Data"
   RMDir /r "$PROFILE\.audaxdm"
 SectionEnd
