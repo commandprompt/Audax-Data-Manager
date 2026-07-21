@@ -36,6 +36,7 @@ import cytoscape from 'cytoscape';
 import nodeHtmlLabel from 'cytoscape-node-html-label'
 import { handleError } from '../logging/utils';
 import debounce from 'lodash/debounce'
+import isEmpty from 'lodash/isEmpty';
 
 
 export default {
@@ -137,7 +138,7 @@ export default {
                 columns: node.columns.map((column) => (
                   {
                     name: column.name,
-                    type: this.shortDataType(column.type),
+                    type: column.type,
                     cgid: column.cgid,
                     is_pk: column.is_pk,
                     is_fk: column.is_fk,
@@ -170,18 +171,6 @@ export default {
         handleError(error);
       })
     },
-    shortDataType(typename) {
-      const TYPEMAP = {
-        'character varying': 'varchar',
-        'timestamp with time zone': 'timestamptz',
-        'timestamp without time zone': 'timestamp',
-        'time without time zone': 'time',
-        'time with time zone': 'timetz',
-        'character': 'char',
-        'boolean': 'bool'
-      }
-      return TYPEMAP[typename] || typename
-    },
     columnClass(column) {
       let classes = []
       if(column.is_pk)
@@ -211,7 +200,7 @@ export default {
               columns: node.columns.map((column) => (
                   {
                     name: column.name,
-                    type: this.shortDataType(column.type),
+                    type: column.type,
                     cgid: column.cgid,
                     is_pk: column.is_pk,
                     is_fk: column.is_fk,
@@ -257,10 +246,10 @@ export default {
           spacingFactor: 0.85,
         })
         
-        setTimeout(() => {
-          this.adjustSizes()
-        }, 100)
       }
+      setTimeout(() => {
+        this.adjustSizes();
+      }, 100);
     
       this.setupEvents();
 
@@ -301,8 +290,10 @@ export default {
           node.style('height', el.parentElement.clientHeight + padding)
         }
       })
-      this.layout.run()
-      this.cy.fit()
+      if (!isEmpty(this.layout)) {
+        this.layout.run();
+        this.cy.fit();
+      }
     },
     saveGraphState() {
       const layoutData = this.cy.json(); 

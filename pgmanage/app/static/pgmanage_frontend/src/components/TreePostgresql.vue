@@ -256,7 +256,7 @@ export default {
             label: "Create Table",
             icon: "fas fa-plus",
             onClick: () => {
-              tabsStore.createSchemaEditorTab(this.selectedNode, operationModes.CREATE)
+              tabsStore.createSchemaEditorTab(this.selectedNode.title, this.selectedNode.data.schema, operationModes.CREATE);
             },
           },
           {
@@ -311,7 +311,7 @@ export default {
             label: "Alter Table",
             icon: "fas fa-edit",
             onClick: () => {
-              tabsStore.createSchemaEditorTab(this.selectedNode, operationModes.UPDATE)
+              tabsStore.createSchemaEditorTab(this.selectedNode.title, this.selectedNode.data.schema, operationModes.UPDATE);
             },
           },
           {
@@ -3008,6 +3008,9 @@ export default {
           break;
         case "user_mapping":
           schema = node.data.foreign_server;
+          break;
+        case "table":
+          table = node.data.raw_value;
           break;
       }
 

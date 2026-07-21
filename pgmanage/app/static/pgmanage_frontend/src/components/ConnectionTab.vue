@@ -1,7 +1,7 @@
 <template>
   <div data-testid="connection-tab" class="container-fluid position-relative g-0">
     <div class="row g-0">
-      <splitpanes class="default-theme">
+      <splitpanes @resized="handleDatabaseTreeWidthChange" class="default-theme">
         <pane min-size="18" size="25">
           <div
             :id="`${workspaceId}_div_left`"
@@ -74,6 +74,7 @@
                       :properties-data="propertiesData"
                       :show-loading="showTreeTabsLoading"
                       :is-visible="isTreeTabsVisible"
+                      :db-explorer-width="dbExplorerWidth"
                       @show-tree-tabs="showTreeTabPane"
                       @hide-tree-tabs="hideTreeTabpane"
                     />
@@ -117,6 +118,7 @@ import TabTitleUpdateMixin from "../mixins/sidebar_title_update_mixin";
 import { Tooltip } from "bootstrap";
 import { handleError } from "../logging/utils";
 import SearchModal from "./SearchModal.vue";
+import debounce from 'lodash/debounce'
 
 export default {
   name: "ConnectionTab",
@@ -140,12 +142,14 @@ export default {
   data() {
     return {
       ddlData: "",
+      dbExplorerWidth: 18,
       propertiesData: [],
       treeTabsPaneSize: 2,
       lastTreeTabsPaneSize: null,
       showTreeTabsLoading: false,
       lastTreeTabsData: null,
       lastTreeTabsView: null,
+      skipTransitions: true,
     };
   },
   computed: {
@@ -175,6 +179,9 @@ export default {
         return truncateText(this.connectionTab.metaData.selectedDatabase, 10);
       }
       return this.connectionTab.metaData.selectedDatabase;
+    },
+    paneTransitionStyle() {
+      return this.skipTransitions ? 'none' : '0.35s';
     },
     treeComponent() {
       const treeTechnologiesMap = {
@@ -270,12 +277,7 @@ export default {
       let connection = connectionsStore.getConnection(this.databaseIndex);
       emitter.emit("connection-save", connection);
     },
-    getProperties({ view, data }) {
-      if (!this.isTreeTabsVisible) {
-        this.lastTreeTabsData = data;
-        this.lastTreeTabsView = view;
-        return;
-      }
+    debouncedFetchProperties: debounce(function(view, data) {
       let loadingTimeout = setTimeout(() => {
         this.showTreeTabsLoading = true;
       }, 1000);
@@ -307,12 +309,26 @@ export default {
           }
           this.showTreeTabsLoading = false;
         });
+    }, 200),
+    getProperties({ view, data }) {
+      // remember last DB object to load properties for
+      // use this data later when properties/ddl is expanded
+      this.lastTreeTabsData = data;
+      this.lastTreeTabsView = view;
+
+      // don't load anything if properties/ddl panel is hidden
+      if (!this.isTreeTabsVisible)
+        return;
+
+      this.debouncedFetchProperties(view, data);
     },
     clearTreeTabsData() {
       this.ddlData='';
       this.propertiesData=[];
     },
     showTreeTabPane() {
+      this.skipTransitions = false
+      setTimeout(() => { this.skipTransitions = true }, 350); ;
       this.treeTabsPaneSize = this.lastTreeTabsPaneSize || 40;
       if (!!this.lastTreeTabsData && !!this.lastTreeTabsView)
         this.getProperties({
@@ -321,6 +337,8 @@ export default {
         });
     },
     hideTreeTabpane() {
+      this.skipTransitions = false
+      setTimeout(() => { this.skipTransitions = true }, 350); ;
       this.lastTreeTabsPaneSize = this.treeTabsPaneSize;
       this.treeTabsPaneSize = 2;
     },
@@ -329,6 +347,9 @@ export default {
       if (this.treeTabsPaneSize !== 2)  {
         this.lastTreeTabsPaneSize = this.treeTabsPaneSize;
       }
+    },
+    handleDatabaseTreeWidthChange(event) {
+      this.dbExplorerWidth = event[1].size;
     },
     showQuickSearch(event) {
       emitter.emit(`${this.workspaceId}_show_quick_search`, event);
@@ -353,6 +374,6 @@ export default {
 }
 
 .splitpanes .splitpanes__pane {
-  transition: none;
+  transition: v-bind(paneTransitionStyle);
 }
 </style>

@@ -33,8 +33,8 @@
               <div class="col-2">
                 <p class="h6">Type</p>
               </div>
-              <div class="col-2">
-                <p class="h6">Refresh Interval</p>
+              <div class="col-1">
+                <p class="h6">Refresh</p>
               </div>
               <div class="col d-flex justify-content-end pe-2">
                 <p class="h6">Actions</p>
@@ -58,7 +58,7 @@
                 </div>
               </div>
 
-              <div class="col d-flex justify-content-end">
+              <div class="col d-flex">
                 <button
                   @click='$emit("moveWidgetUp", index)'
                   class="btn btn-icon btn-icon-secondary ps-2 pe-2" title="Move widget up" type="button">
@@ -80,7 +80,7 @@
                 <div class="cell">{{ widget.type }}</div>
               </div>
 
-              <div class="col-2 d-flex align-items-center">
+              <div class="col-1 d-flex align-items-center">
                 <div class="cell">{{ humanizeDuration(widget.interval) }}</div>
               </div>
 

@@ -331,6 +331,8 @@ class MariaDB:
             select distinct i.constraint_name as "constraint_name",
                    i.table_name as "table_name",
                    k.referenced_table_name as r_table_name,
+                   k.column_name as "column_name",
+                   k.referenced_column_name as "r_column_name",
                    k.table_schema as "table_schema",
                    k.referenced_table_schema as r_table_schema,
                    r.update_rule as "update_rule",

@@ -16,7 +16,7 @@
         <label class="fw-bold mb-2" :for="`${tabId}_rowLimit`">Limit</label>
         <div class="d-flex">
           <select :id="`${tabId}_rowLimit`" v-model="rowLimit" class="form-select">
-            <option v-for="(option, index) in [10, 100, 1000]"
+            <option v-for="(option, index) in [25, 100, 1000]"
               :key=index
               :value="option">
                 {{option}} rows
@@ -71,6 +71,7 @@ import { dataEditorFilterModes } from '../constants';
 import { handleError } from '../logging/utils';
 import dialects from './dialect-data';
 import { extractOrderByClause } from '../utils';
+import { readClipboardText } from "@src/utils/clipboard";
 
 // TODO: run query in transaction
 
@@ -110,7 +111,7 @@ export default {
       tableData: [],
       tableDataLocal: [],
       queryFilters: [{ column: "", operator: "=", value: "" }],
-      rowLimit: 10,
+      rowLimit: 25,
       dataLoaded: false,
       heightSubtract: 200, //default safe value, recalculated in handleResize
       tabulator: null,
@@ -399,12 +400,11 @@ export default {
               {
                 label: '<i class="fas fa-paste"></i><span>Paste</span>',
                 action: async () => {
-                  if (!navigator.clipboard || !navigator.clipboard.readText) {
+                  const text = await readClipboardText();
+
+                  if (!text) {
                     return;
                   }
-
-                  const text = await navigator.clipboard.readText();
-                  if (!text) return;
 
                   const clip = this.tabulator.modules.clipboard;
 
@@ -563,7 +563,14 @@ export default {
 
       if (params?.sort && params.sort.length === 1) {
         let sortColumnName = this.columnNames[params.sort[0].field];
-        const updatedOrderClause = `ORDER BY ${sortColumnName} ${params.sort[0].dir}`;
+        let updatedOrderClause = '';
+        if (this.dialect === 'oracle') {
+          // sort column should be quoted
+          let quotedColumnName = this.knex.raw("?", [sortColumnName]).toQuery()
+          updatedOrderClause = `ORDER BY ${quotedColumnName} ${params.sort[0].dir}`;
+        } else {
+          updatedOrderClause = `ORDER BY ${sortColumnName} ${params.sort[0].dir}`;
+        }
         this.updatedRawQuery = `${queryFilterCleaned} ${updatedOrderClause}`;
         return updatedOrderClause;
       }
@@ -662,6 +669,9 @@ export default {
     handleResize() {
       if(this.$refs === null)
         return
+
+      if(this.tabulator)
+        this.tabulator.redraw();
 
       this.heightSubtract =
         this.$refs.bottomToolbar.getBoundingClientRect().height +

@@ -586,6 +586,7 @@
   <script>
   try {
     var gui = require('nw.gui');
+    let clipboard = gui.Clipboard.get();
     let win = gui.Window.get();
     let django = null;
     let v_loading_data_container = document.getElementById('loading_interface');
@@ -741,6 +742,11 @@
 
       win.setMinimumSize(1024, 768);
       initWindowState();
+
+      v_webview.contentWindow.postMessage(
+        { type: "pgmanage:desktop-host-ready" },
+        "*"
+      );
     });
 
     const child_process = require('child_process')
@@ -784,6 +790,32 @@
 
     window.addEventListener("message", (event) => {
       const data = event.data;
+
+      if (data.type === "pgmanage:read-clipboard-text") {
+
+        if (!data.requestId) {
+          return;
+        }
+
+        let text = "";
+
+        try {
+          text = clipboard.get("text") || "";
+        } catch (error) {
+          text = "";
+        }
+
+        v_webview.contentWindow.postMessage(
+          {
+            type: "pgmanage:clipboard-text",
+            requestId: data.requestId,
+            text,
+          },
+          "*" 
+        );
+
+        return;
+      }
 
       if (data.type == "pgmanage:confirm-close") {
         finalizeClose();

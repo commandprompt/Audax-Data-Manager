@@ -360,11 +360,13 @@ describe("useTabsStore", () => {
     const primaryTab = store.addTab({ name: "Primary Tab" });
     store.selectTab(primaryTab);
     store.selectedPrimaryTab.metaData.selectedDBMS = "mysql";
+    const nodeMock = {
+      title: "test_table",
+      data: { schema: "TestSchema", database: "TestDB" },
+    };
     store.createSchemaEditorTab(
-      {
-        title: "test_table",
-        data: { schema: "TestSchema", database: "TestDB" },
-      },
+      nodeMock.title,
+      nodeMock.data.database,
       operationModes.CREATE,
     );
 
