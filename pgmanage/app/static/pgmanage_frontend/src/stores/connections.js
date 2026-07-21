@@ -32,7 +32,7 @@ const useConnectionsStore = defineStore({
         let details = `${connection.tunnel.user}@${connection.tunnel.server}:${connection.tunnel.port}`;
         tabsStore.createTerminalTab(connection.id, connection.alias, details);
       } else {
-        tabsStore.createConnectionTab(connection.id);
+        tabsStore.createWorkspaceTab(connection.id);
       }
     },
     queueChangeActiveDatabaseThreadSafe(data) {

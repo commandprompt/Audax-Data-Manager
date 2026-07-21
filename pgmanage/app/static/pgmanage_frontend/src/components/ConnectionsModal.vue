@@ -323,7 +323,7 @@ export default {
                     }
                     currentParent = tab.index;
                     tabsStore
-                      .createConnectionTab(
+                      .createWorkspaceTab(
                         tab.index,
                         false,
                         conn.alias,

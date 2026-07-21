@@ -220,10 +220,10 @@ describe("useTabsStore", () => {
   it("should create and select a connection tab", async () => {
     const store = useTabsStore();
     const connectionIndex = 0;
-    const connectionTab = await store.createConnectionTab(connectionIndex);
+    const workspaceTab = await store.createWorkspaceTab(connectionIndex);
 
-    expect(connectionTab).toBeDefined();
-    expect(store.selectedPrimaryTab).toEqual(connectionTab);
+    expect(workspaceTab).toBeDefined();
+    expect(store.selectedPrimaryTab).toEqual(workspaceTab);
   });
 
   it("should create a Terminal tab", () => {
@@ -282,7 +282,7 @@ describe("useTabsStore", () => {
 
   it("should create a Monitoring Dashboard tab", async () => {
     const store = useTabsStore();
-    await store.createConnectionTab(0);
+    await store.createWorkspaceTab(0);
     store.createMonitoringDashboardTab();
     const tab = store.selectedPrimaryTab.metaData.secondaryTabs.find(
       (tab) => tab.name === "Monitoring"
@@ -318,7 +318,7 @@ describe("useTabsStore", () => {
 
   it("should create an ERD tab with schema arg provided", async () => {
     const store = useTabsStore();
-    await store.createConnectionTab(0);
+    await store.createWorkspaceTab(0);
     store.selectedPrimaryTab.metaData.selectedDatabase = "TestDatabase";
     store.createERDTab("TestSchema");
     const tab = store.selectedPrimaryTab.metaData.secondaryTabs.find(
@@ -330,7 +330,7 @@ describe("useTabsStore", () => {
 
   it("should create an ERD tab without schema arg provided", async () => {
     const store = useTabsStore();
-    await store.createConnectionTab(0);
+    await store.createWorkspaceTab(0);
     store.createERDTab();
     const tab = store.selectedPrimaryTab.metaData.secondaryTabs.find(
       (tab) => tab.name === "ERD"
@@ -377,7 +377,7 @@ describe("useTabsStore", () => {
 
   it("should create a Monitoring tab", async () => {
     const store = useTabsStore();
-    await store.createConnectionTab(0);
+    await store.createWorkspaceTab(0);
     store.createMonitoringTab("Backends", "SELECT * FROM backends");
     const tab = store.selectedPrimaryTab.metaData.secondaryTabs.find(
       (tab) => tab.name === "Backends"
