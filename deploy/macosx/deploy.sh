@@ -134,16 +134,16 @@ plutil -replace CFBundleShortVersionString -string $APP_VERSION $APP_LONG_VERSIO
 echo CFBundleDisplayName = \"$APP_NAME\" >> $APP_LONG_VERSION.app/Contents/Resources/el.lproj/InfoPlist.strings
 
 # rename nwjs executable
-mv $APP_LONG_VERSION.app/Contents/MacOS/nwjs $APP_LONG_VERSION.app/Contents/MacOS/$APP_NAME
+mv $APP_LONG_VERSION.app/Contents/MacOS/nwjs "$APP_LONG_VERSION.app/Contents/MacOS/$APP_NAME"
 
-mv $APP_LONG_VERSION.app $RELEASE_DIR/$APP_NAME.app
+mv $APP_LONG_VERSION.app "$RELEASE_DIR/$APP_NAME.app"
 
 # Create dmg file
 
 # Install dmgbuild command line tool
 pip3 install dmgbuild
 
-dmgbuild -s $DEPLOY_DIR/settings.py -D app=$RELEASE_DIR/$APP_NAME.app "$APP_NAME" "$APP_LONG_VERSION"_mac_x64.dmg
+dmgbuild -s $DEPLOY_DIR/settings.py -D app="$RELEASE_DIR/$APP_NAME.app" "$APP_NAME" "$APP_LONG_VERSION"_mac_x64.dmg
 
 mv "$APP_LONG_VERSION"_mac_x64.dmg $RELEASE_DIR
 
