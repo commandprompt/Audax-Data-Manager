@@ -31,9 +31,11 @@ describe("ConnectionTab.vue", () => {
     tabsStore = useTabsStore();
     connTab = tabsStore.addTab({ name: "TestConnection" });
     tabsStore.selectTab(connTab);
-    connTab.metaData.selectedDatabaseIndex = 1;
-    connTab.metaData.selectedDBMS = "postgresql";
-    connTab.metaData.selectedDatabase = "testdb";
+    // $patch (rather than a direct field write) notifies subscribers with a
+    // "connections" payload, which sidebar_title_update_mixin.js reacts to by
+    // touching DOM nodes that don't exist in this shallow-mounted test. Do
+    // this once, before any component subscribes, so per-test resets below
+    // must use direct field writes instead.
     connectionsStore.$patch({
       connections: [connectionMock],
     });
@@ -42,6 +44,11 @@ describe("ConnectionTab.vue", () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllMocks();
+
+    connTab.metaData.selectedDatabaseIndex = 1;
+    connTab.metaData.selectedDBMS = "postgresql";
+    connTab.metaData.selectedDatabase = "testdb";
+    connectionMock.autocomplete = true;
 
     axios.post.mockResolvedValueOnce({});
 

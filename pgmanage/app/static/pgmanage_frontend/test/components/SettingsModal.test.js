@@ -16,10 +16,11 @@ describe("SettingsModal.vue", () => {
   let wrapper, settingsStore;
 
   beforeEach(() => {
+    settingsStore = useSettingsStore();
+    settingsStore.$reset();
     wrapper = mount(SettingsModal, {
       shallow: true,
     });
-    settingsStore = useSettingsStore();
   });
 
   afterEach(() => {

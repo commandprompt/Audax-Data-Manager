@@ -22,6 +22,7 @@ vi.mock("@src/stores/stores_initializer", () => {
 describe("useTabsStore", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
+    document.title = "";
   });
 
   it("should initialize with a unique id and empty tabs", () => {
