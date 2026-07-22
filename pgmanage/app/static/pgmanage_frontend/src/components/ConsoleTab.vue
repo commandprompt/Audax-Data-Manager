@@ -235,11 +235,16 @@ export default {
       emitter.on(`${this.tabId}_run_console`, (check_command) => {
         this.consoleSQL(check_command);
       });
+
+      emitter.on(`${this.tabId}_editor_focus`, () => {
+        this.$refs.editor.focus();
+      });
     },
     clearEvents() {
       emitter.all.delete(`${this.tabId}_resize`);
       emitter.all.delete(`${this.tabId}_check_console_status`);
       emitter.all.delete(`${this.tabId}_run_console`);
+      emitter.all.delete(`${this.tabId}_editor_focus`);
     },
     onResize() {
       if (this.fitAddon)

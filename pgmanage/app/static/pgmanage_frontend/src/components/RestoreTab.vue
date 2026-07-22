@@ -320,6 +320,7 @@ import { showAlert } from '../notification_control';
 import { settingsStore, fileManagerStore, tabsStore } from '../stores/stores_initializer';
 import { truncateText } from "../utils";
 import { handleError } from '../logging/utils';
+import { emitter } from "../emitter";
 
 export default {
   name: "RestoreTab",
@@ -451,6 +452,13 @@ export default {
         })
       }
     })
+
+    emitter.on(`${this.tabId}_focus_first_input`, () => {
+      this.$el.querySelector('input:not([disabled]), select:not([disabled])')?.focus();
+    });
+  },
+  unmounted() {
+    emitter.all.delete(`${this.tabId}_focus_first_input`);
   },
   methods: {
     getRoleNames() {

@@ -553,6 +553,14 @@ export default {
       emitter.on(`${this.tabId}_run_explain_analyze`, () => {
         this.runExplain(1);
       });
+
+      emitter.on(`${this.tabId}_editor_focus`, () => {
+        this.$refs.editor.focus();
+      });
+
+      emitter.on(`${this.tabId}_focus_query_results_grid`, () => {
+        this.$refs.queryResults.focus();
+      });
     },
     clearEvents() {
       emitter.all.delete(`${this.tabId}_check_query_status`);
@@ -560,6 +568,8 @@ export default {
       emitter.all.delete(`${this.tabId}_run_explain_analyze`);
       emitter.all.delete(`${this.tabId}_run_query`);
       emitter.all.delete(`${this.tabId}_run_selection`);
+      emitter.all.delete(`${this.tabId}_editor_focus`);
+      emitter.all.delete(`${this.tabId}_focus_query_results_grid`);
     },
     showCommandsHistory() {
       commandsHistoryStore.showModal(this.tabId, this.databaseIndex, "Query");

@@ -343,6 +343,7 @@ import { showAlert } from "../notification_control";
 import { fileManagerStore, tabsStore, settingsStore } from "../stores/stores_initializer";
 import { truncateText } from "../utils";
 import { handleError } from "../logging/utils";
+import { emitter } from "../emitter";
 
 export default {
   name: "BackupTab",
@@ -493,6 +494,13 @@ export default {
         });
       }
     });
+
+    emitter.on(`${this.tabId}_focus_first_input`, () => {
+      this.$el.querySelector('input:not([disabled]), select:not([disabled])')?.focus();
+    });
+  },
+  unmounted() {
+    emitter.all.delete(`${this.tabId}_focus_first_input`);
   },
   watch: {
     'backupOptions.format'(newValue){

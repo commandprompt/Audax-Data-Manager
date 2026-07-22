@@ -56,6 +56,10 @@ export default {
       this.refreshTreeRecursive(node_type);
     });
 
+    emitter.on(`focusTree_${this.workspaceId}`, () => {
+      this.$refs.tree.$el.focus();
+    })
+
     this.$watch("selectedNode", (newVal) => {
       if (newVal === undefined) {
         this.$emit("clearTabs");

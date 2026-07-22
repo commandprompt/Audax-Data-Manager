@@ -243,6 +243,10 @@ export default {
         }
       });
 
+    emitter.on(`${this.tabId}_focus_data_grid`, () => {
+      this.focus();
+    });
+
     settingsStore.$onAction((action) => {
       if(action.name === "setFontSize") {
         action.after(() => {
@@ -259,6 +263,7 @@ export default {
   unmounted() {
     emitter.all.delete(`${this.tabId}_query_edit`);
     emitter.all.delete(`${this.tabId}_check_query_edit_status`);
+    emitter.all.delete(`${this.tabId}_focus_data_grid`);
   },
   updated() {
     if (tabsStore.selectedPrimaryTab?.metaData?.selectedTab?.id === this.tabId) {
@@ -266,6 +271,9 @@ export default {
     }
   },
   methods: {
+    focus() {
+      this.tabulator?.element.querySelector(".tabulator-tableholder")?.focus();
+    },
     actionsFormatter(cell, formatterParams, onRendered) {
       const div = document.createElement("div");
       div.className = 'btn btn-grid-actions';

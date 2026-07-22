@@ -202,6 +202,9 @@ export default {
         shortcut_explain: "Explain Query",
         shortcut_explain_analyze: "Analyze Query",
         shortcut_quick_search: "Quick Search",
+        shortcut_focus_database_tree: "Focus into database tree",
+        shortcut_focus_selected_tab: "Focus into selected tab",
+        shortcut_focus_data_grid: "Focus into data grid",
       };
       return LABEL_MAP[shortcut.shortcut_code] || "unknown";
     },

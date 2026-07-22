@@ -192,6 +192,7 @@ import { Modal } from "bootstrap";
 import { tabsStore } from "../stores/stores_initializer";
 import ConfirmableButton from "./ConfirmableButton.vue";
 import { handleError } from "../logging/utils";
+import { emitter } from "../emitter";
 
 export default {
   name: "Config",
@@ -287,6 +288,13 @@ export default {
     this.getConfiguration();
     this.getConfigHistory();
     this.getConfigStatus();
+
+    emitter.on(`${this.tabId}_focus_first_input`, () => {
+      this.$el.querySelector('input:not([disabled]), select:not([disabled])')?.focus();
+    });
+  },
+  unmounted() {
+    emitter.all.delete(`${this.tabId}_focus_first_input`);
   },
   methods: {
     getConfiguration() {
