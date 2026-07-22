@@ -421,6 +421,7 @@ const useTabsStore = defineStore("tabs", {
       tab.metaData.consoleHelp = primaryTab.metaData?.consoleHelp;
       tab.metaData.databaseIndex = primaryTab.metaData?.selectedDatabaseIndex;
       tab.metaData.dialect = primaryTab.metaData?.selectedDBMS;
+      tab.metaData.databaseName = primaryTab.metaData?.selectedDatabase;
 
       this.selectTab(tab);
     },

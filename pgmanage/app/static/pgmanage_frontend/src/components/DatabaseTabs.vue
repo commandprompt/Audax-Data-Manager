@@ -231,6 +231,7 @@ export default {
           consoleHelp: tab?.metaData?.consoleHelp,
           databaseIndex: tab?.metaData?.databaseIndex,
           dialect: tab?.metaData?.dialect,
+          databaseName: tab?.metaData?.databaseName,
         },
         QueryTab: {
           workspaceId: tab.parentId,

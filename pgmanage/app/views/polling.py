@@ -2,6 +2,7 @@ import copy
 import io
 import logging
 import os
+import re
 import threading
 import time
 import traceback
@@ -1274,6 +1275,14 @@ def thread_console(self, args) -> None:
         # Removing last character if it is a semi-colon
         if sql_cmd[-1:] == ";":
             sql_cmd = sql_cmd[:-1]
+
+        # Strip oracle's "/" or mssql's "GO" terminator (not valid SQL),
+        # preserving any comment that follows it.
+        if database.db_type in ("oracle", "mssql"):
+            marker_pattern = r"/" if database.db_type == "oracle" else r"go(?:\s+\d+)?"
+            trailing_junk = r"(?:\n[ \t]*(?:--[^\n]*)?)*"
+            pattern = rf"(?is)\n[ \t]*{marker_pattern}[ \t]*(?:--[^\n]*)?(?={trailing_junk}$)"
+            sql_cmd = re.sub(pattern, "", sql_cmd).rstrip()
 
         log_start_time = datetime.now(timezone.utc)
         show_fetch_button: bool = False

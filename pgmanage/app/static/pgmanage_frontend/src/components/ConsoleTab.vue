@@ -1,113 +1,101 @@
 <template>
-  <div>
-  <splitpanes class="default-theme console-body" horizontal @resized="onResize">
-    <pane size="80">
-      <div ref="console" @contextmenu.stop.prevent="contextMenu" :id="`txt_console_${tabId}`" class="omnidb__txt-console me-2 h-100"></div>
-    </pane>
+  <div class="console-tab">
+    <div
+      ref="console"
+      class="omnidb__txt-console terminal-wrapper flex-grow-1"
+      @contextmenu.stop.prevent="contextMenu"
+    ></div>
 
-    <pane size="20" class="ps-2 border-top">
-      <div ref="tabActions" class="tab-actions py-2 d-flex align-items-center">
-        <button class="btn btn-square btn-primary" title="Run" @click="consoleSQL(false)" :disabled="executingState">
-          <i class="fas fa-play fa-light"></i>
+    <div ref="tabActions" class="tab-actions py-2 d-flex align-items-center border-top ps-2">
+      <button class="btn btn-square btn-secondary" title="Open File" @click="openFileManagerModal">
+          <i class="fas fa-folder-open fa-light"></i>
+      </button>
+
+      <button class="btn btn-square btn-secondary" title="Clear Console" @click="clearConsole()">
+        <i class="fas fa-broom fa-light"></i>
+      </button>
+
+      <button class="btn btn-square btn-secondary me-2" title="Command History" @click="showCommandsHistory()">
+        <i class="fas fa-clock-rotate-left fa-light"></i>
+      </button>
+
+      <template v-if="postgresqlDialect">
+        <div class="form-check form-check-inline mb-0">
+          <input :id="`check_autocommit_${tabId}`" class="form-check-input" type="checkbox" v-model="autocommit" />
+          <label class="form-check-label" :for="`check_autocommit_${tabId}`">Autocommit</label>
+        </div>
+
+        <TabStatusIndicator :tab-status="tabStatus" />
+      </template>
+
+      <template v-if="fetchMoreData && idleState">
+        <button class="btn btn-sm btn-secondary" title="Fetch More"
+          @click="consoleSQL(consoleModes.FETCH_MORE)">
+          Fetch more
         </button>
+        <BlockSizeSelector v-model="blockSize"/>
+      </template>
 
-        <button class="btn btn-square btn-secondary" title="Open File" @click="openFileManagerModal">
-            <i class="fas fa-folder-open fa-light"></i>
-        </button>
+      <button v-if="fetchMoreData && idleState" class="btn btn-sm btn-secondary" title="Fetch All"
+        @click="consoleSQL(consoleModes.FETCH_ALL)">
+        Fetch all
+      </button>
 
-        <button class="btn btn-square btn-secondary" title="Indent SQL" @click="indentSQL()">
-          <i class="fas fa-indent fa-ligth"></i>
-        </button>
+      <button v-if="fetchMoreData && idleState" class="btn btn-sm btn-secondary" title="Skip Fetch"
+        @click="consoleSQL(consoleModes.SKIP_FETCH)">
+        Skip Fetch
+      </button>
 
-        <button class="btn btn-square btn-secondary" title="Clear Console" @click="clearConsole()">
-          <i class="fas fa-broom fa-ligth"></i>
-        </button>
+      <button v-if="openedTransaction && !executingState" class="btn btn-sm btn-primary" title="Commit">
+        Commit
+      </button>
 
-        <button class="btn btn-square btn-secondary me-2" title="Command History" @click="showCommandsHistory()">
-          <i class="fas fa-clock-rotate-left fa-light"></i>
-        </button>
+      <button v-if="openedTransaction && !executingState" class="btn btn-sm btn-secondary" title="Rollback">
+        Rollback
+      </button>
 
-        <template v-if="postgresqlDialect">
-          <div class="form-check form-check-inline mb-0">
-            <input :id="`check_autocommit_${tabId}`" class="form-check-input" type="checkbox" v-model="autocommit" />
-            <label class="form-check-label" :for="`check_autocommit_${tabId}`">Autocommit</label>
-          </div>
+      <CancelButton v-if="executingState && longQuery" :tab-id="tabId" :workspace-id="workspaceId"
+        @cancelled="cancelConsoleTab()" />
 
-          <TabStatusIndicator :tab-status="tabStatus" />
-        </template>
-
-        <template v-if="fetchMoreData && idleState">
-          <button class="btn btn-sm btn-secondary" title="Fetch More"
-            @click="consoleSQL(false, consoleModes.FETCH_MORE)">
-            Fetch more
-          </button>
-          <BlockSizeSelector v-model="blockSize"/>
-        </template>
-
-        <button v-if="fetchMoreData && idleState" class="btn btn-sm btn-secondary" title="Fetch All"
-          @click="consoleSQL(false, consoleModes.FETCH_ALL)">
-          Fetch all
-        </button>
-
-        <button v-if="fetchMoreData && idleState" class="btn btn-sm btn-secondary" title="Skip Fetch"
-          @click="consoleSQL(false, consoleModes.SKIP_FETCH)">
-          Skip Fetch
-        </button>
-
-        <button v-if="openedTransaction && !executingState" class="btn btn-sm btn-primary" title="Run">
-          Commit
-        </button>
-
-        <button v-if="openedTransaction && !executingState" class="btn btn-sm btn-secondary" title="Run">
-          Rollback
-        </button>
-
-        <CancelButton v-if="executingState && longQuery" :tab-id="tabId" :workspace-id="workspaceId"
-          @cancelled="cancelConsoleTab()" />
-
-        <p class="m-0 h6" v-if="cancelled">
-          <b>Cancelled</b>
-        </p>
-        <p v-else-if="queryStartTime && queryDuration" class="m-0 h6 me-2">
-          <b>Start time:</b> {{ queryStartTime.format() }}<br/>
-          <b>Duration:</b> {{ queryDuration }}
-        </p>
-        <p v-else-if="queryStartTime" class="m-0 h6 me-2">
-          <b>Start time:</b> {{ queryStartTime.format() }}
-        </p>
-      </div>
-        <QueryEditor ref="editor" class="editor-height me-2" :read-only="readOnlyEditor" :tab-id="tabId" :workspace-id="workspaceId" tab-mode="console"
-          :dialect="dialect" @editor-change="updateEditorContent" :autocomplete="autocomplete"/>
-    </pane>
-  </splitpanes>
-</div>
+      <p class="m-0 h6" v-if="cancelled">
+        <b>Cancelled</b>
+      </p>
+      <p v-else-if="queryStartTime && queryDuration" class="m-0 h6 me-2">
+        <b>Start time:</b> {{ queryStartTime.format() }}<br/>
+        <b>Duration:</b> {{ queryDuration }}
+      </p>
+      <p v-else-if="queryStartTime" class="m-0 h6 me-2">
+        <b>Start time:</b> {{ queryStartTime.format() }}
+      </p>
+    </div>
+  </div>
 </template>
 
 <script>
+import { markRaw } from "vue";
 import { Terminal } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
 import { CanvasAddon } from '@xterm/addon-canvas';
-import { Splitpanes, Pane } from "splitpanes";
+import axios from "axios";
 import { emitter } from "../emitter";
 import { showToast } from "../notification_control";
 import moment from "moment";
 import { createRequest } from "../long_polling";
-import { settingsStore, tabsStore, connectionsStore, messageModalStore, fileManagerStore, commandsHistoryStore } from "../stores/stores_initializer";
+import { settingsStore, tabsStore, messageModalStore, fileManagerStore, commandsHistoryStore } from "../stores/stores_initializer";
 import TabStatusIndicator from "./TabStatusIndicator.vue";
-import QueryEditor from "./QueryEditor.vue";
 import CancelButton from "./CancelSQLButton.vue";
 import { tabStatusMap, requestState, queryRequestCodes, consoleModes } from "../constants";
 import FileInputChangeMixin from '../mixins/file_input_mixin'
 import BlockSizeSelector from "./BlockSizeSelector.vue";
 import ContextMenu from "@imengyu/vue3-context-menu";
+import { readClipboardText } from "@src/utils/clipboard";
+import { handleError } from "../logging/utils.js";
+import { ConsoleInputController, CLEAR_TERMINAL, QUIET_RESET } from "../console/ConsoleInputController.js";
 
 export default {
   name: "ConsoleTab",
   components: {
-    Splitpanes,
-    Pane,
     TabStatusIndicator,
-    QueryEditor,
     CancelButton,
     BlockSizeSelector
   },
@@ -118,6 +106,7 @@ export default {
     consoleHelp: String,
     databaseIndex: Number,
     dialect: String,
+    databaseName: String,
   },
   data() {
     return {
@@ -133,14 +122,13 @@ export default {
       queryDuration: "",
       queryStartTime: "",
       cancelled: false,
-      readOnlyEditor: false,
-      editorContent: "",
+      bufferPreview: "",
       longQuery: false,
       terminal: null,
       fitAddon: null,
+      inputController: null,
       blockSize: 50,
-      editorHeightSubtract: 50, //default safe value, recalculated in handleResize,
-      consoleHeightSubtract: 50
+      consoleHeightSubtract: 50, //default safe value, recalculated in onResize
     };
   },
   computed: {
@@ -153,9 +141,6 @@ export default {
     postgresqlDialect() {
       return this.dialect === "postgresql";
     },
-    autocomplete() {
-      return connectionsStore.getConnection(this.databaseIndex).autocomplete
-    },
     consoleModes() {
       return consoleModes;
     },
@@ -166,29 +151,25 @@ export default {
       ].includes(this.tabStatus);
     },
     hasChanges() {
-      return this.activeTransaction || this.executingState || !!this.editorContent
-    },
-    editorHeight() {
-      return `calc(100% - ${this.editorHeightSubtract}px)`;
+      return this.activeTransaction || this.executingState || !!this.bufferPreview
     },
     consoleHeight() {
       return `calc(100vh - ${this.consoleHeightSubtract}px)`
     }
   },
-  updated() { 
+  updated() {
     if (!this.terminal) {
       this.setupTerminal()
     }
-    this.onResize()
+
+    this.updateHeightOffset()
   },
   mounted() {
     if (tabsStore.selectedPrimaryTab.metaData.selectedTab.id === this.tabId) {
       this.setupTerminal()
       requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-              this.onResize();
-            })
-          })
+        this.onResize();
+      })
     }
     this.setupEvents();
 
@@ -197,26 +178,50 @@ export default {
       this.terminal.options.theme = state.terminalTheme;
       this.terminal.options.fontSize = state.fontSize;
     });
-
   },
   unmounted() {
     this.clearEvents();
   },
   methods: {
     setupTerminal() {
-      this.terminal = new Terminal({
+      // marRaw helps to avoid vue reactivity side effects on xterm objects
+      this.terminal = markRaw(new Terminal({
         fontSize: settingsStore.fontSize,
         theme: settingsStore.terminalTheme,
         fontFamily: "'Ubuntu Mono', monospace",
-      });
+      }));
 
       this.terminal.open(this.$refs.console);
-      this.terminal.loadAddon(new CanvasAddon());
-      this.terminal.write(this.consoleHelp);
+      this.terminal.loadAddon(markRaw(new CanvasAddon()));
+      this.terminal.onData((data) => this.onData(data));
 
-      this.fitAddon = new FitAddon();
-
+      this.fitAddon = markRaw(new FitAddon());
       this.terminal.loadAddon(this.fitAddon);
+
+      this.inputController = markRaw(new ConsoleInputController({
+        dialect: this.dialect,
+        // matches the backend's own command echo format (thread_console in
+        // polling.py always prefixes output with "<database>=# "), so the
+        // prompt shown while typing is consistent with what's echoed after Enter
+        promptPrimary: this.databaseName ? `${this.databaseName}=# ` : undefined,
+        promptContinuation: this.databaseName ? `${this.databaseName}-# ` : undefined,
+        onSubmit: this.handleSubmit,
+        onBufferChange: (text) => { this.bufferPreview = text; },
+      }));
+
+      this.terminal.write(this.consoleHelp);
+      this.inputController.beginNewInputLine(this.terminal);
+      this.terminal.focus();
+      this.preloadHistory();
+    },
+    onData(data) {
+      const result = this.inputController.handleData(data);
+      if (result === QUIET_RESET) {
+        this.terminal.write("\r\n");
+        this.inputController.beginNewInputLine(this.terminal);
+      } else if (!result) {
+        this.inputController.render(this.terminal);
+      }
     },
     setupEvents() {
       emitter.on(`${this.tabId}_resize`, () => {
@@ -232,104 +237,122 @@ export default {
         }
       });
 
-      emitter.on(`${this.tabId}_run_console`, (check_command) => {
-        this.consoleSQL(check_command);
+      emitter.on(`${this.tabId}_copy_to_editor`, (content) => {
+        this.inputController.setBuffer(content);
+        this.inputController.render(this.terminal);
+        this.terminal.focus();
+      });
+
+      emitter.on(`${this.tabId}_history_cleared`, () => {
+        this.preloadHistory();
       });
     },
     clearEvents() {
       emitter.all.delete(`${this.tabId}_resize`);
       emitter.all.delete(`${this.tabId}_check_console_status`);
-      emitter.all.delete(`${this.tabId}_run_console`);
+      emitter.all.delete(`${this.tabId}_copy_to_editor`);
+      emitter.all.delete(`${this.tabId}_history_cleared`);
     },
     onResize() {
-      if (this.fitAddon)
-        this.fitAddon.fit();
-      
-      this.editorHeightSubtract =
-        this.$refs.tabActions.getBoundingClientRect().height;
-      this.consoleHeightSubtract =
-        this.$refs.console.getBoundingClientRect().top;
+      this.updateHeightOffset();
+      // wait for DOM updates after updateHeightOffset
+      this.$nextTick(() => {
+        requestAnimationFrame(() => {
+          if (!this.fitAddon || !this.terminal) return;
+          this.fitAddon.fit();
+        });
+      });
     },
-    consoleSQL(check_command = true, mode = consoleModes.DATA_OPERATION) {
-      const command = this.editorContent.trim();
-      if (!check_command || command[0] === "\\") {
-        if (!this.idleState) {
-          showToast("info", "Tab with activity in progres.");
-        } else {
-          if (command === "" && mode === consoleModes.DATA_OPERATION) {
-            showToast("info", "Please provide a string.");
-          } else {
-            let tab = tabsStore.getSelectedSecondaryTab(this.workspaceId)
-            this.queryDuration = "";
-            this.cancelled = false;
-            this.fetchMoreData = false;
-            this.longQuery = false;
-            this.tempData = [];
-            emitter.emit(`${this.tabId}_copy_to_editor`, "");
-            this.lastCommand = command;
-
-            let message_data = {
-              sql_cmd: command,
-              mode: mode,
-              db_index: this.databaseIndex,
-              workspace_id: this.workspaceId,
-              tab_id: this.tabId,
-              autocommit: this.autocommit,
-              block_size: this.blockSize
-            };
-
-            this.readOnlyEditor = true;
-
-            this.queryStartTime = moment();
-
-            let context = {
-              tab: tab,
-              database_index: this.databaseIndex,
-              acked: false,
-              last_command: this.lastCommand,
-              check_command: check_command,
-              mode: mode,
-              callback: this.consoleReturn.bind(this),
-              passwordSuccessCallback: this.passwordSuccessCallback.bind(this),
-              passwordFailCalback: () => {
-                emitter.emit(`${this.tabId}_cancel_query`);
-              },
-            };
-
-            context.tab.metaData.context = context
-
-            createRequest(queryRequestCodes.Console, message_data, context);
-
-            this.consoleState = requestState.Executing;
-
-            setTimeout(() => {
-              if (this.consoleState === requestState.Executing) {
-                tab.metaData.isLoading = true;
-                this.longQuery = true;
-              }
-            }, 1000);
-
-            this.queryInterval = setInterval((function(){
-              let diff = moment().diff(this.queryStartTime)
-              this.queryDuration = moment.utc(diff).format('HH:mm:ss')
-            }).bind(this), 1000)
-
-            tab.metaData.isReady = false
-
-            this.tabStatus = tabStatusMap.RUNNING;
-          }
-        }
+    updateHeightOffset() {
+      if (this.$refs.console) {
+        this.consoleHeightSubtract = this.$refs.console.getBoundingClientRect().top;
       }
+    },
+    preloadHistory() {
+      axios.post("/get_commands_history/", {
+        current_page: 1,
+        database_index: this.databaseIndex,
+        database_filter: this.databaseName,
+        command_contains: "",
+        command_type: "Console",
+        page_size: 300,
+      }).then((resp) => {
+        this.inputController.setPreloadedHistory(
+          resp.data.command_list.map((c) => c.snippet).reverse()
+        );
+      }).catch(handleError);
+    },
+    handleSubmit(text) {
+      if (this.terminal) this.terminal.write("\r\n");
+      this.consoleSQL(consoleModes.DATA_OPERATION, text);
+    },
+    consoleSQL(mode = consoleModes.DATA_OPERATION, command = "") {
+      let tab = tabsStore.getSelectedSecondaryTab(this.workspaceId)
+      this.queryDuration = "";
+      this.cancelled = false;
+      this.fetchMoreData = false;
+      this.longQuery = false;
+      this.tempData = [];
+      this.lastCommand = command;
+
+      let message_data = {
+        sql_cmd: command,
+        mode: mode,
+        db_index: this.databaseIndex,
+        workspace_id: this.workspaceId,
+        tab_id: this.tabId,
+        autocommit: this.autocommit,
+        block_size: this.blockSize
+      };
+
+      this.inputController.setLocked(true);
+
+      this.queryStartTime = moment();
+
+      let context = {
+        tab: tab,
+        database_index: this.databaseIndex,
+        acked: false,
+        last_command: this.lastCommand,
+        mode: mode,
+        callback: this.consoleReturn.bind(this),
+        passwordSuccessCallback: this.passwordSuccessCallback.bind(this),
+        passwordFailCalback: () => {
+          emitter.emit(`${this.tabId}_cancel_query`);
+        },
+      };
+
+      context.tab.metaData.context = context
+
+      createRequest(queryRequestCodes.Console, message_data, context);
+
+      this.consoleState = requestState.Executing;
+
+      setTimeout(() => {
+        if (this.consoleState === requestState.Executing) {
+          tab.metaData.isLoading = true;
+          this.longQuery = true;
+        }
+      }, 1000);
+
+      this.queryInterval = setInterval((function(){
+        let diff = moment().diff(this.queryStartTime)
+        this.queryDuration = moment.utc(diff).format('HH:mm:ss')
+      }).bind(this), 1000)
+
+      tab.metaData.isReady = false
+
+      this.tabStatus = tabStatusMap.RUNNING;
     },
     consoleReturn(data, context) {
       this.tempData.push(data.data.data)
-      
+
       if (!this.idleState && (data.data.last_block || data.error)) {
         clearInterval(this.queryInterval);
         this.queryInterval = null;
         data.data.data = this.tempData;
         this.tempData = []
-        this.readOnlyEditor = false;
+        this.inputController.setLocked(false);
         this.tabStatus = data.data.con_status;
         if (
           this.workspaceId === tabsStore.selectedPrimaryTab.id &&
@@ -353,8 +376,9 @@ export default {
     },
     consoleReturnRender(data) {
       data.data.data.forEach((chunk) => {
-        this.terminal.writeln(chunk);
+        this.terminal.write(chunk);
       })
+      this.terminal.write("\r\n");
       this.fetchMoreData = data.data.show_fetch_button;
       this.queryDuration = data.data.duration;
 
@@ -369,6 +393,8 @@ export default {
             emitter.emit(`refreshTreeRecursive_${this.workspaceId}`, node_type);
         }
       }
+
+      this.inputController.beginNewInputLine(this.terminal);
     },
     contextMenu(event) {
       let option_list = [
@@ -378,6 +404,20 @@ export default {
           disabled: !this.terminal.hasSelection(),
           onClick: () => {
             document.execCommand("copy");
+          },
+        },
+        {
+          label: "Paste",
+          icon: "fas fa-paste",
+          onClick: async () => {
+            const text = await readClipboardText();
+
+            if (!text) {
+              return;
+            }
+
+            this.inputController.insertText(text);
+            this.inputController.render(this.terminal);
           },
         },
       ];
@@ -392,17 +432,15 @@ export default {
       });
     },
     clearConsole() {
-      this.terminal.clear();
+      this.terminal.write(CLEAR_TERMINAL);
       this.terminal.write(this.consoleHelp);
-    },
-    indentSQL() {
-      emitter.emit(`${this.tabId}_indent_sql`);
+      this.inputController.beginNewInputLine(this.terminal);
     },
     cancelConsoleTab() {
       clearInterval(this.queryInterval);
       this.queryInterval = null;
 
-      this.readOnlyEditor = false;
+      this.inputController.setLocked(false);
 
       this.consoleState = requestState.Idle;
       this.tabStatus = tabStatusMap.NOT_CONNECTED;
@@ -411,19 +449,13 @@ export default {
     },
     passwordSuccessCallback(context) {
       emitter.emit(`${this.tabId}_cancel_query`);
-
-      emitter.emit(`${this.tabId}_copy_to_editor`, this.lastCommand);
-
-      this.consoleSQL(context.check_command, context.mode);
-    },
-    updateEditorContent(newContent) {
-      this.editorContent = newContent;
+      this.consoleSQL(context.mode, this.lastCommand);
     },
     showCommandsHistory() {
       commandsHistoryStore.showModal(this.tabId, this.databaseIndex, "Console");
     },
     openFileManagerModal() {
-      if (!!this.editorContent) {
+      if (!!this.bufferPreview) {
         messageModalStore.showModal(
           "Are you sure you wish to discard the current changes?",
           () => {
@@ -448,12 +480,15 @@ export default {
 </script>
 
 <style scoped>
-.editor-height {
-  height: v-bind(editorHeight);
+.console-tab {
+  height: v-bind(consoleHeight);
+  display: flex;
+  flex-direction: column;
 }
 
-.console-body {
-  height: v-bind(consoleHeight);
+.terminal-wrapper {
+  min-height: 0;
+  overflow: hidden;
 }
 
 .tab-actions {
@@ -465,9 +500,5 @@ export default {
 
 .tab-actions>button {
   margin-right: 5px;
-}
-
-.splitpanes .splitpanes__pane {
-  transition: none;
 }
 </style>
