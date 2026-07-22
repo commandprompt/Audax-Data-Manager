@@ -1555,6 +1555,7 @@ class PostgreSQL(Generic):
                 if command_key in ["\\z", "\\dp", "\\n", "\\np", "\\ns", "\\nd", "\\pager", "\\!", "\\e", "\\ev", "\\ef", "\\copy"]: # these commands either not working or not needed
                     continue
                 self.help.AddRow([command_key, command.syntax, command.description])
+            self.help.AddRow(["\\c", "\\c[onnect] [dbname]", "connect to new database"])
 
             self.help_commands = DataTable(simple=True)
             self.help_commands.Columns = ["SQL Command"]
@@ -1577,15 +1578,16 @@ class PostgreSQL(Generic):
                 "PostgreSQL is not supported. Please install it with 'pip install Spartacus[postgresql]'."
             )
 
-    def GetConnectionString(self):
+    def GetConnectionString(self, service=None):
+        service = service or self.service
         if self.conn_string != "":
             if self.conn_string_parsed.query == "":
                 new_query = "?dbname={0}&port={1}".format(
-                    self.service.replace("'", "\\'"), self.port
+                    service.replace("'", "\\'"), self.port
                 )
             else:
                 new_query = "&dbname={0}&port={1}".format(
-                    self.service.replace("'", "\\'"), self.port
+                    service.replace("'", "\\'"), self.port
                 )
             if self.host is None or self.host == "":
                 None
@@ -1604,14 +1606,14 @@ class PostgreSQL(Generic):
             if self.password is None or self.password == "":
                 return """port={0} dbname='{1}' user='{2}' application_name='{3}'""".format(
                     self.port,
-                    self.service.replace("'", "\\'"),
+                    service.replace("'", "\\'"),
                     self.user.replace("'", "\\'"),
                     self.application_name.replace("'", "\\'"),
                 )
             else:
                 return """port={0} dbname='{1}' user='{2}' password='{3}' application_name='{4}'""".format(
                     self.port,
-                    self.service.replace("'", "\\'"),
+                    service.replace("'", "\\'"),
                     self.user.replace("'", "\\'"),
                     self.password.replace("'", "\\'"),
                     self.application_name.replace("'", "\\'"),
@@ -1621,7 +1623,7 @@ class PostgreSQL(Generic):
                 return """host='{0}' port={1} dbname='{2}' user='{3}' application_name='{4}'""".format(
                     self.host.replace("'", "\\'"),
                     self.port,
-                    self.service.replace("'", "\\'"),
+                    service.replace("'", "\\'"),
                     self.user.replace("'", "\\'"),
                     self.application_name.replace("'", "\\'"),
                 )
@@ -1629,7 +1631,7 @@ class PostgreSQL(Generic):
                 return """host='{0}' port={1} dbname='{2}' user='{3}' password='{4}' application_name='{5}'""".format(
                     self.host.replace("'", "\\'"),
                     self.port,
-                    self.service.replace("'", "\\'"),
+                    service.replace("'", "\\'"),
                     self.user.replace("'", "\\'"),
                     self.password.replace("'", "\\'"),
                     self.application_name.replace("'", "\\'"),
@@ -2144,6 +2146,65 @@ class PostgreSQL(Generic):
         except Exception as exc:
             raise Spartacus.Database.Exception(str(exc))
 
+    def special_handle_connect(self, sql):
+        """
+        Implements psql-like \c [dbname]` special command
+        Returns a confirmation string on success. Raises
+        Spartacus.Database.Exception on failure without touching
+        self.con/self.cur/self.service - the old connection is left intact.
+        """
+        args = sql.strip().rstrip(";").split()[1:]
+        if len(args) > 1:
+            raise Spartacus.Database.Exception(
+                '\\c: only a single "dbname" argument is supported '
+                "(switching user/host/port via \\c is not supported)."
+            )
+        target_service = args[0].strip('"').strip("'") if args else self.service
+
+        if target_service == self.service and self.con is not None:
+            # Bare "\c" or "\c samedb" while already connected - just reconfirm
+            return 'You are now connected to database "{0}" as user "{1}".'.format(
+                self.service, self.user
+            )
+
+        try:
+            new_con = psycopg2.connect(
+                self.GetConnectionString(service=target_service),
+                cursor_factory=psycopg2.extras.DictCursor,
+                **self.connection_params
+            )
+        except psycopg2.Error as exc:
+            raise Spartacus.Database.Exception(
+                "connection to server failed: {0}\nPrevious connection kept".format(
+                    str(exc).strip()
+                )
+            )
+        except Exception as exc:
+            raise Spartacus.Database.Exception(
+                "connection to server failed: {0}\nPrevious connection kept".format(exc)
+            )
+
+        # New connection verified - now safe to retire the old one.
+        new_con.autocommit = self.autocommit
+        if self.con is not None:
+            try:
+                if self.cur:
+                    self.cur.close()
+                self.con.close()
+            except Exception:
+                pass
+
+        self.con = new_con
+        self.cur = new_con.cursor()
+        self.con.notices = DataList()
+        self.service = target_service
+        self.start = True
+        self.cursor = None
+
+        return 'You are now connected to database "{0}" as user "{1}".'.format(
+            target_service, self.user
+        )
+
     def Special(self, sql):
         try:
             keep = None
@@ -2162,6 +2223,8 @@ class PostgreSQL(Generic):
             elif command == "\\h" and len(sql.lstrip().split(" ")[1:]) == 0:
                 heading = 'Type "\h [parameter]" where "parameter" is a SQL Command from the list below:'
                 table = self.help_commands
+            elif command in ("\\c", "\\connect"):
+                return self.special_handle_connect(sql)
             else:
                 aux = self.help.Select("Command", command)
                 if len(aux.Rows) > 0:

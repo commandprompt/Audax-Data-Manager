@@ -310,6 +310,18 @@ describe("ConsoleInputController", () => {
     });
   });
 
+  describe("setPrompt", () => {
+    it("changes the prompt strings used by render()", () => {
+      const c = makeController();
+      c.setPrompt("otherdb=# ", "otherdb-# ");
+      c.insertText("select 1");
+      const term = fakeTerminal();
+      c.render(term);
+      const written = term.write.mock.calls[0][0];
+      expect(written).toContain("otherdb=# ");
+    });
+  });
+
   describe("beginNewInputLine", () => {
     it("resets to an empty input line and renders exactly once", () => {
       const c = makeController();

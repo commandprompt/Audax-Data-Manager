@@ -1382,6 +1382,12 @@ def thread_console(self, args) -> None:
                         database.connection.start = True
                         data1 = database.connection.Special(sql)
 
+                        # database.connection.service reflects the live
+                        # connection (e.g. after \c) - keep the wrapper's
+                        # active_service in sync so the prompt, history, and
+                        # the next request's tab-cache check follow it.
+                        database.active_service = database.connection.service
+
                         notices = database.connection.GetNotices()
                         notices_text = ""
                         if len(notices) > 0:
@@ -1420,6 +1426,7 @@ def thread_console(self, args) -> None:
                 "last_block": True,
                 "duration": duration,
                 "con_status": database.connection.GetConStatus(),
+                "active_database": database.active_service,
             }
 
             # send data in chunks to avoid blocking the websocket server
@@ -1449,6 +1456,7 @@ def thread_console(self, args) -> None:
                             "show_fetch_button": show_fetch_button,
                             "con_status": database.connection.GetConStatus(),
                             "status": database.connection.GetStatus(),
+                            "active_database": database.active_service,
                         }
                     if not self.cancel:
                         queue_response(client_object, response_data_copy)

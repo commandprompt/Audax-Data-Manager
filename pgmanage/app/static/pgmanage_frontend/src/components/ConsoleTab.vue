@@ -268,11 +268,11 @@ export default {
         this.consoleHeightSubtract = this.$refs.console.getBoundingClientRect().top;
       }
     },
-    preloadHistory() {
+    preloadHistory(databaseFilter = this.databaseName) {
       axios.post("/get_commands_history/", {
         current_page: 1,
         database_index: this.databaseIndex,
-        database_filter: this.databaseName,
+        database_filter: databaseFilter,
         command_contains: "",
         command_type: "Console",
         page_size: 300,
@@ -302,7 +302,8 @@ export default {
         workspace_id: this.workspaceId,
         tab_id: this.tabId,
         autocommit: this.autocommit,
-        block_size: this.blockSize
+        block_size: this.blockSize,
+        database_name: this.databaseName,
       };
 
       this.inputController.setLocked(true);
@@ -381,6 +382,14 @@ export default {
       this.terminal.write("\r\n");
       this.fetchMoreData = data.data.show_fetch_button;
       this.queryDuration = data.data.duration;
+
+      const newActiveDatabase = data.data.active_database;
+      if (newActiveDatabase && newActiveDatabase !== this.databaseName) {
+        const tab = tabsStore.getSecondaryTabById(this.tabId, this.workspaceId);
+        if (tab) tab.metaData.databaseName = newActiveDatabase;
+        this.inputController.setPrompt(`${newActiveDatabase}=# `, `${newActiveDatabase}-# `);
+        this.preloadHistory(newActiveDatabase);
+      }
 
       if (!data.error && !!data?.data?.status && isNaN(data.data.status)) {
         let mode = ["CREATE", "DROP", "ALTER"];
@@ -474,6 +483,10 @@ export default {
       if (tab) {
         tab.metaData.hasUnsavedChanges = this.hasChanges;
       }
+    },
+    databaseName(newVal) {
+      if (!this.inputController) return;
+      this.inputController.setPrompt(`${newVal}=# `, `${newVal}-# `);
     },
   }
 };

@@ -99,6 +99,11 @@ export class ConsoleInputController {
     this.locked = locked;
   }
 
+  setPrompt(promptPrimary = "=# ", promptContinuation = "-# ") {
+    this.promptPrimary = promptPrimary;
+    this.promptContinuation = promptContinuation;
+  }
+
   setPreloadedHistory(snippets) {
     this.history = snippets.slice();
     this.historyIndex = null;
