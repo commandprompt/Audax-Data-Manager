@@ -2,13 +2,11 @@ import { defineStore } from "pinia";
 import ShortUniqueId from "short-unique-id";
 import { connectionsStore, messageModalStore, dbMetadataStore } from "./stores_initializer";
 import { showToast, showConfirm } from "../notification_control";
-import ContextMenu from "@imengyu/vue3-context-menu";
 import { createRequest, removeContext } from "../long_polling";
 import moment from "moment";
 import { emitter } from "../emitter";
 import { queryRequestCodes, operationModes } from "../constants";
 import { showMenuNewTabOuter, renameTab } from "../workspace";
-import { h } from "vue";
 
 import postgresqlIcon from '@src/assets/images/db_icons/postgresql.svg'
 import mysqlIcon from '@src/assets/images/db_icons/mysql.svg'
@@ -389,7 +387,9 @@ const useTabsStore = defineStore("tabs", {
           emitter.emit(`${this.id}_resize`);
         },
         closeFunction: (e, tab) => {
-          this.terminalContextMenu(e, tab);
+          this.beforeCloseTab(e, () => {
+            this.closeTab(tab);
+          });
         },
       });
       tab.metaData.selectedDatabaseIndex = index;
@@ -736,37 +736,6 @@ const useTabsStore = defineStore("tabs", {
         default:
           break;
       }
-    },
-    terminalContextMenu(e, tab) {
-      let optionList = [
-        {
-          label: "Adjust Terminal Dimensions",
-          icon: "fas fa-window-maximize",
-          onClick: function () {
-            emitter.emit(`${tab.id}_adjust_terminal_dimensions`);
-          },
-        },
-        {
-          label: h("p", {
-            class: "mb-0",
-            innerHTML: "Close Terminal",
-          }),
-          icon: "fas fa-plug-circle-xmark",
-          onClick: () => {
-            ContextMenu.closeContextMenu();
-            this.closeTab(tab);
-          },
-        },
-      ];
-
-      ContextMenu.showContextMenu({
-        theme: "pgmanage",
-        x: e.x,
-        y: e.y,
-        zIndex: 1000,
-        minWidth: 230,
-        items: optionList,
-      });
     },
     closeTab(tab) {
       if (

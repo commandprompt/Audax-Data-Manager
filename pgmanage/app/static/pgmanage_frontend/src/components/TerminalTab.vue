@@ -105,11 +105,6 @@ export default {
           this.resizeBrowserHandler();
         });
       });
-
-      emitter.on(`${this.workspaceId}_adjust_terminal_dimensions`, () => {
-        this.adjustTermninalDimensions();
-        this.term.focus();
-      });
     },
     contextMenu(event) {
       let option_list = [
@@ -148,7 +143,6 @@ export default {
     clearEvents() {
       window.removeEventListener("resize", this.resizeBrowserHandler);
       emitter.all.delete(`${this.workspaceId}_resize`);
-      emitter.all.delete(`${this.workspaceId}_adjust_terminal_dimensions`);
     },
     terminalRun(spawn = true, query = "\r") {
       this.lastCommand = query;
