@@ -59,7 +59,7 @@ export default {
 
     emitter.on(`focusTree_${this.workspaceId}`, () => {
       this.$refs.tree.$el.focus();
-      flashHighlight(document.getElementById(`${this.workspaceId}_tree`));
+      flashHighlight(this.$refs.tree.$el.parentElement);
     })
 
     this.$watch("selectedNode", (newVal) => {
