@@ -21,6 +21,7 @@ import { emitter } from "../emitter";
 import TabTitleUpdateMixin from "../mixins/sidebar_title_update_mixin";
 import ContextMenu from "@imengyu/vue3-context-menu";
 import { readClipboardText } from "@src/utils/clipboard";
+import debounce from "lodash/debounce";
 
 export default {
   name: "TerminalTab",
@@ -43,10 +44,15 @@ export default {
     this.setupTerminal();
     this.setupEvents();
 
+    let previousFontSize = settingsStore.fontSize;
     settingsStore.$subscribe((mutation, state) => {
       this.term.options.theme = state.terminalTheme;
       this.term.options.fontSize = state.fontSize;
-      this.fitAddon.fit();
+
+      if (state.fontSize !== previousFontSize) {
+        previousFontSize = state.fontSize;
+        this.fitAndNotifyResize();
+      }
     });
 
     this.subscribeToConnectionChanges(this.workspaceId, this.databaseIndex);
@@ -89,10 +95,7 @@ export default {
       this.contextCode = ctx.code;
       tab.metaData.context = ctx;
 
-      this.terminalRun(
-        true,
-        `stty rows ${this.term.rows} cols ${this.term.cols} \n`
-      );
+      this.terminalResize(this.term.cols, this.term.rows);
     },
     setupEvents() {
       window.addEventListener("resize", this.resizeBrowserHandler);
@@ -101,11 +104,6 @@ export default {
         this.$nextTick(() => {
           this.resizeBrowserHandler();
         });
-      });
-
-      emitter.on(`${this.workspaceId}_adjust_terminal_dimensions`, () => {
-        this.adjustTermninalDimensions();
-        this.term.focus();
       });
     },
     contextMenu(event) {
@@ -145,7 +143,6 @@ export default {
     clearEvents() {
       window.removeEventListener("resize", this.resizeBrowserHandler);
       emitter.all.delete(`${this.workspaceId}_resize`);
-      emitter.all.delete(`${this.workspaceId}_adjust_terminal_dimensions`);
     },
     terminalRun(spawn = true, query = "\r") {
       this.lastCommand = query;
@@ -155,6 +152,18 @@ export default {
         db_index: null,
         spawn: spawn,
         ssh_id: this.databaseIndex,
+      };
+
+      createRequest(queryRequestCodes.Terminal, messageData, this.contextCode);
+
+      this.state = requestState.Executing;
+    },
+    terminalResize(cols, rows) {
+      let messageData = {
+        workspace_id: this.workspaceId,
+        db_index: null,
+        ssh_id: this.databaseIndex,
+        resize: { cols, rows },
       };
 
       createRequest(queryRequestCodes.Terminal, messageData, this.contextCode);
@@ -173,15 +182,16 @@ export default {
     },
     resizeBrowserHandler() {
       if (this.workspaceId === tabsStore.selectedPrimaryTab.id) {
-        this.fitAddon.fit();
+        this.fitAndNotifyResize();
       }
     },
-    adjustTermninalDimensions() {
-      this.terminalRun(
-        false,
-        `stty rows ${this.term.rows} cols ${this.term.cols} \n`
-      );
+    fitAndNotifyResize() {
+      this.fitAddon.fit();
+      this.adjustTermninalDimensions();
     },
+    adjustTermninalDimensions: debounce(function () {
+      this.terminalResize(this.term.cols, this.term.rows);
+    }, 500),
   },
 };
 </script>

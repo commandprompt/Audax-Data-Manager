@@ -146,7 +146,7 @@ function showMenuNewTabOuter(e) {
           };
         } else {
           onClick = () => {
-            tabsStore.createConnectionTab(conn.id, true, name, tooltip_name)
+            tabsStore.createWorkspaceTab(conn.id, true, name, tooltip_name)
           };
         }
         return {
@@ -245,7 +245,7 @@ function showMenuNewTabOuter(e) {
     } else {
       startLoading();
       setTimeout(function () {
-        tabsStore.createConnectionTab()
+        tabsStore.createWorkspaceTab()
       }, 0);
     }
   }

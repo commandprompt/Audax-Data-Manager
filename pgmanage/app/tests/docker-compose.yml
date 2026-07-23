@@ -1,10 +1,10 @@
-version: '3.1'
-
+# Requires pgmanage/app/tests/dellstore2-normal-1.0.sql locally (not committed to
+# git due to its size). Run ./fetch-dellstore.sh once to download it, then
+# `docker compose up`.
 services:
 
   test_db:
     image: postgres:15.5
-    restart: always
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -14,3 +14,8 @@ services:
     volumes:
       - ./dellstore2-normal-1.0.sql:/docker-entrypoint-initdb.d/db.sql
       - ./test-db.sh:/docker-entrypoint-initdb.d/initdb.sh
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d dellstore"]
+      interval: 2s
+      timeout: 3s
+      retries: 15

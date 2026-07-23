@@ -6,6 +6,7 @@ import axios from "axios";
 import { vi, describe, it, expect, afterEach, beforeEach } from "vitest";
 import { operationModes } from "@src/constants";
 import { handleError } from "@src/logging/utils";
+import { mockErrorResponse } from "../helpers/fixtures.js";
 
 vi.mock("@src/logging/utils", () => ({
   handleError: vi.fn(),
@@ -121,9 +122,7 @@ describe("ExtensionModal.vue", () => {
   });
 
   it("handles API error in getSchemas and getAvailableExtensions", async () => {
-    const errorResponse = {
-      response: { data: { data: "Response error" } },
-    };
+    const errorResponse = mockErrorResponse("Response error");
     vi.restoreAllMocks();
     axios.post.mockRejectedValue(errorResponse);
     const wrapper = mountComponent();
@@ -187,9 +186,7 @@ describe("ExtensionModal.vue", () => {
   });
 
   it("handles API errors gracefully", async () => {
-    axios.post.mockRejectedValueOnce({
-      response: { data: { data: "Error occurred" } },
-    });
+    axios.post.mockRejectedValueOnce(mockErrorResponse("Error occurred"));
     const wrapper = mountComponent();
     const saveExtensionSpy = vi.spyOn(wrapper.vm, "saveExtension");
     await wrapper.setData({ selectedExtension: { name: "hstore" } });

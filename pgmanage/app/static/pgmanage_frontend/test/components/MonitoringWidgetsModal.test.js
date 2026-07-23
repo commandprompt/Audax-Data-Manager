@@ -3,11 +3,6 @@ import { beforeEach, describe, test, vi, expect, beforeAll } from "vitest";
 import MonitoringWidgetsModal from "../../src/components/MonitoringWidgetsModal.vue";
 import axios from "axios";
 
-vi.mock("tabulator-tables", () => {
-  const TabulatorFull = vi.fn();
-  return { TabulatorFull };
-});
-
 describe("MonitoringWidgetsModal", () => {
   let wrapper;
 

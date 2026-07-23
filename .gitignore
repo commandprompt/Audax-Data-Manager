@@ -10,3 +10,10 @@
 *.DS_Store
 venv
 enterprise
+
+pip-cache/
+storage/
+process_logs
+
+# test-only fixture, supplied locally by devs (see pgmanage/app/tests/test-db.sh)
+pgmanage/app/tests/dellstore2-normal-1.0.sql

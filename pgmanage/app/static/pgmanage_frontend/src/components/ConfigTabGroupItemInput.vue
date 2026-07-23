@@ -186,7 +186,7 @@ export default {
     },
     formatNumber(value, unit = null) {
       const units = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "YB", "ZB"]
-      const unit_regex_size = /(?<value>[0-9.]+)\s*(?<unit>[KMGBTPEYZ]?B)$/iy
+      const unit_regex_size = /(?<value>[0-9.]+)\s*(?<unit>[KMGBTPEYZ]?B)$/i
       let match_value_size = value.match(unit_regex_size)
       let factor = 1
       // if unit contains number, like '8kb'
@@ -202,7 +202,7 @@ export default {
         let size_num = match_value_size.groups.value
         let size_unit = match_value_size.groups.unit
         let m = 0
-        for (u of units) {
+        for (let u of units) {
           if (!!unit && unit.toLowerCase() === u.toLowerCase()) {
             m = 0
           }

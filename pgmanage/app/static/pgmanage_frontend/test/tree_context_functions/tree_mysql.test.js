@@ -10,6 +10,7 @@ import axios from "axios";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { flushPromises } from "@vue/test-utils";
 import { handleError } from "@src/logging/utils";
+import { mockErrorResponse } from "../helpers/fixtures.js";
 
 vi.mock("@src/logging/utils", () => ({
   handleError: vi.fn(),
@@ -39,13 +40,7 @@ vi.mock("@src/tree_context_functions/tree_postgresql", () => ({
 }));
 
 describe("TemplateMysql Functions", () => {
-  const errorResponse = {
-    response: {
-      data: {
-        data: "Error message",
-      },
-    },
-  };
+  const errorResponse = mockErrorResponse("Error message");
   beforeEach(() => {
     vi.clearAllMocks();
     vi.useFakeTimers();

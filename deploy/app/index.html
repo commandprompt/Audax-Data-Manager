@@ -35,6 +35,7 @@
         position: absolute;
         top: 30px; left: 0;
         width: 100%; height: calc(100% - 30px);
+        visibility: hidden;
       }
 
       #loading_interface {
@@ -583,31 +584,6 @@
       </div>
     </div>
   <script>
-
-  function simulate_startup(p_window, p_list, p_loading_data_container, p_loading_data_content, p_webview) {
-    if (p_list.length>0) {
-      var string = p_list.shift();
-      p_loading_data_content.innerHTML += '<br/>' + string;
-      setTimeout(function() {
-        simulate_startup(p_window, p_list, p_loading_data_container, p_loading_data_content, p_webview);
-      },2000);
-    }
-    // Done with the startup, adjust page and load PGManage
-    else {
-      p_loading_data_container.style.display = 'none';
-
-      p_window.width = 1280;
-      p_window.height = 1024;
-
-      p_window.x = Math.floor((window.screen.availWidth/2) - (p_window.width/2));
-      p_window.y = Math.floor((window.screen.availHeight/2) - (p_window.height/2));
-
-      document.getElementById('bar_top').style.display = '';
-      p_webview.style.display = '';
-      p_webview.src = 'http://192.168.100.21:8000';
-    }
-  }
-
   try {
     var gui = require('nw.gui');
     let clipboard = gui.Clipboard.get();
@@ -753,7 +729,20 @@
       }
     });
 
-    v_webview.addEventListener("loadstop", () => {
+    v_webview.addEventListener('loadstop', () => {
+      // quit this part if it is not initial loading screen and v_loading_data_container style display is 'none'
+      if (!!v_loading_data_container.getAttribute("style")) return;
+
+      // Prevent intermediate frames from being displayed.
+      win.hide();
+
+      v_loading_data_container.style.display = 'none';
+      document.getElementById('bar_top').style.display = '';
+      v_webview.style.visibility = 'visible';
+
+      win.setMinimumSize(1024, 768);
+      initWindowState();
+
       v_webview.contentWindow.postMessage(
         { type: "pgmanage:desktop-host-ready" },
         "*"
@@ -851,59 +840,37 @@
       process.env.PATH=path.join('/usr/local/bin', path.delimiter, process.env.PATH)
     }
 
-    setTimeout(function() {
-      django = child_process.spawn(path.join(global.__dirname,'pgmanage-server/pgmanage-server'),['-A'], { detached: false });
+    django = child_process.spawn(path.join(global.__dirname,'pgmanage-server/pgmanage-server'),['-A'], { detached: false });
 
-      django.stderr.on('data', (data) => {
-        outputContainer.innerHTML += `<p class="splash__output_text">${data}</p>`
-      });
+    django.stderr.on('data', (data) => {
+      outputContainer.innerHTML += `<p class="splash__output_text">${data}</p>`
+    });
 
-      django.stdout.on('data', (data) => {
-        lines = data.toString().split('\n');
+    django.stdout.on('data', (data) => {
+      lines = data.toString().split('\n');
 
-        lines.forEach((line) => {
-          if(line == '')
-            return
+      lines.forEach((line) => {
+        if(line == '')
+          return
 
-          if (line.substring(0, 4) != 'http') {
-            let out =`<p class="splash__output_text">${line}</p>`
-            outputContainer.innerHTML += out
-              document.getElementById('stages_item_description').innerHTML = ''
-            if(line.startsWith(' ')) {
-              document.getElementById('stages_item_description').innerHTML = line
-            } else {
-              document.getElementById('stages_item_title').innerHTML = line
-            }
+        if (line.substring(0, 4) != 'http') {
+          let out =`<p class="splash__output_text">${line}</p>`
+          outputContainer.innerHTML += out
+            document.getElementById('stages_item_description').innerHTML = ''
+          if(line.startsWith(' ')) {
+            document.getElementById('stages_item_description').innerHTML = line
           } else {
-              document.getElementById('stages_item_description').innerHTML = '';
-              document.getElementById('stages_item_title').innerHTML = 'Opening PGManage...';
-
-              (function(value) { setTimeout( function() {
-                v_loading_data_container.style.display = 'none';
-                win.setMinimumSize(1024, 768)
-                initWindowState()
-                document.getElementById('bar_top').style.display = '';
-                v_webview.style.display = '';
-                v_webview.src = value;
-                }, 500);
-              })(line);
+            document.getElementById('stages_item_title').innerHTML = line
           }
-        })
-      });
+        } else {
+            document.getElementById('stages_item_description').innerHTML = '';
+            document.getElementById('stages_item_title').innerHTML = 'Opening PGManage...';
 
-    },100);
+            v_webview.src = line;
+        }
+      })
+    });
 
-    let simulate_startup_list = [
-      'Initiating phase 1...',
-      'Phase 1 completed.',
-      'Initiating phase 2...',
-      'Phase 2 completed.',
-      'Loading PGManage...'
-    ];
-    /*
-    setTimeout(function(){
-      simulate_startup(v_window, simulate_startup_list, v_loading_data_container, v_loading_data_content, v_webview);
-    }, 1100);*/
 
     // GUI controls
     function guiMinimize() {

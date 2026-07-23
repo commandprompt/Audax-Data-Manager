@@ -423,12 +423,17 @@ def create_request(request: HttpRequest, session: Session) -> JsonResponse:
                     transport = client.get_transport()
                     transport.set_keepalive(120)
 
+                    resize: Optional[dict[str, Any]] = request_data.get("resize")
+
                     workspace_context["terminal_ssh_client"] = client
                     workspace_context["terminal_transport"] = transport
                     workspace_context["terminal_object"] = SSHClientInteraction(
-                        client, timeout=60, display=False
+                        client,
+                        timeout=60,
+                        display=False,
+                        tty_width=resize["cols"] if resize else 80,
+                        tty_height=resize["rows"] if resize else 24,
                     )
-                    workspace_context["terminal_object"].send(request_data["cmd"])
 
                     workspace_context["terminal_type"] = "remote"
 
@@ -454,7 +459,13 @@ def create_request(request: HttpRequest, session: Session) -> JsonResponse:
             else:
                 try:
                     workspace_context["last_update"] = datetime.now()
-                    workspace_context["terminal_object"].send(request_data["cmd"])
+                    resize: Optional[dict[str, Any]] = request_data.get("resize")
+                    if resize:
+                        workspace_context["terminal_object"].resize(
+                            width=resize["cols"], height=resize["rows"]
+                        )
+                    else:
+                        workspace_context["terminal_object"].send(request_data["cmd"])
                 except OSError:
                     pass
 

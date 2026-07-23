@@ -5,6 +5,7 @@ import { Modal } from "bootstrap";
 import { tabsStore } from "@src/stores/stores_initializer";
 import { flushPromises, mount } from "@vue/test-utils";
 import axios from "axios";
+import { mockErrorResponse } from "../helpers/fixtures.js";
 
 vi.mock("bootstrap", () => ({
   Modal: {
@@ -118,13 +119,7 @@ describe("PasswordModal", () => {
   });
 
   it("renewPassword sets message to error.response.data.data on error", async () => {
-    axios.post.mockRejectedValue({
-      response: {
-        data: {
-          data: "Error from backend",
-        },
-      },
-    });
+    axios.post.mockRejectedValue(mockErrorResponse("Error from backend"));
 
     wrapper.vm.message = "";
     wrapper.vm.renewPassword();
