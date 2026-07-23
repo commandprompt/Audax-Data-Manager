@@ -259,7 +259,7 @@ const useTabsStore = defineStore("tabs", {
 
       this.selectTab(tab);
     },
-    createConnectionTab(
+    createWorkspaceTab(
       index,
       createInitialTabs = true,
       name = false,
@@ -320,7 +320,7 @@ const useTabsStore = defineStore("tabs", {
 
           const connTab = this.addTab({
             name: connName,
-            component: "ConnectionTab",
+            component: "WorkspaceTab",
             icon: icon,
             tooltip: tooltipName,
             mode: "connection",
@@ -340,12 +340,12 @@ const useTabsStore = defineStore("tabs", {
                   messageModalStore.showModal(
                     "Some tabs have unsaved changes. Do you wish to discard all changes and close?",
                     () => {
-                      this.closeConnectionTab(primaryTab, secondaryTabs);
+                      this.closeWorkspaceTab(primaryTab, secondaryTabs);
                     },
                     null
                   );
                 } else {
-                  this.closeConnectionTab(primaryTab, secondaryTabs);
+                  this.closeWorkspaceTab(primaryTab, secondaryTabs);
                 }
               });
             },
@@ -777,11 +777,11 @@ const useTabsStore = defineStore("tabs", {
         callback(tab);
       }
     },
-    closeConnectionTab(connectionTab, secondaryTabs) {
+    closeWorkspaceTab(workspaceTab, secondaryTabs) {
       let tabsToRemove = [];
       let tab_ids = secondaryTabs.map((tab) => tab.id);
       tab_ids.forEach((tab_id) => {
-        let tab = this.getSecondaryTabById(tab_id, connectionTab.id);
+        let tab = this.getSecondaryTabById(tab_id, workspaceTab.id);
         if (
           tab.metaData.mode == "query" ||
           tab.metaData.mode == "edit" ||
@@ -794,7 +794,7 @@ const useTabsStore = defineStore("tabs", {
           let messageData = {
             tab_id: tab.id,
             tab_db_id: null,
-            workspace_id: connectionTab.id,
+            workspace_id: workspaceTab.id,
           };
           if (tab.metaData.mode == "query")
             messageData.tab_db_id = tab.metaData.initTabDatabaseId;
@@ -802,7 +802,7 @@ const useTabsStore = defineStore("tabs", {
         }
       });
       let messageData = {
-        workspace_id: connectionTab.id,
+        workspace_id: workspaceTab.id,
         tab_db_id: null,
         tab_id: null,
       };
@@ -811,8 +811,8 @@ const useTabsStore = defineStore("tabs", {
       if (tabsToRemove.length > 0) {
         createRequest(queryRequestCodes.CloseTab, tabsToRemove);
       }
-      dbMetadataStore.deleteDbMeta(connectionTab.metaData.selectedDatabaseIndex);
-      this.removeTab(connectionTab);
+      dbMetadataStore.deleteDbMeta(workspaceTab.metaData.selectedDatabaseIndex);
+      this.removeTab(workspaceTab);
     },
   },
 });

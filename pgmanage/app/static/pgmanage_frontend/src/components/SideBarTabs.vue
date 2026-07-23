@@ -97,7 +97,7 @@ export default {
   components: {
     WelcomeScreen,
     SnippetPanel,
-    ConnectionTab: defineAsyncComponent(() => import("./ConnectionTab.vue")),
+    WorkspaceTab: defineAsyncComponent(() => import("./WorkspaceTab.vue")),
     TerminalTab: defineAsyncComponent(() => import("./TerminalTab.vue")),
   },
   computed: {
@@ -140,7 +140,7 @@ export default {
     saveSettings: debounce(() => settingsStore.saveSettings(true), 1000),
     getCurrentProps(tab) {
       const componentsProps = {
-        ConnectionTab: {
+        WorkspaceTab: {
           workspaceId: tab.id,
         },
         SnippetPanel: {
