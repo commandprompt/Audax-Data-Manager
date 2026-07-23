@@ -23,5 +23,8 @@ vi.mock("tabulator-tables", () => {
   TabulatorFull.prototype.setData = vi.fn();
   TabulatorFull.prototype.replaceData = vi.fn();
   TabulatorFull.prototype.on = vi.fn();
+  TabulatorFull.prototype.destroy = vi.fn();
+  TabulatorFull.prototype.selectRow = vi.fn();
+  TabulatorFull.prototype.copyToClipboard = vi.fn();
   return { TabulatorFull };
 });
