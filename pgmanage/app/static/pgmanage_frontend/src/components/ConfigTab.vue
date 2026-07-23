@@ -1,5 +1,5 @@
 <template>
-<div class="p-2">
+<div ref="highlightEl" class="p-2">
   <div class="row">
     <div class="form-group col">
       <form class="form" role="search" @submit.prevent>
@@ -192,6 +192,7 @@ import { Modal } from "bootstrap";
 import { tabsStore } from "../stores/stores_initializer";
 import ConfirmableButton from "./ConfirmableButton.vue";
 import { handleError } from "../logging/utils";
+import { flashHighlight } from "../utils";
 import { emitter } from "../emitter";
 
 export default {
@@ -291,6 +292,7 @@ export default {
 
     emitter.on(`${this.tabId}_focus`, () => {
       this.$refs.focusableEl.focus();
+      flashHighlight(this.$refs.highlightEl);
     });
   },
   unmounted() {

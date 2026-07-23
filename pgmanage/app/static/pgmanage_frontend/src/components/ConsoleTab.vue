@@ -89,6 +89,7 @@ import { FitAddon } from "@xterm/addon-fit";
 import { CanvasAddon } from '@xterm/addon-canvas';
 import { Splitpanes, Pane } from "splitpanes";
 import { emitter } from "../emitter";
+import { flashHighlight } from "../utils";
 import { showToast } from "../notification_control";
 import moment from "moment";
 import { createRequest } from "../long_polling";
@@ -238,6 +239,7 @@ export default {
 
       emitter.on(`${this.tabId}_focus`, () => {
         this.$refs.editor.focus();
+        flashHighlight(this.$refs.editor.$el);
       });
     },
     clearEvents() {

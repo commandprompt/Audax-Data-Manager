@@ -58,10 +58,18 @@ function splitStringInHalf(str) {
   return [firstHalf, secondHalf];
 }
 
+function flashHighlight(el) {
+  if (!el) return;
+  el.classList.remove("focus-highlight");
+  void el.offsetWidth;
+  el.classList.add("focus-highlight");
+}
+
 export {
   truncateText,
   extractOrderByClause,
   findChild,
   findNode,
   splitStringInHalf,
+  flashHighlight,
 };

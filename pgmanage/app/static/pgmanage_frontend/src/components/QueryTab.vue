@@ -160,6 +160,7 @@ import { queryModes, requestState, tabStatusMap, queryRequestCodes } from "../co
 import CancelButton from "./CancelSQLButton.vue";
 import QueryEditor from "./QueryEditor.vue";
 import { emitter } from "../emitter";
+import { flashHighlight } from "../utils";
 import TabStatusIndicator from "./TabStatusIndicator.vue";
 import QueryResultTabs from "./QueryResultTabs.vue";
 import FileInputChangeMixin from '../mixins/file_input_mixin'
@@ -556,10 +557,12 @@ export default {
 
       emitter.on(`${this.tabId}_focus`, () => {
         this.$refs.editor.focus();
+        flashHighlight(this.$refs.editor.$el);
       });
 
       emitter.on(`${this.tabId}_focus_secondary`, () => {
         this.$refs.queryResults.focus();
+        flashHighlight(this.$refs.queryResults.$el);
       });
     },
     clearEvents() {

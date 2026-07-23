@@ -70,7 +70,7 @@ import DataEditorTabFilterList from './DataEditorTabFilterList.vue'
 import { dataEditorFilterModes } from '../constants';
 import { handleError } from '../logging/utils';
 import dialects from './dialect-data';
-import { extractOrderByClause } from '../utils';
+import { extractOrderByClause, flashHighlight } from '../utils';
 import { readClipboardText } from "@src/utils/clipboard";
 
 // TODO: run query in transaction
@@ -245,6 +245,7 @@ export default {
 
     emitter.on(`${this.tabId}_focus`, () => {
       this.focus();
+      flashHighlight(this.$refs.editorDiv);
     });
 
     settingsStore.$onAction((action) => {

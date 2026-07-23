@@ -7,6 +7,7 @@ import { axiosHooks } from "../logging/service";
 import { handleError } from "../logging/utils";
 import { h } from "vue";
 import debounce from "lodash/debounce";
+import { flashHighlight } from "../utils";
 
 export default {
   emits: ["treeTabsUpdate", "clearTabs"],
@@ -58,6 +59,7 @@ export default {
 
     emitter.on(`focusTree_${this.workspaceId}`, () => {
       this.$refs.tree.$el.focus();
+      flashHighlight(document.getElementById(`${this.workspaceId}_tree`));
     })
 
     this.$watch("selectedNode", (newVal) => {

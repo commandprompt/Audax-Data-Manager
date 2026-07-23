@@ -374,6 +374,25 @@ a:not([href]):not([tabindex]){
   transition: 0.35s;
 }
 
+/* FOCUS HIGHLIGHT */
+.focus-highlight {
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    pointer-events: none;
+    animation: focus-highlight-fade 0.8s ease-out;
+  }
+}
+
+@keyframes focus-highlight-fade {
+  from { background-color: rgba($primaryBlue, 0.35); }
+  to { background-color: rgba($primaryBlue, 0); }
+}
+
 /* PANEL VIEW FULL */
 .omnidb__panel-view--full {
   background-color: #FFF;

@@ -1,5 +1,5 @@
 <template>
-  <div class="backup-tab-scrollable p-2">
+  <div ref="highlightEl" class="backup-tab-scrollable p-2">
   <form @submit.prevent>
       <div class="row">
         <div class="col-4 d-flex">
@@ -341,7 +341,7 @@ import UtilityJobs from "./UtilityJobs.vue";
 import axios from 'axios'
 import { showAlert } from "../notification_control";
 import { fileManagerStore, tabsStore, settingsStore } from "../stores/stores_initializer";
-import { truncateText } from "../utils";
+import { truncateText, flashHighlight } from "../utils";
 import { handleError } from "../logging/utils";
 import { emitter } from "../emitter";
 
@@ -497,6 +497,7 @@ export default {
 
     emitter.on(`${this.tabId}_focus`, () => {
       this.$refs.focusableEl.focus();
+      flashHighlight(this.$refs.highlightEl);
     });
   },
   unmounted() {
