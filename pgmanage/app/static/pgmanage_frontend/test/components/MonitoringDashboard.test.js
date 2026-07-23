@@ -5,14 +5,6 @@ import MonitoringWidget from "@src/components/MonitoringWidget.vue";
 
 import axios from "axios";
 
-vi.mock("tabulator-tables", () => {
-  const TabulatorFull = vi.fn();
-  TabulatorFull.prototype.redraw = vi.fn();
-  TabulatorFull.prototype.setData = vi.fn();
-  TabulatorFull.prototype.replaceData = vi.fn();
-  return { TabulatorFull };
-});
-
 describe("MonitoringDashboard", () => {
   let dashboardWrapper;
 

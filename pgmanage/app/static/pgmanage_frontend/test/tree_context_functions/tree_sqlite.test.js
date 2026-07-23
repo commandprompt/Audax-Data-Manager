@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import axios from "axios";
 import { handleError } from "@src/logging/utils";
+import { mockErrorResponse } from "../helpers/fixtures.js";
 import { emitter } from "@src/emitter";
 import { tabsStore } from "@src/stores/stores_initializer";
 import { flushPromises } from "@vue/test-utils";
@@ -39,13 +40,7 @@ vi.mock("@src/stores/stores_initializer", () => ({
 }));
 
 describe("TemplateSqlite Functions", () => {
-  const errorResponse = {
-    response: {
-      data: {
-        data: "Error message",
-      },
-    },
-  };
+  const errorResponse = mockErrorResponse("Error message");
   beforeEach(() => {
     vi.clearAllMocks();
     vi.useFakeTimers();

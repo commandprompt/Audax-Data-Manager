@@ -7,14 +7,6 @@ import "@src/ace_extras/ext-hoverlink.js";
 import TreePropertiesDDL from "@src/components/TreePropertiesDDL.vue";
 import { useSettingsStore } from "@src/stores/settings.js";
 
-vi.mock("tabulator-tables", () => {
-  const TabulatorFull = vi.fn();
-  TabulatorFull.prototype.redraw = vi.fn();
-  TabulatorFull.prototype.setData = vi.fn();
-  TabulatorFull.prototype.on = vi.fn();
-  return { TabulatorFull };
-});
-
 describe("TreePropertiesDDL.vue", () => {
   let settingsStore;
   beforeAll(() => {

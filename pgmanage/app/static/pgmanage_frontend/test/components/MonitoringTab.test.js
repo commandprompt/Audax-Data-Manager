@@ -4,14 +4,6 @@ import MonitoringTab from "@src/components/MonitoringTab.vue";
 
 import axios from "axios";
 
-vi.mock("tabulator-tables", () => {
-  const TabulatorFull = vi.fn();
-  TabulatorFull.prototype.redraw = vi.fn();
-  TabulatorFull.prototype.setData = vi.fn();
-  TabulatorFull.prototype.replaceData = vi.fn();
-  return { TabulatorFull };
-});
-
 describe("MonitoringTab", () => {
   let monTabWrapper;
 
@@ -124,9 +116,6 @@ describe("MonitoringTab", () => {
       shallow: true,
     });
 
-    expect(
-      postgresMonTab.find('button[data-testid="logs-tab-button"]').exists()
-    ).toBeTruthy();
     expect(
       postgresMonTab.find('button[data-testid="logs-tab-button"]').exists()
     ).toBeTruthy();

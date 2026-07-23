@@ -7,8 +7,8 @@ import { useSettingsStore } from "@src/stores/settings.js";
 import "@src/ace_extras/themes/theme-omnidb.js";
 import "ace-builds/src-noconflict/mode-sql";
 import { emitter } from "@src/emitter";
-import { operationModes } from "@src/constants";
 import { handleError } from "@src/logging/utils";
+import { mockErrorResponse } from "../helpers/fixtures.js";
 
 vi.mock("@src/logging/utils", () => ({
   handleError: vi.fn(),
@@ -17,14 +17,6 @@ vi.mock("@src/logging/utils", () => ({
 vi.mock("@src/notification_control", () => ({
   showToast: vi.fn(),
 }));
-
-vi.mock("tabulator-tables", () => {
-  const TabulatorFull = vi.fn();
-  TabulatorFull.prototype.redraw = vi.fn();
-  TabulatorFull.prototype.setData = vi.fn();
-  TabulatorFull.prototype.replaceData = vi.fn();
-  return { TabulatorFull };
-});
 
 vi.mock("bootstrap", () => ({
   Modal: {
@@ -169,9 +161,7 @@ describe("PgCronModal.vue", () => {
   });
 
   it("handles API error in setupJobStatisticsTab", async () => {
-    const errorResponse = {
-      response: { data: { data: "Error fetching logs" } },
-    };
+    const errorResponse = mockErrorResponse("Error fetching logs");
     const wrapper = mountComponent();
     axios.post.mockRejectedValue(errorResponse);
 
@@ -223,9 +213,7 @@ describe("PgCronModal.vue", () => {
   });
 
   it("handles API error in clearJobStats", async () => {
-    const errorResponse = {
-      response: { data: { data: "Error clearing logs" } },
-    };
+    const errorResponse = mockErrorResponse("Error clearing logs");
     const wrapper = mountComponent();
     axios.post.mockRejectedValue(errorResponse);
 
@@ -261,9 +249,7 @@ describe("PgCronModal.vue", () => {
   });
 
   it("handles API error and calls showToast when deleteJob fails", async () => {
-    const errorResponse = {
-      response: { data: { data: "Error deleting job" } },
-    };
+    const errorResponse = mockErrorResponse("Error deleting job");
     const wrapper = mountComponent();
 
     axios.post.mockRejectedValue(errorResponse);

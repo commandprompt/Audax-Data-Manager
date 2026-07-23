@@ -6,6 +6,7 @@ import { flushPromises, mount } from "@vue/test-utils";
 import axios from "axios";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { handleError } from "@src/logging/utils";
+import { mockErrorResponse } from "../helpers/fixtures.js";
 
 vi.mock("@src/logging/utils", () => ({
   handleError: vi.fn(),
@@ -187,9 +188,7 @@ describe("RestoreTab.vue", () => {
   });
 
   it("calls getRoleNames and shows an error toast on failure", async () => {
-    const errorResponse = {
-      response: { data: { data: "Error fetching roles" } },
-    };
+    const errorResponse = mockErrorResponse("Error fetching roles");
     axios.post.mockRejectedValueOnce(errorResponse);
 
     await wrapper.vm.getRoleNames();
@@ -215,9 +214,7 @@ describe("RestoreTab.vue", () => {
   });
 
   it("calls createRestore and shows an error toast on failure", async () => {
-    const errorResponse = {
-      response: { data: { data: "Error restoring backup" } },
-    };
+    const errorResponse = mockErrorResponse("Error restoring backup");
     axios.post.mockRejectedValueOnce(errorResponse);
 
     await wrapper.vm.createRestore();
@@ -268,9 +265,7 @@ describe("RestoreTab.vue", () => {
   });
 
   it("calls previewCommand and shows an error toast on failure", async () => {
-    const errorResponse = {
-      response: { data: { data: "Error previewing command" } },
-    };
+    const errorResponse = mockErrorResponse("Error previewing command");
     axios.post.mockRejectedValueOnce(errorResponse);
 
     await wrapper.vm.previewCommand();
