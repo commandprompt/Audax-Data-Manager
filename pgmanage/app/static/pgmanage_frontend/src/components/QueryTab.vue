@@ -554,11 +554,11 @@ export default {
         this.runExplain(1);
       });
 
-      emitter.on(`${this.tabId}_editor_focus`, () => {
+      emitter.on(`${this.tabId}_focus`, () => {
         this.$refs.editor.focus();
       });
 
-      emitter.on(`${this.tabId}_focus_query_results_grid`, () => {
+      emitter.on(`${this.tabId}_focus_secondary`, () => {
         this.$refs.queryResults.focus();
       });
     },
@@ -568,8 +568,8 @@ export default {
       emitter.all.delete(`${this.tabId}_run_explain_analyze`);
       emitter.all.delete(`${this.tabId}_run_query`);
       emitter.all.delete(`${this.tabId}_run_selection`);
-      emitter.all.delete(`${this.tabId}_editor_focus`);
-      emitter.all.delete(`${this.tabId}_focus_query_results_grid`);
+      emitter.all.delete(`${this.tabId}_focus`);
+      emitter.all.delete(`${this.tabId}_focus_secondary`);
     },
     showCommandsHistory() {
       commandsHistoryStore.showModal(this.tabId, this.databaseIndex, "Query");

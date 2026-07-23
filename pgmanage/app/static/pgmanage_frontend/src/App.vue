@@ -310,20 +310,7 @@ export default {
           const tab = tabsStore.selectedPrimaryTab.metaData.selectedTab;
           if (!tab) return;
 
-          switch (tab.metaData.mode) {
-            case 'query':
-            case 'console':
-              emitter.emit(`${tab.id}_editor_focus`);
-              break;
-            case 'backup':
-            case 'restore':
-            case 'configuration':
-              emitter.emit(`${tab.id}_focus_first_input`);
-              break;
-            case 'edit':
-              emitter.emit(`${tab.id}_focus_data_grid`);
-              break;
-          }
+          emitter.emit(`${tab.id}_focus`);
         },
         shortcut_focus_data_grid: function(e) {
           if (tabsStore.selectedPrimaryTab.metaData.mode !== 'connection') return;
@@ -331,7 +318,7 @@ export default {
           const tab = tabsStore.selectedPrimaryTab.metaData.selectedTab;
           if (!tab || tab.metaData.mode !== 'query') return;
 
-          emitter.emit(`${tab.id}_focus_query_results_grid`);
+          emitter.emit(`${tab.id}_focus_secondary`);
         },
       };
     },

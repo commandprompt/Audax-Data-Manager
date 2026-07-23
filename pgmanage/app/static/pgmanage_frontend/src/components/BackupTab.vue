@@ -64,7 +64,7 @@
                     data-bs-title="The character set encoding to use for the backup file."
                     class="form-group my-1">
                     <label for="backupEncoding" class="fw-bold mb-1">Encoding</label>
-                    <select id="backupEncoding" class="form-select" v-model="backupOptions.encoding">
+                    <select ref="focusableEl" id="backupEncoding" class="form-select" v-model="backupOptions.encoding">
                       <option value="">Use database encoding</option>
                       <option v-for="encoding in encodingList" :key="encoding" :value="encoding">{{ encoding }}</option>
                     </select>
@@ -495,12 +495,12 @@ export default {
       }
     });
 
-    emitter.on(`${this.tabId}_focus_first_input`, () => {
-      this.$el.querySelector('input:not([disabled]), select:not([disabled])')?.focus();
+    emitter.on(`${this.tabId}_focus`, () => {
+      this.$refs.focusableEl.focus();
     });
   },
   unmounted() {
-    emitter.all.delete(`${this.tabId}_focus_first_input`);
+    emitter.all.delete(`${this.tabId}_focus`);
   },
   watch: {
     'backupOptions.format'(newValue){

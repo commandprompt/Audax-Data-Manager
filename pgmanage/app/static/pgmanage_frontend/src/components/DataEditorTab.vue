@@ -243,7 +243,7 @@ export default {
         }
       });
 
-    emitter.on(`${this.tabId}_focus_data_grid`, () => {
+    emitter.on(`${this.tabId}_focus`, () => {
       this.focus();
     });
 
@@ -263,7 +263,7 @@ export default {
   unmounted() {
     emitter.all.delete(`${this.tabId}_query_edit`);
     emitter.all.delete(`${this.tabId}_check_query_edit_status`);
-    emitter.all.delete(`${this.tabId}_focus_data_grid`);
+    emitter.all.delete(`${this.tabId}_focus`);
   },
   updated() {
     if (tabsStore.selectedPrimaryTab?.metaData?.selectedTab?.id === this.tabId) {

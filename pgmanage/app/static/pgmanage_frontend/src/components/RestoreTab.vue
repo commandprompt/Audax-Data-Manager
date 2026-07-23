@@ -17,7 +17,7 @@
 
               <div  class="form-group mb-1">
                 <label for="restoreFormat" class="fw-bold mb-1">Format</label>
-                <select id="restoreFormat" class="form-select" v-model="restoreOptions.format">
+                <select ref="focusableEl" id="restoreFormat" class="form-select" v-model="restoreOptions.format">
                   <option value="custom/tar">Custom or tar</option>
                   <option value="directory">Directory</option>
                 </select>
@@ -453,12 +453,12 @@ export default {
       }
     })
 
-    emitter.on(`${this.tabId}_focus_first_input`, () => {
-      this.$el.querySelector('input:not([disabled]), select:not([disabled])')?.focus();
+    emitter.on(`${this.tabId}_focus`, () => {
+      this.$refs.focusableEl.focus();
     });
   },
   unmounted() {
-    emitter.all.delete(`${this.tabId}_focus_first_input`);
+    emitter.all.delete(`${this.tabId}_focus`);
   },
   methods: {
     getRoleNames() {

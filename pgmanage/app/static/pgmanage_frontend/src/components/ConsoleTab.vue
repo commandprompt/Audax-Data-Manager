@@ -236,7 +236,7 @@ export default {
         this.consoleSQL(check_command);
       });
 
-      emitter.on(`${this.tabId}_editor_focus`, () => {
+      emitter.on(`${this.tabId}_focus`, () => {
         this.$refs.editor.focus();
       });
     },
@@ -244,7 +244,7 @@ export default {
       emitter.all.delete(`${this.tabId}_resize`);
       emitter.all.delete(`${this.tabId}_check_console_status`);
       emitter.all.delete(`${this.tabId}_run_console`);
-      emitter.all.delete(`${this.tabId}_editor_focus`);
+      emitter.all.delete(`${this.tabId}_focus`);
     },
     onResize() {
       if (this.fitAddon)

@@ -4,7 +4,7 @@
     <div class="form-group col">
       <form class="form" role="search" @submit.prevent>
         <label class="fw-bold mb-2" :for="`${tabId}_inputSearchSettings`">Search</label>
-        <input v-model.trim="query_filter" class="form-control" :id="`${tabId}_inputSearchSettings`" name="filter"
+        <input ref="focusableEl" v-model.trim="query_filter" class="form-control" :id="`${tabId}_inputSearchSettings`" name="filter"
           :disabled="v$.$invalid" placeholder="Find in settings" />
       </form>
     </div>
@@ -289,12 +289,12 @@ export default {
     this.getConfigHistory();
     this.getConfigStatus();
 
-    emitter.on(`${this.tabId}_focus_first_input`, () => {
-      this.$el.querySelector('input:not([disabled]), select:not([disabled])')?.focus();
+    emitter.on(`${this.tabId}_focus`, () => {
+      this.$refs.focusableEl.focus();
     });
   },
   unmounted() {
-    emitter.all.delete(`${this.tabId}_focus_first_input`);
+    emitter.all.delete(`${this.tabId}_focus`);
   },
   methods: {
     getConfiguration() {
