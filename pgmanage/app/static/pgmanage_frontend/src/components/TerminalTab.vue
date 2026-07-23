@@ -21,6 +21,7 @@ import { emitter } from "../emitter";
 import TabTitleUpdateMixin from "../mixins/sidebar_title_update_mixin";
 import ContextMenu from "@imengyu/vue3-context-menu";
 import { readClipboardText } from "@src/utils/clipboard";
+import debounce from "lodash/debounce";
 
 export default {
   name: "TerminalTab",
@@ -89,10 +90,7 @@ export default {
       this.contextCode = ctx.code;
       tab.metaData.context = ctx;
 
-      this.terminalRun(
-        true,
-        `stty rows ${this.term.rows} cols ${this.term.cols} \n`
-      );
+      this.terminalResize(this.term.cols, this.term.rows);
     },
     setupEvents() {
       window.addEventListener("resize", this.resizeBrowserHandler);
@@ -161,6 +159,18 @@ export default {
 
       this.state = requestState.Executing;
     },
+    terminalResize(cols, rows) {
+      let messageData = {
+        workspace_id: this.workspaceId,
+        db_index: null,
+        ssh_id: this.databaseIndex,
+        resize: { cols, rows },
+      };
+
+      createRequest(queryRequestCodes.Terminal, messageData, this.contextCode);
+
+      this.state = requestState.Executing;
+    },
     handleResponse(data, context) {
       if (this.clearTerminal) {
         this.term.write("\x1b[H\x1b[2J");
@@ -173,15 +183,16 @@ export default {
     },
     resizeBrowserHandler() {
       if (this.workspaceId === tabsStore.selectedPrimaryTab.id) {
-        this.fitAddon.fit();
+        this.fitAndNotifyResize();
       }
     },
-    adjustTermninalDimensions() {
-      this.terminalRun(
-        false,
-        `stty rows ${this.term.rows} cols ${this.term.cols} \n`
-      );
+    fitAndNotifyResize() {
+      this.fitAddon.fit();
+      this.adjustTermninalDimensions();
     },
+    adjustTermninalDimensions: debounce(function () {
+      this.terminalResize(this.term.cols, this.term.rows);
+    }, 500),
   },
 };
 </script>
