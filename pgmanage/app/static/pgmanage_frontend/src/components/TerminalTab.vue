@@ -44,10 +44,15 @@ export default {
     this.setupTerminal();
     this.setupEvents();
 
+    let previousFontSize = settingsStore.fontSize;
     settingsStore.$subscribe((mutation, state) => {
       this.term.options.theme = state.terminalTheme;
       this.term.options.fontSize = state.fontSize;
-      this.fitAddon.fit();
+
+      if (state.fontSize !== previousFontSize) {
+        previousFontSize = state.fontSize;
+        this.fitAndNotifyResize();
+      }
     });
 
     this.subscribeToConnectionChanges(this.workspaceId, this.databaseIndex);

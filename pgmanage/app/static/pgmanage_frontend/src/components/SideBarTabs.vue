@@ -47,8 +47,7 @@
             </span>
             <i
               v-if="tab.closable"
-              class="fas tab-icon omnidb__tab-menu__link-close"
-              :class="tab.metaData.mode == 'outer_terminal' ? 'fa-ellipsis-vertical' : 'fa-times'"
+              class="fas tab-icon omnidb__tab-menu__link-close fa-times"
               @click.stop.prevent="tab.closeFunction($event, tab)"
             ></i>
           </a>
