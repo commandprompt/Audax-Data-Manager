@@ -55,12 +55,21 @@ class PostgreSQL(TestCase):
         get_client_omnidb_session(p_client=cls.client_session)
 
         # sanity checks on the shared fixture, not a per-test assertion - no
-        # TestCase instance exists yet in setUpClass, so self.assert* can't be used
-        assert response.status_code == 200
+        # TestCase instance exists yet in setUpClass, so self.assert* can't be
+        # used; raise explicit errors instead of bare `assert` so a broken
+        # fixture fails clearly instead of silently under `python -O`
+        if response.status_code != 200:
+            raise RuntimeError(
+                f"fixture login failed: expected status 200, got {response.status_code}"
+            )
         data = json.loads(response.content.decode())
-        assert data['data'] >= 0
+        if data['data'] < 0:
+            raise RuntimeError(f"fixture login returned unexpected session id: {data['data']}")
         session = cls.client_session.session
-        assert session['pgmanage_session'].user_name == 'admin'
+        if session['pgmanage_session'].user_name != 'admin':
+            raise RuntimeError(
+                f"fixture login session user mismatch: expected 'admin', got {session['pgmanage_session'].user_name!r}"
+            )
 
         session['pgmanage_session'].databases = [{
             'database': cls.database,
@@ -74,7 +83,10 @@ class PostgreSQL(TestCase):
         # DDL templates are static per connection - fetched once here instead of
         # once per test, since dozens of tests below only check one dict key each
         tree_info_response = cls.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
-        assert tree_info_response.status_code == 200
+        if tree_info_response.status_code != 200:
+            raise RuntimeError(
+                f"fixture tree info fetch failed: expected status 200, got {tree_info_response.status_code}"
+            )
         cls.templates = tree_info_response.json()['templates']
 
     @classmethod
@@ -793,11 +805,13 @@ DROP SUBSCRIPTION #sub_name#
     def test_get_uniques_postgresql_session(self):
         self.database.connection.Execute('alter table public.categories drop constraint if exists un_test')
         self.database.connection.Execute('alter table public.categories add constraint un_test unique (categoryname)')
-        response = self.client_session.post('/get_uniques_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "schema": "public", "table": "categories"}'})
-        self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content.decode())
-        self.assertTrue(self.lists_equal([a['constraint_name'] for a in data], ['un_test']))
-        self.database.connection.Execute('alter table public.categories drop constraint un_test')
+        try:
+            response = self.client_session.post('/get_uniques_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "schema": "public", "table": "categories"}'})
+            self.assertEqual(response.status_code, 200)
+            data = json.loads(response.content.decode())
+            self.assertTrue(self.lists_equal([a['constraint_name'] for a in data], ['un_test']))
+        finally:
+            self.database.connection.Execute('alter table public.categories drop constraint un_test')
 
     def test_get_uniques_columns_postgresql_nosession(self):
         response = self.client_nosession.post('/get_uniques_columns_postgresql/')
@@ -806,11 +820,13 @@ DROP SUBSCRIPTION #sub_name#
     def test_get_uniques_columns_postgresql_session(self):
         self.database.connection.Execute('alter table public.categories drop constraint if exists un_test')
         self.database.connection.Execute('alter table public.categories add constraint un_test unique (categoryname)')
-        response = self.client_session.post('/get_uniques_columns_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "unique": "un_test", "schema": "public", "table": "categories"}'})
-        self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content.decode())
-        self.assertTrue(self.lists_equal([a for a in data], ['categoryname']))
-        self.database.connection.Execute('alter table public.categories drop constraint un_test')
+        try:
+            response = self.client_session.post('/get_uniques_columns_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "unique": "un_test", "schema": "public", "table": "categories"}'})
+            self.assertEqual(response.status_code, 200)
+            data = json.loads(response.content.decode())
+            self.assertTrue(self.lists_equal([a for a in data], ['categoryname']))
+        finally:
+            self.database.connection.Execute('alter table public.categories drop constraint un_test')
 
     def test_get_indexes_postgresql_nosession(self):
         response = self.client_nosession.post('/get_indexes_postgresql/')
@@ -906,11 +922,13 @@ DROP SUBSCRIPTION #sub_name#
 
     def test_get_views_postgresql_session(self):
         self.database.connection.Execute('create or replace view vw_omnidb_test as select c.customerid, c.firstname, c.lastname, sum(o.totalamount) as totalamount from customers c inner join orders o on o.customerid = c.customerid group by c.customerid, c.firstname, c.lastname')
-        response = self.client_session.post('/get_views_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "schema": "public"}'})
-        self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content.decode())
-        self.assertTrue(self.lists_equal([a['name'] for a in data], ['vw_omnidb_test']))
-        self.database.connection.Execute('drop view vw_omnidb_test')
+        try:
+            response = self.client_session.post('/get_views_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "schema": "public"}'})
+            self.assertEqual(response.status_code, 200)
+            data = json.loads(response.content.decode())
+            self.assertTrue(self.lists_equal([a['name'] for a in data], ['vw_omnidb_test']))
+        finally:
+            self.database.connection.Execute('drop view vw_omnidb_test')
 
     def test_get_views_columns_postgresql_nosession(self):
         response = self.client_nosession.post('/get_views_columns_postgresql/')
@@ -918,16 +936,18 @@ DROP SUBSCRIPTION #sub_name#
 
     def test_get_views_columns_postgresql_session(self):
         self.database.connection.Execute('create or replace view vw_omnidb_test as select c.customerid, c.firstname, c.lastname, sum(o.totalamount) as totalamount from customers c inner join orders o on o.customerid = c.customerid group by c.customerid, c.firstname, c.lastname')
-        response = self.client_session.post('/get_views_columns_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "schema": "public", "table": "vw_omnidb_test"}'})
-        self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content.decode())
-        self.assertTrue(self.lists_equal([a['column_name'] for a in data], [
-            'customerid',
-            'firstname',
-            'lastname',
-            'totalamount'
-        ]))
-        self.database.connection.Execute('drop view vw_omnidb_test')
+        try:
+            response = self.client_session.post('/get_views_columns_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "schema": "public", "table": "vw_omnidb_test"}'})
+            self.assertEqual(response.status_code, 200)
+            data = json.loads(response.content.decode())
+            self.assertTrue(self.lists_equal([a['column_name'] for a in data], [
+                'customerid',
+                'firstname',
+                'lastname',
+                'totalamount'
+            ]))
+        finally:
+            self.database.connection.Execute('drop view vw_omnidb_test')
 
     def test_get_view_definition_postgresql_nosession(self):
         response = self.client_nosession.post('/get_view_definition_postgresql/')
@@ -935,10 +955,11 @@ DROP SUBSCRIPTION #sub_name#
 
     def test_get_view_definition_postgresql_session(self):
         self.database.connection.Execute('create or replace view vw_omnidb_test as select c.customerid, c.firstname, c.lastname, sum(o.totalamount) as totalamount from customers c inner join orders o on o.customerid = c.customerid group by c.customerid, c.firstname, c.lastname')
-        response = self.client_session.post('/get_view_definition_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "schema": "public", "view": "vw_omnidb_test"}'})
-        self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content.decode())
-        self.assertIn('''CREATE OR REPLACE VIEW public.vw_omnidb_test AS
+        try:
+            response = self.client_session.post('/get_view_definition_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "schema": "public", "view": "vw_omnidb_test"}'})
+            self.assertEqual(response.status_code, 200)
+            data = json.loads(response.content.decode())
+            self.assertIn('''CREATE OR REPLACE VIEW public.vw_omnidb_test AS
  SELECT c.customerid,
     c.firstname,
     c.lastname,
@@ -946,7 +967,8 @@ DROP SUBSCRIPTION #sub_name#
    FROM (customers c
      JOIN orders o ON ((o.customerid = c.customerid)))
   GROUP BY c.customerid, c.firstname, c.lastname''', data['data'])
-        self.database.connection.Execute('drop view vw_omnidb_test')
+        finally:
+            self.database.connection.Execute('drop view vw_omnidb_test')
 
     def test_get_databases_postgresql_nosession(self):
         response = self.client_nosession.post('/get_databases_postgresql/')
@@ -985,11 +1007,13 @@ DROP SUBSCRIPTION #sub_name#
     def test_get_checks_postgresql_session(self):
         self.database.connection.Execute('alter table public.categories drop constraint if exists ch_test')
         self.database.connection.Execute("alter table public.categories add constraint ch_test check ( position(' ' in categoryname) = 0 )")
-        response = self.client_session.post('/get_checks_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "schema": "public", "table": "categories"}'})
-        self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content.decode())
-        self.assertTrue(self.lists_equal([a['constraint_name'] for a in data], ['ch_test']))
-        self.database.connection.Execute('alter table public.categories drop constraint ch_test')
+        try:
+            response = self.client_session.post('/get_checks_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "schema": "public", "table": "categories"}'})
+            self.assertEqual(response.status_code, 200)
+            data = json.loads(response.content.decode())
+            self.assertTrue(self.lists_equal([a['constraint_name'] for a in data], ['ch_test']))
+        finally:
+            self.database.connection.Execute('alter table public.categories drop constraint ch_test')
 
     def test_get_excludes_postgresql_nosession(self):
         response = self.client_nosession.post('/get_excludes_postgresql/')
@@ -999,11 +1023,13 @@ DROP SUBSCRIPTION #sub_name#
     def test_get_excludes_postgresql_session(self):
         self.database.connection.Execute('alter table public.categories drop constraint if exists ex_test')
         self.database.connection.Execute('alter table public.categories add constraint ex_test exclude (categoryname with = )')
-        response = self.client_session.post('/get_excludes_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "schema": "public", "table": "categories"}'})
-        self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content.decode())
-        self.assertEqual(data[0]['constraint_name'], 'ex_test')
-        self.database.connection.Execute('alter table public.categories drop constraint ex_test')
+        try:
+            response = self.client_session.post('/get_excludes_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "schema": "public", "table": "categories"}'})
+            self.assertEqual(response.status_code, 200)
+            data = json.loads(response.content.decode())
+            self.assertEqual(data[0]['constraint_name'], 'ex_test')
+        finally:
+            self.database.connection.Execute('alter table public.categories drop constraint ex_test')
 
     def test_get_rules_postgresql_nosession(self):
         response = self.client_nosession.post('/get_rules_postgresql/')
@@ -1011,11 +1037,13 @@ DROP SUBSCRIPTION #sub_name#
 
     def test_get_rules_postgresql_session(self):
         self.database.connection.Execute('create or replace rule ru_test as on delete to public.categories do instead nothing')
-        response = self.client_session.post('/get_rules_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "schema": "public", "table": "categories"}'})
-        self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content.decode())
-        self.assertTrue(self.lists_equal([a['rule_name'] for a in data], ['ru_test']))
-        self.database.connection.Execute('drop rule ru_test on public.categories')
+        try:
+            response = self.client_session.post('/get_rules_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "schema": "public", "table": "categories"}'})
+            self.assertEqual(response.status_code, 200)
+            data = json.loads(response.content.decode())
+            self.assertTrue(self.lists_equal([a['rule_name'] for a in data], ['ru_test']))
+        finally:
+            self.database.connection.Execute('drop rule ru_test on public.categories')
 
     def test_get_rule_definition_postgresql_nosession(self):
         response = self.client_nosession.post('/get_rule_definition_postgresql/')
@@ -1023,12 +1051,14 @@ DROP SUBSCRIPTION #sub_name#
 
     def test_get_rule_definition_postgresql_session(self):
         self.database.connection.Execute('create or replace rule ru_test as on delete to public.categories do instead nothing')
-        response = self.client_session.post('/get_rule_definition_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "schema": "public", "table": "categories", "rule": "ru_test"}'})
-        self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content.decode())
-        self.assertIn('''CREATE OR REPLACE RULE ru_test AS
+        try:
+            response = self.client_session.post('/get_rule_definition_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "schema": "public", "table": "categories", "rule": "ru_test"}'})
+            self.assertEqual(response.status_code, 200)
+            data = json.loads(response.content.decode())
+            self.assertIn('''CREATE OR REPLACE RULE ru_test AS
     ON DELETE TO public.categories DO INSTEAD NOTHING;''', data['data'])
-        self.database.connection.Execute('drop rule ru_test on public.categories')
+        finally:
+            self.database.connection.Execute('drop rule ru_test on public.categories')
 
     def test_get_triggerfunctions_postgresql_nosession(self):
         response = self.client_nosession.post('/get_triggerfunctions_postgresql/')
@@ -1036,11 +1066,13 @@ DROP SUBSCRIPTION #sub_name#
 
     def test_get_triggerfunctions_postgresql_session(self):
         self.database.connection.Execute("create or replace function public.tg_ins_category() returns trigger language plpgsql as $function$begin new.categoryname := old.categoryname || ' modified'; end;$function$")
-        response = self.client_session.post('/get_triggerfunctions_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "schema": "public"}'})
-        self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content.decode())
-        self.assertTrue(self.lists_equal([a['name'] for a in data], ['tg_ins_category']))
-        self.database.connection.Execute('drop function tg_ins_category()')
+        try:
+            response = self.client_session.post('/get_triggerfunctions_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "schema": "public"}'})
+            self.assertEqual(response.status_code, 200)
+            data = json.loads(response.content.decode())
+            self.assertTrue(self.lists_equal([a['name'] for a in data], ['tg_ins_category']))
+        finally:
+            self.database.connection.Execute('drop function tg_ins_category()')
 
     def test_get_triggerfunction_definition_postgresql_nosession(self):
         response = self.client_nosession.post('/get_triggerfunction_definition_postgresql/')
@@ -1048,13 +1080,16 @@ DROP SUBSCRIPTION #sub_name#
 
     def test_get_triggerfunction_definition_postgresql_session(self):
         self.database.connection.Execute("create or replace function public.tg_ins_category() returns trigger language plpgsql as $function$begin new.categoryname := old.categoryname || ' modified'; end;$function$")
-        response = self.client_session.post('/get_triggerfunction_definition_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "function": "public.tg_ins_category()"}'})
-        self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content.decode())
-        self.assertIn('''CREATE OR REPLACE FUNCTION public.tg_ins_category()
+        try:
+            response = self.client_session.post('/get_triggerfunction_definition_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "function": "public.tg_ins_category()"}'})
+            self.assertEqual(response.status_code, 200)
+            data = json.loads(response.content.decode())
+            self.assertIn('''CREATE OR REPLACE FUNCTION public.tg_ins_category()
  RETURNS trigger
  LANGUAGE plpgsql
 AS $function$begin new.categoryname := old.categoryname || ' modified'; end;$function$''', data['data'])
+        finally:
+            self.database.connection.Execute('drop function tg_ins_category()')
 
     def test_get_triggers_postgresql_nosession(self):
         response = self.client_nosession.post('/get_triggers_postgresql/')
@@ -1063,12 +1098,14 @@ AS $function$begin new.categoryname := old.categoryname || ' modified'; end;$fun
     def test_get_triggers_postgresql_session(self):
         self.database.connection.Execute("create or replace function public.tg_ins_category() returns trigger language plpgsql as $function$begin new.categoryname := old.categoryname || ' modified'; end;$function$")
         self.database.connection.Execute('create or replace trigger tg_ins before insert on public.categories for each statement execute procedure public.tg_ins_category()')
-        response = self.client_session.post('/get_triggers_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "schema": "public", "table": "categories"}'})
-        self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content.decode())
-        self.assertTrue(self.lists_equal([a['trigger_name'] for a in data], ['tg_ins']))
-        self.database.connection.Execute('drop trigger tg_ins on public.categories')
-        self.database.connection.Execute('drop function public.tg_ins_category()')
+        try:
+            response = self.client_session.post('/get_triggers_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "schema": "public", "table": "categories"}'})
+            self.assertEqual(response.status_code, 200)
+            data = json.loads(response.content.decode())
+            self.assertTrue(self.lists_equal([a['trigger_name'] for a in data], ['tg_ins']))
+        finally:
+            self.database.connection.Execute('drop trigger tg_ins on public.categories')
+            self.database.connection.Execute('drop function public.tg_ins_category()')
 
     def test_get_inheriteds_postgresql_nosession(self):
         response = self.client_nosession.post('/get_inheriteds_postgresql/')
@@ -1076,12 +1113,14 @@ AS $function$begin new.categoryname := old.categoryname || ' modified'; end;$fun
 
     def test_get_inheriteds_postgresql_session(self):
         self.database.connection.Execute('create table if not exists public.categories_p1 (check ( category < 100 )) inherits (public.categories)')
-        response = self.client_session.post('/get_inheriteds_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "schema": "public", "table": "categories"}'})
-        self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content.decode())
-        self.assertTrue(self.lists_equal(data, ['public.categories_p1']))
-        self.database.connection.Execute('alter table public.categories_p1 no inherit public.categories')
-        self.database.connection.Execute('drop table public.categories_p1')
+        try:
+            response = self.client_session.post('/get_inheriteds_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "schema": "public", "table": "categories"}'})
+            self.assertEqual(response.status_code, 200)
+            data = json.loads(response.content.decode())
+            self.assertTrue(self.lists_equal(data, ['public.categories_p1']))
+        finally:
+            self.database.connection.Execute('alter table public.categories_p1 no inherit public.categories')
+            self.database.connection.Execute('drop table public.categories_p1')
 
     def test_get_mviews_postgresql_nosession(self):
         response = self.client_nosession.post('/get_mviews_postgresql/')
@@ -1089,11 +1128,13 @@ AS $function$begin new.categoryname := old.categoryname || ' modified'; end;$fun
 
     def test_get_mviews_postgresql_session(self):
         self.database.connection.Execute('create materialized view if not exists public.mvw_omnidb_test as select c.customerid, c.firstname, c.lastname, sum(o.totalamount) as totalamount from customers c inner join orders o on o.customerid = c.customerid group by c.customerid, c.firstname, c.lastname')
-        response = self.client_session.post('/get_mviews_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "schema": "public"}'})
-        self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content.decode())
-        self.assertTrue(self.lists_equal([a['name'] for a in data], ['mvw_omnidb_test']))
-        self.database.connection.Execute('drop materialized view public.mvw_omnidb_test')
+        try:
+            response = self.client_session.post('/get_mviews_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "schema": "public"}'})
+            self.assertEqual(response.status_code, 200)
+            data = json.loads(response.content.decode())
+            self.assertTrue(self.lists_equal([a['name'] for a in data], ['mvw_omnidb_test']))
+        finally:
+            self.database.connection.Execute('drop materialized view public.mvw_omnidb_test')
 
     def test_get_mviews_columns_postgresql_nosession(self):
         response = self.client_nosession.post('/get_mviews_columns_postgresql/')
@@ -1101,16 +1142,18 @@ AS $function$begin new.categoryname := old.categoryname || ' modified'; end;$fun
 
     def test_get_mviews_columns_postgresql_session(self):
         self.database.connection.Execute('create materialized view if not exists public.mvw_omnidb_test as select c.customerid, c.firstname, c.lastname, sum(o.totalamount) as totalamount from customers c inner join orders o on o.customerid = c.customerid group by c.customerid, c.firstname, c.lastname')
-        response = self.client_session.post('/get_mviews_columns_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "schema": "public", "table": "mvw_omnidb_test"}'})
-        self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content.decode())
-        self.assertTrue(self.lists_equal([a['column_name'] for a in data], [
-            'customerid',
-            'firstname',
-            'lastname',
-            'totalamount'
-        ]))
-        self.database.connection.Execute('drop materialized view public.mvw_omnidb_test')
+        try:
+            response = self.client_session.post('/get_mviews_columns_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "schema": "public", "table": "mvw_omnidb_test"}'})
+            self.assertEqual(response.status_code, 200)
+            data = json.loads(response.content.decode())
+            self.assertTrue(self.lists_equal([a['column_name'] for a in data], [
+                'customerid',
+                'firstname',
+                'lastname',
+                'totalamount'
+            ]))
+        finally:
+            self.database.connection.Execute('drop materialized view public.mvw_omnidb_test')
 
     def test_get_mview_definition_postgresql_nosession(self):
         response = self.client_nosession.post('/get_mview_definition_postgresql/')
@@ -1118,10 +1161,11 @@ AS $function$begin new.categoryname := old.categoryname || ' modified'; end;$fun
 
     def test_get_mview_definition_postgresql_session(self):
         self.database.connection.Execute('create materialized view if not exists public.mvw_omnidb_test as select c.customerid, c.firstname, c.lastname, sum(o.totalamount) as totalamount from customers c inner join orders o on o.customerid = c.customerid group by c.customerid, c.firstname, c.lastname')
-        response = self.client_session.post('/get_mview_definition_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "schema": "public", "view": "mvw_omnidb_test"}'})
-        self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content.decode())
-        self.assertIn('''DROP MATERIALIZED VIEW public.mvw_omnidb_test;
+        try:
+            response = self.client_session.post('/get_mview_definition_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "schema": "public", "view": "mvw_omnidb_test"}'})
+            self.assertEqual(response.status_code, 200)
+            data = json.loads(response.content.decode())
+            self.assertIn('''DROP MATERIALIZED VIEW public.mvw_omnidb_test;
 
 CREATE MATERIALIZED VIEW public.mvw_omnidb_test AS
  SELECT c.customerid,
@@ -1132,7 +1176,8 @@ CREATE MATERIALIZED VIEW public.mvw_omnidb_test AS
      JOIN orders o ON ((o.customerid = c.customerid)))
   GROUP BY c.customerid, c.firstname, c.lastname;
 ''', data['data'])
-        self.database.connection.Execute('drop materialized view public.mvw_omnidb_test')
+        finally:
+            self.database.connection.Execute('drop materialized view public.mvw_omnidb_test')
 
     def test_get_extensions_postgresql_nosession(self):
         response = self.client_nosession.post('/get_extensions_postgresql/')
@@ -1150,11 +1195,13 @@ CREATE MATERIALIZED VIEW public.mvw_omnidb_test AS
 
     def test_get_physicalreplicationslots_postgresql_session(self):
         self.database.connection.Execute("select * from pg_create_physical_replication_slot('test_slot')")
-        response = self.client_session.post('/get_physicalreplicationslots_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
-        self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content.decode())
-        self.assertTrue(self.lists_equal([a['name'] for a in data], ['test_slot']))
-        self.database.connection.Execute("select pg_drop_replication_slot('test_slot')")
+        try:
+            response = self.client_session.post('/get_physicalreplicationslots_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
+            self.assertEqual(response.status_code, 200)
+            data = json.loads(response.content.decode())
+            self.assertTrue(self.lists_equal([a['name'] for a in data], ['test_slot']))
+        finally:
+            self.database.connection.Execute("select pg_drop_replication_slot('test_slot')")
 
     def test_get_logicalreplicationslots_postgresql_nosession(self):
         response = self.client_nosession.post('/get_logicalreplicationslots_postgresql/')
@@ -1162,11 +1209,13 @@ CREATE MATERIALIZED VIEW public.mvw_omnidb_test AS
 
     def test_get_logicalreplicationslots_postgresql_session(self):
         self.database.connection.Execute("select * from pg_create_logical_replication_slot('test_slot', 'pgoutput')")
-        response = self.client_session.post('/get_logicalreplicationslots_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
-        self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content.decode())
-        self.assertTrue(self.lists_equal([a['name'] for a in data], ['test_slot']))
-        self.database.connection.Execute("select pg_drop_replication_slot('test_slot')")
+        try:
+            response = self.client_session.post('/get_logicalreplicationslots_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
+            self.assertEqual(response.status_code, 200)
+            data = json.loads(response.content.decode())
+            self.assertTrue(self.lists_equal([a['name'] for a in data], ['test_slot']))
+        finally:
+            self.database.connection.Execute("select pg_drop_replication_slot('test_slot')")
 
     def test_get_extension_details_postgresql_nosession(self):
         response = self.client_nosession.post('/get_extension_details/')
