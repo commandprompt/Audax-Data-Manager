@@ -131,9 +131,6 @@ class ProcessExecutor:
             self._update_process_status()
             logging.info("Status updated.")
 
-            if os.environ.get(os.environ.get("JOB_ID", None), None):
-                os.environ["PGPASSWORD"] = os.environ[os.environ["JOB_ID"]]
-
             kwargs = {
                 "close_fds": False,
                 "shell": True if _IS_WIN else False,
