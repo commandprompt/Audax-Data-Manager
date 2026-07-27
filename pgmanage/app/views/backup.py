@@ -1,6 +1,5 @@
 import functools
 import operator
-import os
 from abc import abstractmethod
 
 from app.bgjob.jobs import BatchJob, IJobDesc, escape_dquotes_process_arg
@@ -379,7 +378,7 @@ def create_backup(request, database):
                 user=request.user,
             )
 
-        os.environ[str(job.id)] = database.password
+        job.env["PGPASSWORD"] = database.password
 
         job.start()
     except Exception as exc:
