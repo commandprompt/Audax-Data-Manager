@@ -184,7 +184,10 @@ export default {
         'shortcut_autocomplete': 'Autocomplete',
         'shortcut_explain': 'Explain Query',
         'shortcut_explain_analyze': 'Analyze Query',
-        'shortcut_quick_search': 'Quick Search'
+        'shortcut_quick_search': 'Quick Search',
+        'shortcut_focus_database_tree': "Focus Database Explorer",
+        'shortcut_focus_selected_tab': "Focus Work Area Primary",
+        'shortcut_focus_data_grid': "Focus Work Area Secondary",
       };
       return LABEL_MAP[shortcut.shortcut_code] || 'unknown'
     },

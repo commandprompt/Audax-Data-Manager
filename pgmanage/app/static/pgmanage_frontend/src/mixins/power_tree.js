@@ -7,6 +7,7 @@ import { axiosHooks } from "../logging/service";
 import { handleError } from "../logging/utils";
 import { h } from "vue";
 import debounce from "lodash/debounce";
+import { flashHighlight } from "../utils";
 
 export default {
   emits: ["treeTabsUpdate", "clearTabs"],
@@ -55,6 +56,11 @@ export default {
     emitter.on(`refreshTreeRecursive_${this.workspaceId}`, (node_type) => {
       this.refreshTreeRecursive(node_type);
     });
+
+    emitter.on(`focusTree_${this.workspaceId}`, () => {
+      this.$refs.tree.$el.focus();
+      flashHighlight(this.$refs.tree.$el.parentElement);
+    })
 
     this.$watch("selectedNode", (newVal) => {
       if (newVal === undefined) {

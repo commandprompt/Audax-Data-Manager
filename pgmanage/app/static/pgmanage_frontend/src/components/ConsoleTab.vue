@@ -89,6 +89,7 @@ import { FitAddon } from "@xterm/addon-fit";
 import { CanvasAddon } from '@xterm/addon-canvas';
 import { Splitpanes, Pane } from "splitpanes";
 import { emitter } from "../emitter";
+import { flashHighlight } from "../utils";
 import { showToast } from "../notification_control";
 import moment from "moment";
 import { createRequest } from "../long_polling";
@@ -235,11 +236,17 @@ export default {
       emitter.on(`${this.tabId}_run_console`, (check_command) => {
         this.consoleSQL(check_command);
       });
+
+      emitter.on(`${this.tabId}_focus`, () => {
+        this.$refs.editor.focus();
+        flashHighlight(this.$refs.editor.$el);
+      });
     },
     clearEvents() {
       emitter.all.delete(`${this.tabId}_resize`);
       emitter.all.delete(`${this.tabId}_check_console_status`);
       emitter.all.delete(`${this.tabId}_run_console`);
+      emitter.all.delete(`${this.tabId}_focus`);
     },
     onResize() {
       if (this.fitAddon)

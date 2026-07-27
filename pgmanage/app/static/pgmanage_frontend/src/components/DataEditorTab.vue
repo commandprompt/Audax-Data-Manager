@@ -70,7 +70,7 @@ import DataEditorTabFilterList from './DataEditorTabFilterList.vue'
 import { dataEditorFilterModes } from '../constants';
 import { handleError } from '../logging/utils';
 import dialects from './dialect-data';
-import { extractOrderByClause } from '../utils';
+import { extractOrderByClause, flashHighlight } from '../utils';
 import { readClipboardText } from "@src/utils/clipboard";
 
 // TODO: run query in transaction
@@ -243,6 +243,11 @@ export default {
         }
       });
 
+    emitter.on(`${this.tabId}_focus`, () => {
+      this.focus();
+      flashHighlight(this.$refs.editorDiv);
+    });
+
     settingsStore.$onAction((action) => {
       if(action.name === "setFontSize") {
         action.after(() => {
@@ -259,6 +264,7 @@ export default {
   unmounted() {
     emitter.all.delete(`${this.tabId}_query_edit`);
     emitter.all.delete(`${this.tabId}_check_query_edit_status`);
+    emitter.all.delete(`${this.tabId}_focus`);
   },
   updated() {
     if (tabsStore.selectedPrimaryTab?.metaData?.selectedTab?.id === this.tabId) {
@@ -266,6 +272,9 @@ export default {
     }
   },
   methods: {
+    focus() {
+      this.tabulator?.element.querySelector(".tabulator-tableholder")?.focus();
+    },
     actionsFormatter(cell, formatterParams, onRendered) {
       const div = document.createElement("div");
       div.className = 'btn btn-grid-actions';
