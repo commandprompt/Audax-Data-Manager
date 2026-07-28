@@ -1,6 +1,6 @@
 import functools
 import operator
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 
 from app.bgjob.jobs import BatchJob, IJobDesc, escape_dquotes_process_arg
 from app.file_manager.file_manager import FileManager
@@ -10,7 +10,7 @@ from app.utils.postgresql_utilities import get_utility_path
 from django.http import JsonResponse
 
 
-class Backup:
+class Backup(ABC):
     """
     A base class representing backup type
     """
@@ -106,7 +106,7 @@ class BackupMessage(IJobDesc):
         self.backup_type = backup_type
         self.conn_id = conn_id
         self.bfile = backup_file
-        self.database = kwargs["database"] if "database" in kwargs else None
+        self.database = kwargs.get("database")
         self.cmd = ""
         self.args_str = "{0} ({1}:{2})"
         self._connection_name = self.get_connection_name()
@@ -123,7 +123,7 @@ class BackupMessage(IJobDesc):
         for arg in args:
             if arg and len(arg) >= 2 and arg[:2] == "--":
                 self.cmd += " " + arg
-            elif len(arg.split()) > 3:
+            elif arg.startswith("| "):
                 self.cmd += f" {arg}"
             else:
                 self.cmd += cmd_arg(arg)
@@ -278,7 +278,9 @@ def get_args_params_values(data, conn, backup_obj_type, backup_file):
         )
     )
     if backup_obj_type == "objects":
-        args.append(data["database"])
+        if not data.get("database"):
+            raise ValueError("Missing required field: database")
+        set_value("database", "--dbname")
 
     if data.get("pigz"):
         file_name = args[1]
@@ -345,12 +347,11 @@ def create_backup(request, database):
                 status=400,
             )
 
-    args = get_args_params_values(data, database, backup_type_str, resolved_path)
-
-    escaped_args = [escape_dquotes_process_arg(arg) for arg in args]
-
     try:
         backup_type = Backup.get_backup_type(backup_type_str)
+
+        args = get_args_params_values(data, database, backup_type_str, resolved_path)
+        escaped_args = [escape_dquotes_process_arg(arg) for arg in args]
 
         if backup_type_str == "objects":
             job = BatchJob(
@@ -359,7 +360,7 @@ def create_backup(request, database):
                     database.conn_id,
                     resolved_path,
                     *args,
-                    database=data["database"],
+                    database=data.get("database"),
                 ),
                 cmd=utility_path,
                 args=escaped_args,
@@ -423,16 +424,19 @@ def preview_command(request, database):
             data["pigz_path"] = pigz_path
         except FileNotFoundError as exc:
             return JsonResponse(data={"data": str(exc)}, status=400)
-    args = get_args_params_values(data, database, backup_type_str, resolved_path)
+    try:
+        backup_type = Backup.get_backup_type(backup_type_str)
 
-    backup_type = Backup.get_backup_type(backup_type_str)
+        args = get_args_params_values(data, database, backup_type_str, resolved_path)
 
-    backup_message = BackupMessage(
-        Backup.create(backup_type),
-        database.conn_id,
-        resolved_path,
-        *args,
-        database=data.get(database),
-    )
+        backup_message = BackupMessage(
+            Backup.create(backup_type),
+            database.conn_id,
+            resolved_path,
+            *args,
+            database=data.get("database"),
+        )
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
 
     return JsonResponse(data={"command": backup_message.details(utility_path)})
