@@ -59,7 +59,7 @@ function showMessageModal(p_content_function, p_large) {
 
 }
 
-function showAlert(p_info, p_funcYes = null, p_large = null)
+function showAlertContent(p_fill_content, p_funcYes = null, p_large = null)
 {
 
 	var v_create_content_function = function() {
@@ -69,7 +69,7 @@ function showAlert(p_info, p_funcYes = null, p_large = null)
 	  var v_button_no = document.getElementById('modal_message_no');
 	  var v_button_cancel = document.getElementById('modal_message_cancel');
 
-	  v_content_div.innerHTML = p_info;
+	  p_fill_content(v_content_div);
 
 		v_button_ok.onclick = function() {
 	    if (p_funcYes!=null)
@@ -87,6 +87,20 @@ function showAlert(p_info, p_funcYes = null, p_large = null)
 	showMessageModal(v_create_content_function, p_large);
 
 
+}
+
+function showAlertText(p_info, p_funcYes = null, p_large = null)
+{
+	showAlertContent(function(v_content_div) {
+		v_content_div.textContent = p_info;
+	}, p_funcYes, p_large);
+}
+
+function showAlertHtml(p_info, p_funcYes = null, p_large = null)
+{
+	showAlertContent(function(v_content_div) {
+		v_content_div.innerHTML = p_info;
+	}, p_funcYes, p_large);
 }
 
 function showConfirm(p_info,p_funcYes = null,p_funcNo = null, p_shownCallback = null, p_large = null)
@@ -156,4 +170,4 @@ function showToast(type, message) {
   })
 }
 
-export { showAlert, showConfirm, showToast};
+export { showAlertText, showAlertHtml, showConfirm, showToast };

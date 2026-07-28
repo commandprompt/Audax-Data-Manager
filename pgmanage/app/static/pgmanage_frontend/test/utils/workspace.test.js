@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import ContextMenu from "@imengyu/vue3-context-menu";
 import { startLoading } from "@src/ajax_control";
-import { showAlert, showConfirm } from "@src/notification_control";
+import { showAlertHtml, showConfirm } from "@src/notification_control";
 import { emitter } from "@src/emitter";
 import { tabsStore, connectionsStore } from "@src/stores/stores_initializer.js";
 import { Modal } from "bootstrap";
@@ -21,7 +21,7 @@ vi.mock("@src/ajax_control", () => ({
 }));
 
 vi.mock("@src/notification_control", () => ({
-  showAlert: vi.fn(),
+  showAlertHtml: vi.fn(),
   showConfirm: vi.fn(),
 }));
 
@@ -68,7 +68,7 @@ describe("workspace.js", () => {
       expect(result).toBe(true);
       expect(okFunction).toHaveBeenCalled();
       expect(cancelFunction).not.toHaveBeenCalled();
-      expect(showAlert).not.toHaveBeenCalled();
+      expect(showAlertHtml).not.toHaveBeenCalled();
     });
 
     it.each(["edit", "alter", "monitoring_dashboard"])(
@@ -85,7 +85,7 @@ describe("workspace.js", () => {
         expect(result).toBe(false);
         expect(cancelFunction).toHaveBeenCalled();
         expect(okFunction).not.toHaveBeenCalled();
-        expect(showAlert).toHaveBeenCalled();
+        expect(showAlertHtml).toHaveBeenCalled();
       },
     );
 

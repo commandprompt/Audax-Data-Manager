@@ -3,7 +3,7 @@ import ShortUniqueId from 'short-unique-id';
 
 import { queryResponseCodes } from "./constants";
 import { debugResponse } from "./debug";
-import { showAlert, showToast } from "./notification_control";
+import { showAlertText, showToast } from "./notification_control";
 import { emitter } from './emitter';
 import { handleError } from './logging/utils';
 
@@ -57,7 +57,7 @@ function polling_response(message) {
       break;
     }
     case parseInt(queryResponseCodes.SessionMissing): {
-      showAlert('Session not found please reload the page.');
+      showAlertText('Session not found please reload the page.');
       break;
     }
     case parseInt(queryResponseCodes.MessageException): {

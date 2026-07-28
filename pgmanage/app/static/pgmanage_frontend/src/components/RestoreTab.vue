@@ -316,7 +316,7 @@
 <script>
 import UtilityJobs from './UtilityJobs.vue';
 import axios from 'axios'
-import { showAlert } from '../notification_control';
+import { showAlertText } from '../notification_control';
 import { settingsStore, fileManagerStore, tabsStore } from '../stores/stores_initializer';
 import { truncateText, flashHighlight } from "../utils";
 import { handleError } from '../logging/utils';
@@ -510,7 +510,7 @@ export default {
         data: this.restoreOptions,
       })
         .then((resp) => {
-          showAlert(resp.data.command.cmd)
+          showAlertText(resp.data.command.cmd)
         })
         .catch((error) => {
           handleError(error);

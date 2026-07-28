@@ -215,7 +215,7 @@
 <script>
 import { refreshHeights } from '../workspace'
 import axios from 'axios'
-import { showAlert, showToast } from '../notification_control'
+import { showAlertText, showToast } from '../notification_control'
 import { minFontSize, maxFontSize } from '../constants'
 import moment from 'moment'
 import { settingsStore } from '../stores/stores_initializer'
@@ -499,8 +499,8 @@ export default {
       })
         .then((resp) => {
           const binary_paths = Object.entries(resp.data.data)
-            .map(([key, value]) => `<p>${key}: ${value}</p>`).join('')
-          showAlert(binary_paths)
+            .map(([key, value]) => `${key}: ${value}`).join('\n')
+          showAlertText(binary_paths)
         })
         .catch((error) => {
           handleError(error);

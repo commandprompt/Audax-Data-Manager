@@ -25,7 +25,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-import { showAlert } from "./notification_control";
+import { showAlertText } from "./notification_control";
 
 //Number of active AJAX calls
 var v_calls_count = 0;
@@ -155,13 +155,13 @@ function cancelAjax() {
 			// Intercepting the workflow when the request returns with evaluated server errors.
  			if(p_return.v_error) {
  				if(p_return.v_error_id == 1) {
- 					showAlert('User not authenticated, please reload the page.');
+ 					showAlertText('User not authenticated, please reload the page.');
  				}
  				else if(p_errorFunc) {
  					p_errorFunc(p_return);
  				}
  				else {
- 					showAlert(p_return.v_data);
+ 					showAlertText(p_return.v_data);
  				}
  			}
 			// Resuming the workflow with the success callback function.
@@ -184,7 +184,7 @@ function cancelAjax() {
 			else {
 				// Prompting error messages related to ajax error.
 	 			if(msg.readyState != 0) {
-	 				showAlert('Request error.')
+	 				showAlertText('Request error.')
 	 			}
 	 			else {
 	 				if(msg.statusText!='abort') {
@@ -202,7 +202,7 @@ function cancelAjax() {
  * Reporting that webserver is off.
  */
 function reportOffline() {
-	showAlert('Webserver was shutdown, please restart it and reload the application.');
+	showAlertText('Webserver was shutdown, please restart it and reload the application.');
 	var v_status_img = document.getElementById("ajax_status");
 }
 
