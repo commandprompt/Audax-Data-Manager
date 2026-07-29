@@ -21,6 +21,8 @@ OUTDIR - Output directory
 import json
 import logging
 import os
+import re
+import secrets
 import signal
 import subprocess
 import sys
@@ -32,6 +34,86 @@ _IS_WIN = os.name == "nt"
 sys_encoding = None
 out_dir = None
 log_file = None
+
+# meta-commands with real OS/shell/file impact; never emitted by pg_dump/pg_dumpall
+_BLOCKED_META_COMMANDS = {
+    b"\\!",
+    b"\\o",
+    b"\\g",
+    b"\\gx",
+    b"\\copy",
+    b"\\i",
+    b"\\ir",
+    b"\\include",
+    b"\\include_relative",
+    b"\\e",
+    b"\\edit",
+    b"\\ef",
+    b"\\ev",
+    b"\\w",
+    b"\\write",
+    b"\\lo_import",
+    b"\\lo_export",
+}
+_COPY_FROM_STDIN_RE = re.compile(rb"(?im)^\s*COPY\s+.+\sFROM\s+STDIN\b")
+_DOLLAR_TAG_RE = re.compile(rb"\$([A-Za-z_][A-Za-z0-9_]*)?\$")
+
+
+def psql_supports_restrict(psql_path):
+    #checks if psql executable supports restrict natively"
+    try:
+        result = subprocess.run(
+            [psql_path, "--help=commands"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=10,
+        )
+        return b"\\restrict" in result.stdout
+    except Exception:
+        return False
+
+
+def inject_restrict_args(command, dash_f_index, is_pigz_into_psql):
+    # restrict with a random key, so nobody can unrestrict
+    key = secrets.token_hex(16)
+    restrict_args = ["-c", f"\\restrict {key}"]
+    if is_pigz_into_psql:
+        # "-f -" keeps psql reading from stdin (fed by pigz) after the -c command
+        return command[:-1] + restrict_args + ["-f", "-"] + command[-1:]
+    return command[:dash_f_index] + restrict_args + command[dash_f_index:]
+
+
+def update_dollar_quote_state(line, state):
+    count = len(_DOLLAR_TAG_RE.findall(line))
+    if count % 2 == 1:
+        state["in_dollar_quote"] = not state["in_dollar_quote"]
+
+
+def filter_psql_line(line, state):
+    # COPY data and dollar-quoted bodies can legitimately start with `\`
+    # (e.g. NULL is literally `\N`), so leave them untouched
+    if state["in_dollar_quote"]:
+        update_dollar_quote_state(line, state)
+        return line
+
+    if state["in_copy"]:
+        if line.rstrip(b"\r\n") == b"\\.":
+            state["in_copy"] = False
+        return line
+
+    stripped = line.lstrip()
+    if stripped.startswith(b"\\"):
+        token = stripped.split(None, 1)[0].rstrip(b"\r\n").lower()
+        if token in _BLOCKED_META_COMMANDS:
+            return b"-- " + line.rstrip(b"\r\n") + b"\n"
+        return line
+
+    if _COPY_FROM_STDIN_RE.search(line):
+        state["in_copy"] = True
+        return line
+
+    update_dollar_quote_state(line, state)
+    return line
 
 
 def unescape_dquotes_process_arg(arg):
@@ -138,7 +220,34 @@ class ProcessExecutor:
             }
 
             logging.info("Starting the command execution...")
-            if len(command[-1].split()) >= 3:
+
+            is_psql = "psql" in os.path.basename(command[0]).lower()
+            dash_f_index = None
+            if is_psql:
+                for i, arg in enumerate(command):
+                    if arg == "-f" and i + 1 < len(command):
+                        dash_f_index = i
+                        break
+            pigz_tail = len(command[-1].split()) >= 3
+            is_pigz_into_psql = is_psql and pigz_tail and "-dc" in command[-1].split()
+            # this block handles filtering of psql slash commands
+            # if psql supports \restrict - use it
+            # otherwise process executor will strip dangerous slash commands
+            # and pipe the sanitized plain dump into psql
+            if is_psql and (dash_f_index is not None or is_pigz_into_psql):
+                if psql_supports_restrict(command[0]):
+                    command = inject_restrict_args(
+                        command, dash_f_index, is_pigz_into_psql
+                    )
+                    if is_pigz_into_psql:
+                        self._execute_with_pigz(command, kwargs)
+                    else:
+                        self._execute_without_pigz(command, kwargs)
+                elif is_pigz_into_psql:
+                    self._execute_psql_filtered_from_pigz(command, kwargs)
+                else:
+                    self._execute_psql_filtered_from_file(command, dash_f_index, kwargs)
+            elif pigz_tail:
                 self._execute_with_pigz(command, kwargs)
             else:
                 self._execute_without_pigz(command, kwargs)
@@ -218,6 +327,107 @@ class ProcessExecutor:
         self.status_args.update({"end_time": datetime.now().strftime("%Y%m%d%H%M%S%f")})
 
         self._fetch_execute_output(process)
+
+    def _execute_psql_filtered_from_file(
+        self, command: List[str], dash_f_index: int, kwargs: Dict[str, Any]
+    ) -> None:
+        # no native \\restrict support: stream the file through the filter into stdin instead of -f ...
+        file_path = command[dash_f_index + 1]
+        psql_command = command[:dash_f_index] + command[dash_f_index + 2 :]
+
+        process = subprocess.Popen(
+            psql_command,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            **kwargs,
+        )
+
+        def source():
+            with open(file_path, "rb") as f:
+                yield from f
+
+        self._run_filtered_restore(process, source())
+
+    def _execute_psql_filtered_from_pigz(
+        self, command: List[str], kwargs: Dict[str, Any]
+    ) -> None:
+        # Same as _execute_psql_filtered_from_file, but sourced from pigz's decompressed output
+        pigz_command = command[-1].split()
+        psql_command = command[:-1]
+
+        pigz_process = subprocess.Popen(
+            pigz_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs
+        )
+        process = subprocess.Popen(
+            psql_command,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            **kwargs,
+        )
+
+        def source():
+            try:
+                yield from pigz_process.stdout
+            finally:
+                pigz_process.stdout.close()
+                pigz_process.wait()
+
+        self._run_filtered_restore(process, source())
+
+    def _run_filtered_restore(self, process: subprocess.Popen, line_source) -> None:
+        writer = Thread(target=self._write_filtered_stdin, args=(process, line_source))
+        writer.start()
+
+        self._update_process_info(process)
+
+        self.process_stdout.attach_process_stream(process, process.stdout)
+        self.process_stdout.start()
+        self.process_stderr.attach_process_stream(process, process.stderr)
+        self.process_stderr.start()
+
+        self.process_stdout.join()
+        self.process_stderr.join()
+        writer.join()
+
+        # already closed by the writer thread; communicate() would raise trying to flush it otherwise
+        process.stdin = None
+
+        exit_code = process.wait()
+
+        if exit_code is None:
+            exit_code = process.poll()
+
+        self.status_args.update(
+            {
+                "exit_code": exit_code,
+                "end_time": datetime.now().strftime("%Y%m%d%H%M%S%f"),
+            }
+        )
+
+        self._fetch_execute_output(process)
+
+    @staticmethod
+    def _write_filtered_stdin(process: subprocess.Popen, line_source) -> None:
+        state = {"in_copy": False, "in_dollar_quote": False}
+        buffer = bytearray()
+        flush_threshold = 256 * 1024
+        try:
+            for raw_line in line_source:
+                buffer += filter_psql_line(raw_line, state)
+                if len(buffer) >= flush_threshold:
+                    process.stdin.write(buffer)
+                    buffer.clear()
+            if buffer:
+                process.stdin.write(buffer)
+        except Exception:
+            pass
+        finally:
+            try:
+                process.stdin.close()
+            except Exception:
+                pass
 
     def _execute_with_pigz(self, command: List[str], kwargs: Dict[str, Any]):
         """Execute the command with pigz compression."""
