@@ -1,6 +1,6 @@
 import BackupTab from "@src/components/BackupTab.vue";
 import UtilityJobs from "@src/components/UtilityJobs.vue";
-import { showAlert } from "@src/notification_control";
+import { showAlertText } from "@src/notification_control";
 import { fileManagerStore } from "@src/stores/stores_initializer";
 import { flushPromises, mount } from "@vue/test-utils";
 import axios from "axios";
@@ -12,9 +12,10 @@ vi.mock("@src/logging/utils", () => ({
   handleError: vi.fn(),
 }));
 
-vi.mock("@src/notification_control", () => ({
-  showAlert: vi.fn(),
-}));
+vi.mock("@src/notification_control", async (importOriginal) => {
+  const orig = await importOriginal();
+  return { ...orig, showAlertText: vi.fn() };
+});
 
 vi.mock("@src/stores/stores_initializer", async (importOriginal) => {
   const orig = await importOriginal();
@@ -378,7 +379,17 @@ describe("BackupTab Component", () => {
       data: wrapper.vm.backupOptions,
       backup_type: wrapper.vm.type,
     });
-    expect(showAlert).toHaveBeenCalledWith("pg_dump command");
+    expect(showAlertText).toHaveBeenCalledWith("pg_dump command");
+  });
+
+  it("shows the previewed command via the text-safe alert, never the HTML one", async () => {
+    const payload = '"><img src=x onerror=alert(1)>';
+    axios.post.mockResolvedValueOnce({ data: { command: { cmd: payload } } });
+
+    await wrapper.vm.previewCommand();
+    await flushPromises();
+
+    expect(showAlertText).toHaveBeenCalledWith(payload);
   });
 
   it("calls previewCommand and shows an error toast on failure", async () => {

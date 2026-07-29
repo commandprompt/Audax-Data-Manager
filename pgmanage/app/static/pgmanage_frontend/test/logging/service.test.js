@@ -2,12 +2,12 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import axios from "axios";
 import * as logging_service from "@src/logging/service";
 import { requestHistory } from "@src/logging/service";
-import { showAlert } from "@src/notification_control";
+import { showAlertText } from "@src/notification_control";
 
 Date.now = vi.fn(() => new Date("2024-08-05T12:33:37.000Z"));
 
 vi.mock("@src/notification_control", () => ({
-  showAlert: vi.fn(),
+  showAlertText: vi.fn(),
 }));
 
 describe("requestHistoryQueue", () => {
@@ -113,7 +113,7 @@ describe("axiosHooks", () => {
     try {
       await onError(error);
     } catch (err) {
-      expect(showAlert).toHaveBeenCalledWith(
+      expect(showAlertText).toHaveBeenCalledWith(
         "User not authenticated, please reload the page."
       );
     }
@@ -127,7 +127,7 @@ describe("axiosHooks", () => {
     try {
       await onError(error);
     } catch (err) {
-      expect(showAlert).toHaveBeenCalledWith(
+      expect(showAlertText).toHaveBeenCalledWith(
         `${error.message}. Try reloading the application if the issue persists.`
       );
     }
