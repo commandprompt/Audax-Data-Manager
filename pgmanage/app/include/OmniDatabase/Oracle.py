@@ -298,11 +298,16 @@ class Oracle:
     @lock_required
     def QueryTablesFields(self, table=None, all_schemas=False, schema=None):
         query_filter = ''
+
+        normalized_table = self.normalize_oracle_identifier(table)
+        normalized_schema = self.normalize_oracle_identifier(schema)
+        normalized_self_schema = self.normalize_oracle_identifier(self.schema)
+
         if not all_schemas:
             if table and schema:
-                query_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' and (case when upper(replace(table_name, ' ', '')) <> table_name then '"' || table_name || '"' else table_name end) = '{1}' ".format(schema, table)
+                query_filter = "and owner = '{0}' and table_name = '{1}' ".format(normalized_schema, normalized_table)
             elif table:
-                query_filter = "and owner = '{0}' and table_name = '{1}' ".format(self.schema, table)
+                query_filter = "and owner = '{0}' and table_name = '{1}' ".format(normalized_self_schema, normalized_table)
             elif schema:
                 query_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' ".format(schema)
             else:
@@ -311,8 +316,10 @@ class Oracle:
             if table:
                 query_filter = "and table_name = '{0}' ".format(table)
         return self.connection.Query('''
-            select (case when upper(replace(table_name, ' ', '')) <> table_name then '"' || table_name || '"' else table_name end) as "table_name",
-                   (case when upper(replace(column_name, ' ', '')) <> column_name then '"' || column_name || '"' else column_name end) as "column_name",
+            select (case when upper(replace(table_name, ' ', '')) <> table_name then '"' || table_name || '"' else table_name end) as "table_name_raw",
+                   (case when upper(replace(column_name, ' ', '')) <> column_name then '"' || column_name || '"' else column_name end) as "column_name_raw",
+                                     column_name as "column_name",
+                                     table_name as "table_name",
                    case when data_type = 'NUMBER' and data_scale = '0' then 'INTEGER' else data_type end as "data_type",
                    case nullable when 'Y' then 'YES' else 'NO' end as "nullable",
                    data_length as "data_length",
@@ -423,76 +430,78 @@ class Oracle:
     @lock_required
     def QueryTablesPrimaryKeys(self, table=None, all_schemas=False, schema=None):
         query_filter = ''
+
+        normalized_table = self.normalize_oracle_identifier(table)
+        normalized_schema = self.normalize_oracle_identifier(schema)
+        normalized_self_schema = self.normalize_oracle_identifier(self.schema)
+
         if not all_schemas:
             if table and schema:
-                query_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' and (case when upper(replace(\"table_name\", ' ', '')) <> \"table_name\" then '"' || \"table_name\" || '"' else \"table_name\" end) = '{1}' ".format(schema, table)
+                query_filter = "and cons.owner = '{0}' and cons.table_name = '{1}' ".format(normalized_schema, normalized_table)
             elif table:
-                query_filter = """and "table_schema" = '{0}' and "table_name" = '{1}' """.format(self.schema, table)
+                query_filter = "and cons.owner = '{0}' and cons.table_name = '{1}' ".format(normalized_self_schema, normalized_table)
             elif schema:
-                query_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' ".format(schema)
+                query_filter = "and cons.owner = '{0}' ".format(normalized_schema)
             else:
-                query_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' ".format(self.schema)
+                query_filter = "and cons.owner = '{0}' ".format(normalized_self_schema)
         else:
             if table:
-                query_filter = "and (case when upper(replace(\"table_name\", ' ', '')) <> \"table_name\" then '"' || \"table_name\" || '"' else \"table_name\" end) = '{0}' ".format(table)
+                query_filter = "and cons.table_name = '{0}' ".format(normalized_table)
         return self.connection.Query('''
-            select distinct *
-            from (
-                select (case when upper(replace(cons.constraint_name, ' ', '')) <> cons.constraint_name then '"' || cons.constraint_name || '"' else cons.constraint_name end) as "constraint_name",
-                       (case when upper(replace(cols.table_name, ' ', '')) <> cols.table_name then '"' || cols.table_name || '"' else cols.table_name end) as "table_name",
-                       (case when upper(replace(cons.owner, ' ', '')) <> cons.owner then '"' || cons.owner || '"' else cons.owner end) as "table_schema"
-                from all_constraints cons,
-                     all_cons_columns cols,
-                     all_tables t
-                where cons.constraint_type = 'P'
-                  and t.table_name = cols.table_name
-                  and cons.constraint_name = cols.constraint_name
-                  and cons.owner = cols.owner
-                order by cons.owner,
-                         cols.table_name,
-                         cons.constraint_name
-            )
-            where 1 = 1
-            {0}
+            select distinct
+               cons.constraint_name as "constraint_name",
+               cons.table_name as "table_name",
+               cons.owner as "table_schema"
+            from all_constraints cons
+            join all_cons_columns cols
+            on cols.owner = cons.owner
+            and cols.constraint_name = cons.constraint_name
+            and cols.table_name = cons.table_name
+            join all_tables t
+            on t.owner = cons.owner
+            and t.table_name = cons.table_name
+            where cons.constraint_type = 'P'
+        {0}
+        order by cons.owner,
+                 cons.table_name,
+                 cons.constraint_name
         '''.format(query_filter), True)
+
 
     @lock_required
     def QueryTablesPrimaryKeysColumns(self, pkey, table=None, all_schemas=False, schema=None):
         query_filter = ''
+
+        normalized_table = self.normalize_oracle_identifier(table)
+        normalized_schema = self.normalize_oracle_identifier(schema)
+        normalized_self_schema = self.normalize_oracle_identifier(self.schema)
         if not all_schemas:
             if table and schema:
-                query_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' and (case when upper(replace(\"table_name\", ' ', '')) <> \"table_name\" then '"' || \"table_name\" || '"' else \"table_name\" end) = '{1}' ".format(schema, table)
+                query_filter = "and cons.owner = '{0}' and cons.table_name = '{1}' ".format(normalized_schema, normalized_table)
             elif table:
-                query_filter = """and "table_schema" = '{0}' and "table_name" = '{1}' """.format(self.schema, table)
+                query_filter = "and cons.owner = '{0}' and cons.table_name = '{1}' ".format(normalized_self_schema, normalized_table)
             elif schema:
-                query_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' ".format(schema)
+                query_filter = "and cons.owner = '{0}' ".format(normalized_schema)
             else:
-                query_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' ".format(self.schema)
+                query_filter = " and cons.owner = '{0}' ".format(normalized_self_schema)
         else:
             if table:
-                query_filter = "and (case when upper(replace(\"table_name\", ' ', '')) <> \"table_name\" then '"' || \"table_name\" || '"' else \"table_name\" end) = '{0}' ".format(table)
-        query_filter = query_filter + "and (case when upper(replace(\"constraint_name\", ' ', '')) <> \"constraint_name\" then '"' || \"constraint_name\" || '"' else \"constraint_name\" end) = '{0}' ".format(pkey)
+                query_filter = "and cons.table_name = '{0}' ".format(normalized_table)
+        query_filter = query_filter + "and cons.constraint_name = '{0}'".format(pkey)
         return self.connection.Query('''
-            select "column_name"
-            from (
-                select (case when upper(replace(cons.constraint_name, ' ', '')) <> cons.constraint_name then '"' || cons.constraint_name || '"' else cons.constraint_name end) as "constraint_name",
-                       (case when upper(replace(cols.table_name, ' ', '')) <> cols.table_name then '"' || cols.table_name || '"' else cols.table_name end) as "table_name",
-                       (case when upper(replace(cols.column_name, ' ', '')) <> cols.column_name then '"' || cols.column_name || '"' else cols.column_name end) as "column_name",
-                       (case when upper(replace(cons.owner, ' ', '')) <> cons.owner then '"' || cons.owner || '"' else cons.owner end) as "table_schema"
-                from all_constraints cons,
-                     all_cons_columns cols,
-                     all_tables t
-                where cons.constraint_type = 'P'
-                  and t.table_name = cols.table_name
-                  and cons.constraint_name = cols.constraint_name
-                  and cons.owner = cols.owner
-                order by cons.owner,
-                         cols.table_name,
-                         cons.constraint_name,
-                         cols.position
-            )
-            where 1 = 1
-            {0}
+            select cols.column_name as "column_name",
+                    (case when upper(replace(cols.column_name, ' ', '')) <> cols.column_name then '"' || cols.column_name || '"' else cols.column_name end) as "column_name_raw"
+        from all_constraints cons
+        join all_cons_columns cols
+          on cols.owner = cons.owner
+         and cols.constraint_name = cons.constraint_name
+         and cols.table_name = cons.table_name
+        where cons.constraint_type = 'P'
+        {0}
+        order by cons.owner,
+                 cols.table_name,
+                 cons.constraint_name,
+                 cols.position
         '''.format(query_filter), True)
 
     @lock_required
@@ -1012,14 +1021,14 @@ aic.column_name
         sql = 'SELECT t.'
         fields = self.QueryTablesFields(table, False, schema)
         if len(fields.Rows) > 0:
-            sql += '\n     , t.'.join([r['column_name'] for r in fields.Rows])
+            sql += '\n     , t.'.join([r['column_name_raw'] for r in fields.Rows])
         sql += '\nFROM {0}.{1} t'.format(schema, table)
         pk = self.QueryTablesPrimaryKeys(table, False, schema)
         if len(pk.Rows) > 0:
             fields = self.QueryTablesPrimaryKeysColumns(pk.Rows[0]['constraint_name'], table, False, schema)
             if len(fields.Rows) > 0:
                 sql += '\nORDER BY t.'
-                sql += '\n       , t.'.join([r['column_name'] for r in fields.Rows])
+                sql += '\n       , t.'.join([r['column_name_raw'] for r in fields.Rows])
         return Template(sql)
 
     def TemplateInsert(self, schema, table):
@@ -1034,7 +1043,7 @@ aic.column_name
                 first = True
                 for r in fields.Rows:
                     if first:
-                        sql += '      {0}'.format(r['column_name'])
+                        sql += '      {0}'.format(r['column_name_raw'])
                         if r['column_name'] in pk_fields:
                             values.append('      ? -- {0} {1} PRIMARY KEY'.format(r['column_name'], r['data_type']))
                         elif r['nullable'] == 'YES':
@@ -1043,7 +1052,7 @@ aic.column_name
                             values.append('      ? -- {0} {1}'.format(r['column_name'], r['data_type']))
                         first = False
                     else:
-                        sql += '\n    , {0}'.format(r['column_name'])
+                        sql += '\n    , {0}'.format(r['column_name_raw'])
                         if r['column_name'] in pk_fields:
                             values.append('\n    , ? -- {0} {1} PRIMARY KEY'.format(r['column_name'], r['data_type']))
                         elif r['nullable'] == 'YES':
@@ -1055,14 +1064,14 @@ aic.column_name
                 first = True
                 for r in fields.Rows:
                     if first:
-                        sql += '      {0}'.format(r['column_name'])
+                        sql += '      {0}'.format(r['column_name_raw'])
                         if r['nullable'] == 'YES':
                             values.append('      ? -- {0} {1} NULLABLE'.format(r['column_name'], r['data_type']))
                         else:
                             values.append('      ? -- {0} {1}'.format(r['column_name'], r['data_type']))
                         first = False
                     else:
-                        sql += '\n    , {0}'.format(r['column_name'])
+                        sql += '\n    , {0}'.format(r['column_name_raw'])
                         if r['nullable'] == 'YES':
                             values.append('\n    , ? -- {0} {1} NULLABLE'.format(r['column_name'], r['data_type']))
                         else:
@@ -1088,34 +1097,34 @@ aic.column_name
                 for r in fields.Rows:
                     if first:
                         if r['column_name'] in pk_fields:
-                            sql += '{0} = ? -- {1} PRIMARY KEY'.format(r['column_name'], r['data_type'])
+                            sql += '{0} = ? -- {1} PRIMARY KEY'.format(r['column_name_raw'], r['data_type'])
                         elif r['nullable'] == 'YES':
-                            sql += '{0} = ? -- {1} NULLABLE'.format(r['column_name'], r['data_type'])
+                            sql += '{0} = ? -- {1} NULLABLE'.format(r['column_name_raw'], r['data_type'])
                         else:
-                            sql += '{0} = ? -- {1}'.format(r['column_name'], r['data_type'])
+                            sql += '{0} = ? -- {1}'.format(r['column_name_raw'], r['data_type'])
                         first = False
                     else:
                         if r['column_name'] in pk_fields:
-                            sql += '\n    , {0} = ? -- {1} PRIMARY KEY'.format(r['column_name'], r['data_type'])
+                            sql += '\n    , {0} = ? -- {1} PRIMARY KEY'.format(r['column_name_raw'], r['data_type'])
                         elif r['nullable'] == 'YES':
-                            sql += '\n    , {0} = ? -- {1} NULLABLE'.format(r['column_name'], r['data_type'])
+                            sql += '\n    , {0} = ? -- {1} NULLABLE'.format(r['column_name_raw'], r['data_type'])
                         else:
-                            sql += '\n    , {0} = ? -- {1}'.format(r['column_name'], r['data_type'])
+                            sql += '\n    , {0} = ? -- {1}'.format(r['column_name_raw'], r['data_type'])
             else:
                 values = []
                 first = True
                 for r in fields.Rows:
                     if first:
                         if r['nullable'] == 'YES':
-                            sql += '{0} = ? -- {1} NULLABLE'.format(r['column_name'], r['data_type'])
+                            sql += '{0} = ? -- {1} NULLABLE'.format(r['column_name_raw'], r['data_type'])
                         else:
-                            sql += '{0} = ? -- {1}'.format(r['column_name'], r['data_type'])
+                            sql += '{0} = ? -- {1}'.format(r['column_name_raw'], r['data_type'])
                         first = False
                     else:
                         if r['nullable'] == 'YES':
-                            sql += '\n    , {0} = ? -- {1} NULLABLE'.format(r['column_name'], r['data_type'])
+                            sql += '\n    , {0} = ? -- {1} NULLABLE'.format(r['column_name_raw'], r['data_type'])
                         else:
-                            sql += '\n    , {0} = ? -- {1}'.format(r['column_name'], r['data_type'])
+                            sql += '\n    , {0} = ? -- {1}'.format(r['column_name_raw'], r['data_type'])
             sql += '\nWHERE condition'
         else:
             sql = ''
@@ -1298,3 +1307,16 @@ select * from all_objects
             AND c.table_name = '{1}'
             ORDER BY c.column_id
         '''.format(in_schema, table), False)
+    
+    def normalize_oracle_identifier(self, identifier):
+        if identifier is None:
+            return None
+
+        identifier = identifier.strip()
+
+        # Quoted identifier: remove quotes and preserve exact case
+        if len(identifier) >= 2 and identifier[0] == '"' and identifier[-1] == '"':
+            return identifier[1:-1].replace('""', '"')
+
+        # Unquoted identifier: Oracle stores it uppercase
+        return identifier.upper()

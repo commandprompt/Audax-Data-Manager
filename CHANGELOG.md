@@ -1,6 +1,93 @@
+# Audax Data Manager 1.5 Release
+
+## Release Date: Jun 16 2026
+
+## Release Notes
+
+  - New features:
+    - implemented support for keyboard navigation in Database Explorer using Page-Up, Page-Down, Home, End and arrow keys #747
+    - implemented support for opening context menu with keyboard "Context Menu" key in Data Editor and Query Tabs #745
+    - implemented support for copying/pasting cell regions in the Data Editor #782
+    - implemented hotkey support for Copy/Paste and Clear actions in data grids #749
+    - implemented full-screen mode support for Data Editor and ERD tabs #791
+    - implemented quick access to theme and font size settings in the app sidebar #787
+    - implemented the "unsaved data" warning when user tries to close a workspace or tab #779
+    - implemented command history deduplication to hide identical subsequent commands from history #780
+    - implemented support for editing cell data in a dedicated modal window in addition to inline editing #781
+    - implemented proper handling of Postgres byte array data in Query and Data Editor tabs #821
+    - implemented clipboard Copy/Paste context menu options in Database Console and SSH Terminal tabs #820
+    - implemented Oracle support in Schema Editor #840
+    - implemented support for renaming database indexes in MySQL, MariaDB, SQLite3 and MS SQL Server #823
+    - implemented support for updating column comments for Postgres, MySQL and MariaDB in schema editor 
+    - implemented support for multiple versions of Postgres binaries #827
+
+  - UI/UX Improvements:
+    - all modal windows can now be closed by Escape key #750
+    - it is now possible to quickly select a query history record and load it in Query Editor by double clicking on it, thanks @ccurvey #750
+    - added "mac-style" text truncation in workspace tabs #288
+    - extended clickable area of Database Explorer rows #776
+    - extended clickable area of Data and Schema Editor grid action icons #800
+    - extended clickable area of Quick Search icon and DDL tab Edit icon
+    - clicking on the settings icon of the Welcome Screen shortcuts area now opens the Shortcuts tab in the Settings modal #801
+    - adaptive layout is now used for data grids when entering fullscreen mode in Query tab #793
+    - full-screen toggle controls now display a different icon based on the current state #792
+    - prevent slight tab width shifts between active and inactive tab states #789
+    - use more subtle colors for Database Explorer tree view toggle controls #788
+    - increased default UI font size from 12px to 16px to match modern display pixel density #817
+    - adjusted database tabs UI to scroll the newly opened tab into view #662
+    - move database query error messages the Messages tab; automatically activate Messages tab it if error occurs. Thanks @ccurvey for reporting the issue #700
+    - improved Database Explorer responsiveness and loading speed when working with thousands of tables #837
+    - improved DB explorer expanded node positioning to fully remain in the view port after node is auto-scrolled #847
+    - improved DB explorer expanded node positioning to fully remain in the view port after Quick Search/Jump-to #846
+    - clicking on minimized DDL / Properties component will expand it #849
+    - added helpful tooltips to Settings, Backup and Restore tabs #824
+    - reorganized context menus in Snippets module to be consistent with the rest of the app #809
+    - unify data grid context menu styles to be consistent with the rest of the app #807
+    - improved Database Explorer layout scaling when font size change #868
+
+  - Bugs fixed:
+    - fixed color markers not showing in the Data Editor after clipboard copy was used on that row #765
+    - fixed hotkey conflicts by disallowing the registration of certain standard key combinations #748
+    - fixed right-click on the Databases node in MySQL/MariaDB changing the selected database #806
+    - fixed Data Editor cell data being fully cleared when cell is being edited and Backspace key is used
+    - fixed Oracle DB Tree APIs when working with quoted tables #839
+    - fixed SQL templates not working with quoted tables #859
+    - fixed ERD tab not showing columns of tables with quoted name #858
+    - fixed Query data context menu item doesn't work with quoted tables #860
+    - fixed Data Editor not working with quoted tables #861
+    - fixed Data Editor not recognizing record changes when editing data in quoted tables (postgresql) #866
+    - made pigz and postgres native backup compression options mutually exclusive to prevent double compression of DB backups #832
+    - fixed deadlocks in QueryTablesFields when working with SQLite3 databases #837
+    - fixed Schema editor -> Foreign keys -> Column dropdown not showing all values #845
+    - fixed DDL / Properties content not refreshed after search/jump-to #848
+    - fixed snippet editor tab remaining open when the snippet is deleted #851
+    - fixed incorrect database schema order in Database Explorer #843
+    - fixed incorrect database partition order in Database Explorer #853
+    - fixed Database Explorer API request failing when working with quoted tables in Oracle #839
+
+  - Other Changes
+    - exposed cherrypy socket queue and thread pool size as config parameters of pgmanage-server
+    - implemented various enhancements in the web file manager dialog to handle huge files #826
+    - extended logging_filter rules to strip DB credentials from log lines containing DB connection strings
+    - optimized database metadata loading to make fewer trips to the database #837
+    - bump django from 4.2.23 to 5.2.12
+    - bump pymysql from 1.1.1 to 1.1.2
+    - bump psutil from 6.1.1 to 7.2.2
+    - bump oracledb from 3.2 to 3.4.2
+    - bump sqlparse from 0.5.3 to 0.5.5
+    - bump pymssql from 2.3.7 to 2.3.10
+    - bump Node.js version from 18x to 22x
+    - bump vite from 5.4.10 to 6.3.5
+    - bump vitest from 2.1.9 to 3.2.4
+    - bump @vitest/ui from 2.1.9 to 3.2.4
+    - bump @vitest/coverage-v from 2.1.9 to 3.2.4
+    - bump vite-plugin-node-polyfills from 0.22.0 to 0.25.0
+    - bump @vitejs/plugin-vue from 5.1.5 to 5.2.4
+    - bump happy-dom from 15.11.7 to 20.6.2
+
 # PgManage 1.4.1 Bugfix Release
 
-## Release Date: Jan 20 2025
+## Release Date: Jan 20 2026
 
 ## Release Notes
 

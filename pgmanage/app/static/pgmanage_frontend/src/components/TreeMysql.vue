@@ -108,7 +108,7 @@ export default {
             label: "ER Diagram",
             icon: "fab fa-hubspot",
             onClick: () => {
-              tabsStore.createERDTab(this.selectedDatabase)
+              tabsStore.createERDTab(this.selectedNode.title);
             },
           },
           {
@@ -143,7 +143,8 @@ export default {
             label: "Create Table",
             icon: "fas fa-plus",
             onClick: () => {
-              tabsStore.createSchemaEditorTab(this.selectedNode, operationModes.CREATE)
+              const nodeDatabase = this.getNodeDatabase(this.selectedNode);
+              tabsStore.createSchemaEditorTab(this.selectedNode.title, nodeDatabase, operationModes.CREATE);
             },
           },
         ],
@@ -170,7 +171,8 @@ export default {
             label: "Alter Table",
             icon: "fas fa-edit",
             onClick: () => {
-              tabsStore.createSchemaEditorTab(this.selectedNode, operationModes.UPDATE)
+              const nodeDatabase = this.getNodeDatabase(this.selectedNode);
+              tabsStore.createSchemaEditorTab(this.selectedNode.title, nodeDatabase, operationModes.UPDATE);
             },
           },
           {
@@ -673,15 +675,6 @@ export default {
     emitter.all.delete(`goToNode_${this.workspaceId}`);
   },
   methods: {
-    onContextMenu(node, e) {
-      this.$refs.tree.select(node.path);
-      e.preventDefault();
-      if (!!node.data.contextMenu) {
-        this.checkCurrentDatabase(node, true, () => {
-          this.showContextMenu(node, e)
-        });
-      }
-    },
     checkCurrentDatabase(
       node,
       complete_check,

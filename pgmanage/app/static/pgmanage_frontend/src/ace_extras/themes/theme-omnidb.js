@@ -227,7 +227,7 @@ box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;\
 background-color: #e9f0f9 !important;\
 }\
 .ace-omnidb.ace_autocomplete .ace_marker-layer .ace_line-hover {\
-background-color: rgba(21, 97, 172, 0.2) !important;\
+background-color: rgba(21, 96, 173, 0.15) !important;\
 border: 0 !important;\
 }\
 .ace-omnidb .ace_completion-meta {\

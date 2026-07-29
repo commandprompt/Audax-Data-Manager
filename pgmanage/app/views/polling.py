@@ -1567,7 +1567,7 @@ def thread_save_edit_data(self, args) -> None:
             except Exception as exc:
                 database.connection.con.rollback()
                 raise DatabaseError(str(exc)) from exc
-        if database.db_type == "oracle" and len(command.split(";\n")) >= 2:
+        elif database.db_type == "oracle" and len(command.split(";\n")) >= 2:
             try:
                 database.connection.Open(False)
                 database.connection.Execute(f"BEGIN\n{command};\nEND;")

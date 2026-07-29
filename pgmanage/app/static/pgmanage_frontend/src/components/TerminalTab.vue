@@ -20,6 +20,7 @@ import { queryRequestCodes, requestState } from "../constants";
 import { emitter } from "../emitter";
 import TabTitleUpdateMixin from "../mixins/sidebar_title_update_mixin";
 import ContextMenu from "@imengyu/vue3-context-menu";
+import { readClipboardText } from "@src/utils/clipboard";
 
 export default {
   name: "TerminalTab",
@@ -120,14 +121,14 @@ export default {
         {
           label: "Paste",
           icon: "fas fa-paste",
-          onClick: () => {
-            try {
-              navigator.clipboard.readText().then((text) => {
-                this.terminalRun(false, text);
-              })
-            } catch (error) {
-              // may throw NotAllowedError in some cases
+          onClick: async () => {
+            const text = await readClipboardText();
+
+            if (!text) {
+              return;
             }
+
+            this.terminalRun(false, text);
           },
         },
       ];

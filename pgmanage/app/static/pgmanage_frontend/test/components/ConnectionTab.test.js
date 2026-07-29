@@ -74,7 +74,7 @@ describe("ConnectionTab.vue", () => {
     wrapper.vm.emitConnectionSave();
     expect(emitterSaveSpy).toHaveBeenCalledWith(
       "connection-save",
-      expect.any(Object)
+      expect.any(Object),
     );
   });
 
@@ -91,7 +91,7 @@ describe("ConnectionTab.vue", () => {
     wrapper.vm.showQuickSearch("click");
     expect(emittershowQuickSearchSpy).toHaveBeenCalledWith(
       `${connTab.id}_show_quick_search`,
-      "click"
+      "click",
     );
   });
 
@@ -111,6 +111,8 @@ describe("ConnectionTab.vue", () => {
 
     wrapper.vm.getProperties(params);
 
+    await vi.advanceTimersByTimeAsync(200);
+
     await flushPromises();
 
     expect(wrapper.vm.ddlData).toBe("ddl");
@@ -124,10 +126,13 @@ describe("ConnectionTab.vue", () => {
     const err = { response: { data: { password_timeout: true, data: "msg" } } };
     axios.post.mockRejectedValue(err);
     wrapper.vm.getProperties({ view: "/v", data: {} });
+
+    await vi.advanceTimersByTimeAsync(200);
+
     await flushPromises();
     expect(emitterShowPasswordSpy).toHaveBeenCalledWith(
       "show_password_prompt",
-      expect.any(Object)
+      expect.any(Object),
     );
   });
 

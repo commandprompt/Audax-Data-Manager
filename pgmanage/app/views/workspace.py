@@ -234,6 +234,18 @@ def draw_graph(request, database):
     edge_dict = {}
     node_dict = {}
 
+    def short_data_type(column_type: str)-> str:
+        type_map = {
+            'character varying': 'varchar',
+            'timestamp with time zone': 'timestamptz',
+            'timestamp without time zone': 'timestamp',
+            'time without time zone': 'time',
+            'time with time zone': 'timetz',
+            'character': 'char',
+            'boolean': 'bool'
+        }
+        return type_map.get(column_type, column_type)
+
     try:
         tables = database.QueryTables(False, schema)
 
@@ -251,7 +263,7 @@ def draw_graph(request, database):
 
             node_data['columns'] = list(({
                 'name': c['column_name'],
-                'type': c['data_type'],
+                'type': short_data_type(c['data_type']),
                 'cgid': None,
                 'is_pk': False,
                 'is_fk': False,
@@ -418,8 +430,9 @@ def get_table_columns(request, database):
         pk_column_names = []
         if pk is not None and len(pk.Rows) > 0:
             if database.has_schema:
+                pk_name = pk.Rows[0].get("name_raw") or pk.Rows[0]["constraint_name"]
                 pk_cols = database.QueryTablesPrimaryKeysColumns(
-                    pk.Rows[0]["constraint_name"], table, False, schema
+                    pk_name, table, False, schema
                 )
             else:
                 pk_cols = database.QueryTablesPrimaryKeysColumns(table)

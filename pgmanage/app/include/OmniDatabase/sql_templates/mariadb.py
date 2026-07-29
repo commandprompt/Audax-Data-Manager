@@ -259,8 +259,7 @@ PRIMARY KEY ( column_name [, ... ] )
     ),
     "drop_primarykey": Template(
         """ALTER TABLE #table_name#
-DROP PRIMARY KEY #constraint_name#
---CASCADE
+DROP PRIMARY KEY
 """
     ),
     "create_unique": Template(

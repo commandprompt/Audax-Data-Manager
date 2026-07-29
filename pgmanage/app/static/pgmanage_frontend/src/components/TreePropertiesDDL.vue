@@ -114,6 +114,7 @@ export default {
     databaseTechnology: String,
     ddlData: String,
     propertiesData: Array,
+    dbExplorerWidth: 18,
     showLoading: {
       type: Boolean,
       default: false,
@@ -132,6 +133,9 @@ export default {
     propertiesData(newValue, oldValue) {
       if (this.tableBuilt) this.table.setData(newValue);
     },
+    dbExplorerWidth(newValue, oldValue) {
+      this.table.redraw(true);
+    }
   },
   mounted() {
     this.setupTable();

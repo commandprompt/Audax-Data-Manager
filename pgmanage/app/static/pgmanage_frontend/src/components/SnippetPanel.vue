@@ -137,7 +137,11 @@ export default {
           emitter.emit("refresh_snippet_tree", resp.data.parent);
 
           if (callback != null) {
-            callback(resp.data);
+            const snippetObject = {
+              text: text, ...resp.data
+            };
+
+            callback(snippetObject);
           }
 
           showToast("success", "Snippet saved.");

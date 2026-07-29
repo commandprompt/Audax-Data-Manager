@@ -213,10 +213,25 @@ FROM sys.databases; """,
         )
 
     def QueryTablesFields(self, table=None, all_schemas=False, schema=None):
-        query_filter = f"WHERE c.object_id = OBJECT_ID('{schema}.{table}')"
+        query_filter = ""
+
+        if table:
+            if schema:
+                query_filter = (
+                    f"WHERE s.name = '{schema}' "
+                    f"AND tbl.name = '{table}'"
+                )
+            else:
+                query_filter = f"WHERE tbl.name = '{table}'"
+
+        elif schema and not all_schemas:
+            query_filter = f"WHERE s.name = '{schema}'"
+    
         return self.Query(
             """
 SELECT 
+    s.name       AS schema_name,
+    tbl.name     AS table_name,
     c.name       AS column_name,
     t.name       AS data_type,
     c.max_length,
@@ -226,8 +241,12 @@ SELECT
     c.is_identity
 FROM sys.columns c
 JOIN sys.types t ON c.user_type_id = t.user_type_id
+JOIN sys.tables tbl
+    ON c.object_id = tbl.object_id
+JOIN sys.schemas s
+    ON tbl.schema_id = s.schema_id
 {0}
-ORDER BY c.column_id;
+ORDER BY s.name, tbl.name, c.column_id;
 """.format(
                 query_filter
             ),

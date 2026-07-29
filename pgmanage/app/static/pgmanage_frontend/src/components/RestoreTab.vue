@@ -40,7 +40,7 @@
                   </select>
               </div>
 
-              <div v-if="!isNotServer" class="form-group mb-1 mt-2">
+              <div v-if="!isNotServer" class="form-group mb-0">
                 <div class="form-check form-switch">
                   <input class="form-check-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsEchoQueries`"
                     v-model="restoreOptions.echo_queries">
@@ -63,19 +63,25 @@
                 </select>
               </div>
 
-              <div v-if="isNotServer" class="form-group mb-1">
-                <label for="restoreRoleName" class="fw-bold mb-1">Restore as:</label>
-                <select id="restoreRoleName" class="form-select" v-model="restoreOptions.role">
-                  <option value="" disabled>Select an item...</option>
-                  <option v-for="name in roleNames" :value="name" :key="name">{{ name }}</option>
-                </select>
-              </div>
 
               <div v-if="isNotServer" class="row mt-1">
                 <div
+                  v-tooltip
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="The database role to use when restoring the backup."
+                  class="form-group col-6 d-flex flex-column justify-content-end">
+                  <label for="restoreRoleName" class="fw-bold mb-1">Restore as:</label>
+                  <select id="restoreRoleName" class="form-select" v-model="restoreOptions.role">
+                    <option value="" disabled>Select an item...</option>
+                    <option v-for="name in roleNames" :value="name" :key="name">{{ name }}</option>
+                  </select>
+                </div>
+
+                <div
                   v-if="pgKeys.length"
                   v-tooltip
-                  class="form-group col-4 d-flex flex-column justify-content-end"
+                  class="form-group col-6 d-flex flex-column justify-content-end"
                   data-bs-toggle="tooltip"
                   data-bs-placement="bottom"
                   data-bs-title="The Postgres utility version used to restore a backup. If not found, the latest available version is used."
@@ -89,7 +95,7 @@
                     </select>
                 </div>
 
-                <div v-if="!isWindowsOS" class="form-group col-8 align-content-end">
+                <div v-if="!isWindowsOS" class="form-group col align-content-end mb-0">
                   <div class="form-check form-switch">
                     <input class="form-check-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsPigz`" v-model="restoreOptions.pigz" :disabled="isDirectoryFormat">
                     <label class="form-check-label" :for="`${restoreTabId}_restoreOptionsPigz`">
@@ -108,8 +114,14 @@
                 </div>
               </div>
               
-                <div class="form-group" :class="(restoreOptions.pigz) ? 'collapse show':'collapse'">
-                  <label for="restorePigzNumberOfJobs" class="fw-bold mb-1">Number of jobs</label>
+                <div 
+                  v-tooltip
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="Sets the number of Pigz processes. More processes make the restore faster but increase CPU load on the machine running Pigz."
+                  class="form-group" :class="(restoreOptions.pigz) ? 'collapse show':'collapse'"
+                  >
+                  <label for="restorePigzNumberOfJobs" class="fw-bold mb-1">Number of Pigz jobs</label>
                   <select id="restorePigzNumberOfJobs" class="form-select" v-model="restoreOptions.pigz_number_of_jobs">
                     <option v-for="number_of_jobs in pigzNumberOfJobs" :value="number_of_jobs" :key="number_of_jobs">{{ number_of_jobs }}</option>
                   </select>
