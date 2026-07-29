@@ -23,6 +23,10 @@ const mockFiles = [
 describe("FileManager.vue", () => {
   let wrapper;
   beforeEach(() => {
+    axios.post.mockResolvedValue({
+      data: { files: mockFiles, current_path: "/home/user", parent: false },
+    });
+
     wrapper = mount(FileManager, {
       data() {
         return { selectedFile: { path: "/home/user/test_file.txt" } };

@@ -1,10 +1,16 @@
 import { mount } from "@vue/test-utils";
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import SnippetPanel from "@src/components/SnippetPanel.vue";
 import axios from "axios";
 import { emitter } from "@src/emitter";
 
 describe("SnippetPanel.vue", () => {
+  beforeEach(() => {
+    axios.get.mockResolvedValue({
+      data: { files: [], folders: [] },
+    });
+  });
+
   it("renders the component correctly", () => {
     axios.get.mockResolvedValue({
       data: { files: [], folders: [] },

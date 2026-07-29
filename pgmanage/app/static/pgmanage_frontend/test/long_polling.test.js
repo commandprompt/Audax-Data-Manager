@@ -1,12 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import axios from "axios";
 import { flushPromises } from "@vue/test-utils";
-import {
-  createContext,
-  removeContext,
-  createRequest,
-  SetAcked,
-} from "@src/long_polling";
 import { handleError } from "@src/logging/utils";
 
 vi.mock("short-unique-id", () => {
@@ -22,10 +16,17 @@ vi.mock("@src/logging/utils", () => ({
 }));
 
 describe("long_polling.js", () => {
-  let longPolling;
-  let showAlert;
-  let showToast;
-  let emitter;
+  let createContext, removeContext, createRequest, SetAcked;
+
+  beforeEach(async () => {
+    // long_polling.js keeps polling state (polling_busy, request_map) in
+    // module-level variables, so each test needs a fresh module instance
+    // to avoid leaking state (e.g. startup flag) into the next test.
+    vi.resetModules();
+    ({ createContext, removeContext, createRequest, SetAcked } = await import(
+      "@src/long_polling"
+    ));
+  });
 
   it("createContext should assign generated code when context.code is missing", () => {
     const context = { context: { some: "value" } };

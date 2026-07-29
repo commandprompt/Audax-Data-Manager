@@ -10,6 +10,7 @@ import { tabsStore } from "@src/stores/stores_initializer";
 import { flushPromises } from "@vue/test-utils";
 import { tabSQLTemplate } from "@src/tree_context_functions/tree_postgresql";
 import { handleError } from "@src/logging/utils";
+import { mockErrorResponse } from "../helpers/fixtures.js";
 
 vi.mock("@src/logging/utils", () => ({
   handleError: vi.fn(),
@@ -36,13 +37,7 @@ vi.mock("@src/stores/stores_initializer", () => ({
 }));
 
 describe("Template Functions", () => {
-  const errorResponse = {
-    response: {
-      data: {
-        data: "Error message",
-      },
-    },
-  };
+  const errorResponse = mockErrorResponse("Error message");
   beforeEach(() => {
     vi.clearAllMocks();
     vi.useFakeTimers();

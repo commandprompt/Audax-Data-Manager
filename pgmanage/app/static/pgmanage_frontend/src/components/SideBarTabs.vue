@@ -47,8 +47,7 @@
             </span>
             <i
               v-if="tab.closable"
-              class="fas tab-icon omnidb__tab-menu__link-close"
-              :class="tab.metaData.mode == 'outer_terminal' ? 'fa-ellipsis-vertical' : 'fa-times'"
+              class="fas tab-icon omnidb__tab-menu__link-close fa-times"
               @click.stop.prevent="tab.closeFunction($event, tab)"
             ></i>
           </a>
@@ -98,7 +97,7 @@ export default {
   components: {
     WelcomeScreen,
     SnippetPanel,
-    ConnectionTab: defineAsyncComponent(() => import("./ConnectionTab.vue")),
+    WorkspaceTab: defineAsyncComponent(() => import("./WorkspaceTab.vue")),
     TerminalTab: defineAsyncComponent(() => import("./TerminalTab.vue")),
   },
   computed: {
@@ -141,7 +140,7 @@ export default {
     saveSettings: debounce(() => settingsStore.saveSettings(true), 1000),
     getCurrentProps(tab) {
       const componentsProps = {
-        ConnectionTab: {
+        WorkspaceTab: {
           workspaceId: tab.id,
         },
         SnippetPanel: {

@@ -6,9 +6,9 @@ import axios from "axios";
 import { Tab } from "bootstrap";
 
 vi.mock("@src/notification_control", () => {
-  const showAlert = vi.fn();
+  const showAlertText = vi.fn();
   return {
-    showAlert,
+    showAlertText,
   };
 });
 
@@ -16,10 +16,11 @@ describe("SettingsModal.vue", () => {
   let wrapper, settingsStore;
 
   beforeEach(() => {
+    settingsStore = useSettingsStore();
+    settingsStore.$reset();
     wrapper = mount(SettingsModal, {
       shallow: true,
     });
-    settingsStore = useSettingsStore();
   });
 
   afterEach(() => {

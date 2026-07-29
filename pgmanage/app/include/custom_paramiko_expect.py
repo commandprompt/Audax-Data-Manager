@@ -248,6 +248,14 @@ class SSHClientInteraction(object):
 
         self.channel.send(send_string)
 
+    def resize(self, width, height):
+        """
+        Sends an SSH window-change request so the remote pty's real size is
+        updated regardless of what currently owns the terminal (shell or a
+        fullscreen program). Replaces legacy 'stty rows/cols' approach
+        """
+        self.channel.resize_pty(width=width, height=height)
+
     def tail(
         self, line_prefix=None, callback=None, output_callback=None, stop_callback=lambda x: False,
         timeout=None

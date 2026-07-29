@@ -30,7 +30,7 @@ import { queryRequestCodes } from "./constants";
 // import { getDebugFunctionDefinitionPostgresql } from "./tree_context_functions/tree_postgresql";
 import { Range } from "ace-builds";
 import { execAjax } from "./ajax_control";
-import { showAlert } from "./notification_control";
+// import { showAlert } from "./notification_control";
 
 /// <summary>
 /// Debug state

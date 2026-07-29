@@ -78,6 +78,7 @@ import { FitAddon } from "@xterm/addon-fit";
 import { CanvasAddon } from '@xterm/addon-canvas';
 import axios from "axios";
 import { emitter } from "../emitter";
+import { flashHighlight } from "../utils";
 import { showToast } from "../notification_control";
 import moment from "moment";
 import { createRequest } from "../long_polling";
@@ -246,12 +247,17 @@ export default {
       emitter.on(`${this.tabId}_history_cleared`, () => {
         this.preloadHistory();
       });
+
+      emitter.on(`${this.tabId}_focus`, () => {
+        this.$refs.editor.focus();
+        flashHighlight(this.$refs.editor.$el);
+      });
     },
     clearEvents() {
       emitter.all.delete(`${this.tabId}_resize`);
       emitter.all.delete(`${this.tabId}_check_console_status`);
-      emitter.all.delete(`${this.tabId}_copy_to_editor`);
-      emitter.all.delete(`${this.tabId}_history_cleared`);
+      emitter.all.delete(`${this.tabId}_run_console`);
+      emitter.all.delete(`${this.tabId}_focus`);
     },
     onResize() {
       this.updateHeightOffset();

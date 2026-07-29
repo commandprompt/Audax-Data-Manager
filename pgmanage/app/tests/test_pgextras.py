@@ -192,7 +192,7 @@ class PgCronJobViewsTests(TestCase):
         self.assertEqual(response.status_code, 500)
         self.assertEqual(response.json().get("data"), "mocked error")
 
-    def test_get_pgcron_job_logs_url_resolves_get_pgcron_job_logs_view(self):
+    def test_save_pgcron_job_url_resolves_save_pgcron_job_view(self):
         view = resolve("/save_pgcron_job/")
         self.assertEqual(view.func.__name__, save_pgcron_job.__name__)
 

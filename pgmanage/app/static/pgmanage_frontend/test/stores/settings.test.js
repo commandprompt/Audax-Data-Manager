@@ -29,6 +29,7 @@ vi.mock("bootstrap", () => ({
 describe("settings store", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
+    settingsStore.$reset();
   });
 
   it("initializes with default state", () => {

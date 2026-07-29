@@ -1,5 +1,5 @@
 <template>
-  <div class="backup-tab-scrollable p-2">
+  <div ref="highlightEl" class="backup-tab-scrollable p-2">
   <form @submit.prevent>
     <div class="row">
       <div :class="(isNotServer) ? 'col-4':'col-12'" class="d-flex">
@@ -17,7 +17,7 @@
 
               <div  class="form-group mb-1">
                 <label for="restoreFormat" class="fw-bold mb-1">Format</label>
-                <select id="restoreFormat" class="form-select" v-model="restoreOptions.format">
+                <select ref="focusableEl" id="restoreFormat" class="form-select" v-model="restoreOptions.format">
                   <option value="custom/tar">Custom or tar</option>
                   <option value="directory">Directory</option>
                 </select>
@@ -316,10 +316,11 @@
 <script>
 import UtilityJobs from './UtilityJobs.vue';
 import axios from 'axios'
-import { showAlert } from '../notification_control';
+import { showAlertText } from '../notification_control';
 import { settingsStore, fileManagerStore, tabsStore } from '../stores/stores_initializer';
-import { truncateText } from "../utils";
+import { truncateText, flashHighlight } from "../utils";
 import { handleError } from '../logging/utils';
+import { emitter } from "../emitter";
 
 export default {
   name: "RestoreTab",
@@ -451,6 +452,14 @@ export default {
         })
       }
     })
+
+    emitter.on(`${this.tabId}_focus`, () => {
+      this.$refs.focusableEl.focus();
+      flashHighlight(this.$refs.highlightEl);
+    });
+  },
+  unmounted() {
+    emitter.all.delete(`${this.tabId}_focus`);
   },
   methods: {
     getRoleNames() {
@@ -501,7 +510,7 @@ export default {
         data: this.restoreOptions,
       })
         .then((resp) => {
-          showAlert(resp.data.command.cmd)
+          showAlertText(resp.data.command.cmd)
         })
         .catch((error) => {
           handleError(error);

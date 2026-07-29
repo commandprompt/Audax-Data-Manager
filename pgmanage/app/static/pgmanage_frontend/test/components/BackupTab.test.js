@@ -1,19 +1,21 @@
 import BackupTab from "@src/components/BackupTab.vue";
 import UtilityJobs from "@src/components/UtilityJobs.vue";
-import { showAlert } from "@src/notification_control";
+import { showAlertText } from "@src/notification_control";
 import { fileManagerStore } from "@src/stores/stores_initializer";
 import { flushPromises, mount } from "@vue/test-utils";
 import axios from "axios";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { handleError } from "@src/logging/utils";
+import { mockErrorResponse } from "../helpers/fixtures.js";
 
 vi.mock("@src/logging/utils", () => ({
   handleError: vi.fn(),
 }));
 
-vi.mock("@src/notification_control", () => ({
-  showAlert: vi.fn(),
-}));
+vi.mock("@src/notification_control", async (importOriginal) => {
+  const orig = await importOriginal();
+  return { ...orig, showAlertText: vi.fn() };
+});
 
 vi.mock("@src/stores/stores_initializer", async (importOriginal) => {
   const orig = await importOriginal();
@@ -269,9 +271,7 @@ describe("BackupTab Component", () => {
   });
 
   it("calls getRoleNames and shows an error toast on failure", async () => {
-    const errorResponse = {
-      response: { data: { data: "Error fetching roles" } },
-    };
+    const errorResponse = mockErrorResponse("Error fetching roles");
     axios.post.mockRejectedValueOnce(errorResponse);
 
     await wrapper.vm.getRoleNames();
@@ -331,9 +331,7 @@ describe("BackupTab Component", () => {
   });
 
   it("calls saveBackup and shows an error toast on failure", async () => {
-    const errorResponse = {
-      response: { data: { data: "Error saving backup" } },
-    };
+    const errorResponse = mockErrorResponse("Error saving backup");
     axios.post.mockRejectedValueOnce(errorResponse);
 
     await wrapper.vm.saveBackup();
@@ -381,13 +379,21 @@ describe("BackupTab Component", () => {
       data: wrapper.vm.backupOptions,
       backup_type: wrapper.vm.type,
     });
-    expect(showAlert).toHaveBeenCalledWith("pg_dump command");
+    expect(showAlertText).toHaveBeenCalledWith("pg_dump command");
+  });
+
+  it("shows the previewed command via the text-safe alert, never the HTML one", async () => {
+    const payload = '"><img src=x onerror=alert(1)>';
+    axios.post.mockResolvedValueOnce({ data: { command: { cmd: payload } } });
+
+    await wrapper.vm.previewCommand();
+    await flushPromises();
+
+    expect(showAlertText).toHaveBeenCalledWith(payload);
   });
 
   it("calls previewCommand and shows an error toast on failure", async () => {
-    const errorResponse = {
-      response: { data: { data: "Error previewing command" } },
-    };
+    const errorResponse = mockErrorResponse("Error previewing command");
     axios.post.mockRejectedValueOnce(errorResponse);
 
     await wrapper.vm.previewCommand();

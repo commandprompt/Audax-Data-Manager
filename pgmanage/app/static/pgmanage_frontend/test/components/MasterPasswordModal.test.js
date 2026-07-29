@@ -5,6 +5,7 @@ import axios from "axios";
 import { emitter } from "@src/emitter";
 import { messageModalStore } from "@src/stores/stores_initializer";
 import { showToast } from "@src/notification_control";
+import { mockErrorResponse } from "../helpers/fixtures.js";
 
 vi.mock("bootstrap", () => ({
   Modal: {
@@ -114,9 +115,7 @@ describe("MasterPasswordModal.vue", () => {
   });
 
   it("updates passwordMessage on failed checkMasterPassword", async () => {
-    axios.post.mockRejectedValue({
-      response: { data: { data: "Wrong password" } },
-    });
+    axios.post.mockRejectedValue(mockErrorResponse("Wrong password"));
 
     await wrapper.vm.checkMasterPassword();
     await flushPromises();

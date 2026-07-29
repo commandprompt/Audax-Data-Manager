@@ -1,6 +1,6 @@
 import ContextMenu from '@imengyu/vue3-context-menu'
 import { startLoading } from './ajax_control'
-import { showAlert, showConfirm } from './notification_control'
+import { showAlertHtml, showConfirm } from './notification_control'
 import { emitter } from './emitter'
 import { tabsStore, connectionsStore } from './stores/stores_initializer.js'
 import { Modal } from 'bootstrap'
@@ -15,7 +15,7 @@ function checkBeforeChangeDatabase(p_cancel_function, p_ok_function) {
 
   for (const tab of tabsStore.selectedPrimaryTab.metaData.secondaryTabs) {
     if(["edit", "alter", "monitoring_dashboard"].includes(tab.metaData.mode)) {
-      showAlert('Cannot change the active database.<br>Please close any open tabs of the following types first: <br/><br/><b>Edit Data<br/><br/>Alter Table<br/><br/>Monitoring Dashboard');
+      showAlertHtml('Cannot change the active database.<br>Please close any open tabs of the following types first: <br/><br/><b>Edit Data<br/><br/>Alter Table<br/><br/>Monitoring Dashboard');
       if (p_cancel_function!=null) {
         p_cancel_function();
       }
@@ -146,7 +146,7 @@ function showMenuNewTabOuter(e) {
           };
         } else {
           onClick = () => {
-            tabsStore.createConnectionTab(conn.id, true, name, tooltip_name)
+            tabsStore.createWorkspaceTab(conn.id, true, name, tooltip_name)
           };
         }
         return {
@@ -245,7 +245,7 @@ function showMenuNewTabOuter(e) {
     } else {
       startLoading();
       setTimeout(function () {
-        tabsStore.createConnectionTab()
+        tabsStore.createWorkspaceTab()
       }, 0);
     }
   }
