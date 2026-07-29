@@ -90,8 +90,8 @@ cd -
 tar -xzvf /deploy/$NWJS_ARCHIVE
 mv $NWJS_DIR pgmanage-app_$VERSION
 cd pgmanage-app_$VERSION
-mkdir pgmanage-server
-cp $HOME/pgmanage-server ./pgmanage-server/pgmanage-server
+
+cp -r $HOME/pgmanage-server ./
 cp $HOME/process_executor ./pgmanage-server/
 # copy index.html .desktop and pgmanage_icon.png to the output dir
 cp $HOME/pgmanage/deploy/app/* .

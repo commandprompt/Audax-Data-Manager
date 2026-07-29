@@ -79,11 +79,11 @@ describe("connections store", () => {
     const store = useConnectionsStore();
     const connection = { id: 1, technology: "other" };
     store.connections = [connection];
-    const createConnectionTab = vi.fn();
-    tabsStore.createConnectionTab = createConnectionTab;
+    const createWorkspaceTab = vi.fn();
+    tabsStore.createWorkspaceTab = createWorkspaceTab;
 
     store.selectConnection(connection.id);
-    expect(createConnectionTab).toHaveBeenCalledWith(connection.id);
+    expect(createWorkspaceTab).toHaveBeenCalledWith(connection.id);
   });
 
   it("queues and processes database change requests", async () => {

@@ -184,8 +184,6 @@ export default {
             if (tabsStore.selectedPrimaryTab.metaData.selectedTab.metaData.mode === 'query') {
               emitter.emit(`${tabsStore.selectedPrimaryTab.metaData.selectedTab.id}_run_query`)
             }
-            else if (tabsStore.selectedPrimaryTab.metaData.selectedTab.metaData.mode === 'console')
-              emitter.emit(`${tabsStore.selectedPrimaryTab.metaData.selectedTab.id}_run_console`, false)
             else if (tabsStore.selectedPrimaryTab.metaData.selectedTab.metaData.mode == 'edit')
               emitter.emit(`${tabsStore.selectedPrimaryTab.metaData.selectedTab.id}_query_edit`)
           }
@@ -299,6 +297,26 @@ export default {
           if (tabsStore.selectedPrimaryTab.metaData.mode === 'connection') {
             emitter.emit(`${tabsStore.selectedPrimaryTab.id}_show_quick_search`, e)
           }
+        },
+        shortcut_focus_database_tree: function(e) {
+          const tab = tabsStore.selectedPrimaryTab;
+          emitter.emit(`focusTree_${tab.id}`);
+        },
+        shortcut_focus_selected_tab: function(e) {
+          if (tabsStore.selectedPrimaryTab.metaData.mode !== 'connection') return;
+
+          const tab = tabsStore.selectedPrimaryTab.metaData.selectedTab;
+          if (!tab) return;
+
+          emitter.emit(`${tab.id}_focus`);
+        },
+        shortcut_focus_data_grid: function(e) {
+          if (tabsStore.selectedPrimaryTab.metaData.mode !== 'connection') return;
+
+          const tab = tabsStore.selectedPrimaryTab.metaData.selectedTab;
+          if (!tab || tab.metaData.mode !== 'query') return;
+
+          emitter.emit(`${tab.id}_focus_secondary`);
         },
       };
     },

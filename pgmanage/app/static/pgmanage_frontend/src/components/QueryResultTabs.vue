@@ -232,6 +232,10 @@ export default {
     this.handleResize();
   },
   methods: {
+    focus() {
+      if (!this.tabulator?.getRows().length) return;
+      this.tabulator.element.querySelector(".tabulator-tableholder")?.focus();
+    },
     cellFormatter(cell, params, onRendered) {
       let cellVal = cell.getValue()
       if (!!cellVal && cellVal?.length > 1000) {

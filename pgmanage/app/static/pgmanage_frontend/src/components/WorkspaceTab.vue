@@ -94,7 +94,7 @@
                 :id="`${workspaceId}`"
                 class="w-100"
                 :workspace-id="workspaceId"
-                :color-label-class='connectionTab.metaData?.colorLabelClass'
+                :color-label-class='workspaceTab.metaData?.colorLabelClass'
               />
             </div>
           </div>
@@ -121,7 +121,7 @@ import SearchModal from "./SearchModal.vue";
 import debounce from 'lodash/debounce'
 
 export default {
-  name: "ConnectionTab",
+  name: "WorkspaceTab",
   components: {
     DatabaseTabs,
     TreePostgresql: defineAsyncComponent(() => import("@conditional/components/TreePostgresql.vue")),
@@ -153,7 +153,7 @@ export default {
     };
   },
   computed: {
-    connectionTab() {
+    workspaceTab() {
       return tabsStore.getPrimaryTabById(this.workspaceId);
     },
     databaseConnection() {
@@ -169,16 +169,16 @@ export default {
       },
     },
     databaseIndex() {
-      return this.connectionTab.metaData.selectedDatabaseIndex;
+      return this.workspaceTab.metaData.selectedDatabaseIndex;
     },
     databaseTechnology() {
-      return this.connectionTab.metaData.selectedDBMS;
+      return this.workspaceTab.metaData.selectedDBMS;
     },
     databaseName() {
       if (this.databaseTechnology === "sqlite") {
-        return truncateText(this.connectionTab.metaData.selectedDatabase, 10);
+        return truncateText(this.workspaceTab.metaData.selectedDatabase, 10);
       }
-      return this.connectionTab.metaData.selectedDatabase;
+      return this.workspaceTab.metaData.selectedDatabase;
     },
     paneTransitionStyle() {
       return this.skipTransitions ? 'none' : '0.35s';
@@ -199,10 +199,10 @@ export default {
     },
   },
   mounted() {
-    this.changeDatabase(this.connectionTab.metaData.selectedDatabaseIndex);
+    this.changeDatabase(this.workspaceTab.metaData.selectedDatabaseIndex);
     this.subscribeToConnectionChanges(this.workspaceId, this.databaseIndex);
     this.$nextTick(() => {
-      if (this.connectionTab.metaData.createInitialTabs) {
+      if (this.workspaceTab.metaData.createInitialTabs) {
         let name = tabsStore.selectedPrimaryTab.metaData.selectedDatabase.replace('\\', '/').split('/').pop()
         tabsStore.createConsoleTab();
         tabsStore.createQueryTab(name);

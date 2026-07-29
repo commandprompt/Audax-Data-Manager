@@ -23,8 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 '''
 
-import os.path
 import re
+from pathlib import Path
 from collections import OrderedDict
 from enum import Enum
 
@@ -166,7 +166,7 @@ class SQLite:
     def TestConnection(self):
         return_data = ''
         try:
-            if os.path.isfile(self.service):
+            if Path(self.service).expanduser().is_file():
                 self.connection.Query("PRAGMA schema_version;")
                 return_data = 'Connection successful.'
             else:

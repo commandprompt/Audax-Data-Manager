@@ -2,6 +2,7 @@ import copy
 import io
 import logging
 import os
+import re
 import threading
 import time
 import traceback
@@ -423,12 +424,17 @@ def create_request(request: HttpRequest, session: Session) -> JsonResponse:
                     transport = client.get_transport()
                     transport.set_keepalive(120)
 
+                    resize: Optional[dict[str, Any]] = request_data.get("resize")
+
                     workspace_context["terminal_ssh_client"] = client
                     workspace_context["terminal_transport"] = transport
                     workspace_context["terminal_object"] = SSHClientInteraction(
-                        client, timeout=60, display=False
+                        client,
+                        timeout=60,
+                        display=False,
+                        tty_width=resize["cols"] if resize else 80,
+                        tty_height=resize["rows"] if resize else 24,
                     )
-                    workspace_context["terminal_object"].send(request_data["cmd"])
 
                     workspace_context["terminal_type"] = "remote"
 
@@ -454,7 +460,13 @@ def create_request(request: HttpRequest, session: Session) -> JsonResponse:
             else:
                 try:
                     workspace_context["last_update"] = datetime.now()
-                    workspace_context["terminal_object"].send(request_data["cmd"])
+                    resize: Optional[dict[str, Any]] = request_data.get("resize")
+                    if resize:
+                        workspace_context["terminal_object"].resize(
+                            width=resize["cols"], height=resize["rows"]
+                        )
+                    else:
+                        workspace_context["terminal_object"].send(request_data["cmd"])
                 except OSError:
                     pass
 
@@ -1275,6 +1287,14 @@ def thread_console(self, args) -> None:
         if sql_cmd[-1:] == ";":
             sql_cmd = sql_cmd[:-1]
 
+        # Strip oracle's "/" or mssql's "GO" terminator (not valid SQL),
+        # preserving any comment that follows it.
+        if database.db_type in ("oracle", "mssql"):
+            marker_pattern = r"/" if database.db_type == "oracle" else r"go(?:\s+\d+)?"
+            trailing_junk = r"(?:\n[ \t]*(?:--[^\n]*)?)*"
+            pattern = rf"(?is)\n[ \t]*{marker_pattern}[ \t]*(?:--[^\n]*)?(?={trailing_junk}$)"
+            sql_cmd = re.sub(pattern, "", sql_cmd).rstrip()
+
         log_start_time = datetime.now(timezone.utc)
         show_fetch_button: bool = False
 
@@ -1373,6 +1393,12 @@ def thread_console(self, args) -> None:
                         database.connection.start = True
                         data1 = database.connection.Special(sql)
 
+                        # database.connection.service reflects the live
+                        # connection (e.g. after \c) - keep the wrapper's
+                        # active_service in sync so the prompt, history, and
+                        # the next request's tab-cache check follow it.
+                        database.active_service = database.connection.service
+
                         notices = database.connection.GetNotices()
                         notices_text = ""
                         if len(notices) > 0:
@@ -1411,6 +1437,7 @@ def thread_console(self, args) -> None:
                 "last_block": True,
                 "duration": duration,
                 "con_status": database.connection.GetConStatus(),
+                "active_database": database.active_service,
             }
 
             # send data in chunks to avoid blocking the websocket server
@@ -1440,6 +1467,7 @@ def thread_console(self, args) -> None:
                             "show_fetch_button": show_fetch_button,
                             "con_status": database.connection.GetConStatus(),
                             "status": database.connection.GetStatus(),
+                            "active_database": database.active_service,
                         }
                     if not self.cancel:
                         queue_response(client_object, response_data_copy)

@@ -1,5 +1,5 @@
 <template>
-  <div class="backup-tab-scrollable p-2">
+  <div ref="highlightEl" class="backup-tab-scrollable p-2">
   <form @submit.prevent>
       <div class="row">
         <div class="col-4 d-flex">
@@ -64,7 +64,7 @@
                     data-bs-title="The character set encoding to use for the backup file."
                     class="form-group my-1">
                     <label for="backupEncoding" class="fw-bold mb-1">Encoding</label>
-                    <select id="backupEncoding" class="form-select" v-model="backupOptions.encoding">
+                    <select ref="focusableEl" id="backupEncoding" class="form-select" v-model="backupOptions.encoding">
                       <option value="">Use database encoding</option>
                       <option v-for="encoding in encodingList" :key="encoding" :value="encoding">{{ encoding }}</option>
                     </select>
@@ -339,10 +339,11 @@
 <script>
 import UtilityJobs from "./UtilityJobs.vue";
 import axios from 'axios'
-import { showAlert } from "../notification_control";
+import { showAlertText } from "../notification_control";
 import { fileManagerStore, tabsStore, settingsStore } from "../stores/stores_initializer";
-import { truncateText } from "../utils";
+import { truncateText, flashHighlight } from "../utils";
 import { handleError } from "../logging/utils";
+import { emitter } from "../emitter";
 
 export default {
   name: "BackupTab",
@@ -493,6 +494,14 @@ export default {
         });
       }
     });
+
+    emitter.on(`${this.tabId}_focus`, () => {
+      this.$refs.focusableEl.focus();
+      flashHighlight(this.$refs.highlightEl);
+    });
+  },
+  unmounted() {
+    emitter.all.delete(`${this.tabId}_focus`);
   },
   watch: {
     'backupOptions.format'(newValue){
@@ -590,7 +599,7 @@ export default {
         backup_type: this.type
       })
         .then((resp) => {
-          showAlert(resp.data.command.cmd)
+          showAlertText(resp.data.command.cmd)
         })
         .catch((error) => {
           handleError(error);

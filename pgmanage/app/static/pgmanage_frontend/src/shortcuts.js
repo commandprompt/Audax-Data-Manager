@@ -326,6 +326,75 @@ let default_shortcuts = {
         'shortcut_key': 'P',
     }
   },
+  'shortcut_focus_database_tree': {
+    'windows': {
+      'ctrl_pressed': true,
+      'shift_pressed': false,
+      'alt_pressed': false,
+      'meta_pressed': false,
+      'shortcut_key': '0',
+    },
+    'linux': {
+      'ctrl_pressed': true,
+      'shift_pressed': false,
+      'alt_pressed': false,
+      'meta_pressed': false,
+      'shortcut_key': '0',
+    },
+    'macos': {
+      'ctrl_pressed': true,
+      'shift_pressed': false,
+      'alt_pressed': false,
+      'meta_pressed': false,
+      'shortcut_key': '0',
+    }
+  },
+  'shortcut_focus_selected_tab': {
+    'windows': {
+      'ctrl_pressed': true,
+      'shift_pressed': false,
+      'alt_pressed': false,
+      'meta_pressed': false,
+      'shortcut_key': '1',
+    },
+    'linux': {
+      'ctrl_pressed': true,
+      'shift_pressed': false,
+      'alt_pressed': false,
+      'meta_pressed': false,
+      'shortcut_key': '1',
+    },
+    'macos': {
+      'ctrl_pressed': true,
+      'shift_pressed': false,
+      'alt_pressed': false,
+      'meta_pressed': false,
+      'shortcut_key': '1',
+    }
+  },
+  'shortcut_focus_data_grid': {
+    'windows': {
+      'ctrl_pressed': true,
+      'shift_pressed': false,
+      'alt_pressed': false,
+      'meta_pressed': false,
+      'shortcut_key': '2',
+    },
+    'linux': {
+      'ctrl_pressed': true,
+      'shift_pressed': false,
+      'alt_pressed': false,
+      'meta_pressed': false,
+      'shortcut_key': '2',
+    },
+    'macos': {
+      'ctrl_pressed': true,
+      'shift_pressed': false,
+      'alt_pressed': false,
+      'meta_pressed': false,
+      'shortcut_key': '2',
+    }
+  },
 }
 
 export { default_shortcuts }

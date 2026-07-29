@@ -4,6 +4,7 @@ import ConfigTab from "@src/components/ConfigTab.vue";
 import axios from "axios";
 import { tabsStore } from "@src/stores/stores_initializer";
 import { handleError } from "@src/logging/utils";
+import { mockErrorResponse } from "../helpers/fixtures.js";
 
 vi.mock("@src/logging/utils", () => ({
   handleError: vi.fn(),
@@ -122,9 +123,7 @@ describe("ConfigTab.vue", () => {
   });
 
   it("displays error on failed configuration save", async () => {
-    const errorResponse = {
-      response: { data: { data: "Failed to save configuration" } },
-    };
+    const errorResponse = mockErrorResponse("Failed to save configuration");
     axios.post.mockRejectedValueOnce(errorResponse);
     wrapper.setData({
       updateSettings: { setting1: { name: "setting1", setting: "value1" } },

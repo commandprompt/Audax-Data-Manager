@@ -1,10 +1,9 @@
-version: '3.1'
-
+# Requires the sample-database fixtures fetched by ./fetch-test-data.sh (not
+# committed to git due to their size) before running `docker compose up`.
 services:
 
-  test_db:
+  postgres_test_db:
     image: postgres:15.5
-    restart: always
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -14,3 +13,36 @@ services:
     volumes:
       - ./dellstore2-normal-1.0.sql:/docker-entrypoint-initdb.d/db.sql
       - ./test-db.sh:/docker-entrypoint-initdb.d/initdb.sh
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d dellstore"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+  mssql_test_db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "Audax_2026!"
+      MSSQL_PID: Developer
+    ports:
+      - 1434:1433
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q 'SELECT 1' -b -o /dev/null"]
+      interval: 5s
+      timeout: 5s
+      retries: 40
+
+  # The mssql/server image has no equivalent of postgres's /docker-entrypoint-initdb.d,
+  # so a one-shot sidecar loads the Northwind fixture once the server is healthy.
+  mssql_test_db_init:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    depends_on:
+      mssql_test_db:
+        condition: service_healthy
+    environment:
+      MSSQL_SA_PASSWORD: "Audax_2026!"
+    volumes:
+      - ./instnwnd.sql:/tmp/instnwnd.sql:ro
+      - ./init-mssql.sh:/tmp/init-mssql.sh:ro
+    entrypoint: ["/bin/bash", "/tmp/init-mssql.sh"]

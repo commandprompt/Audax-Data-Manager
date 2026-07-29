@@ -1,5 +1,3 @@
-import os
-
 from app.bgjob.jobs import BatchJob, IJobDesc
 from app.file_manager.file_manager import FileManager
 from app.models.main import Connection
@@ -197,7 +195,7 @@ def create_restore(request, database):
             description=restore_message, cmd=utility_path, args=args, user=request.user
         )
 
-        os.environ[str(job.id)] = database.password
+        job.env["PGPASSWORD"] = database.password
 
         job.start()
     except Exception as exc:

@@ -2,13 +2,11 @@ import { defineStore } from "pinia";
 import ShortUniqueId from "short-unique-id";
 import { connectionsStore, messageModalStore, dbMetadataStore } from "./stores_initializer";
 import { showToast, showConfirm } from "../notification_control";
-import ContextMenu from "@imengyu/vue3-context-menu";
 import { createRequest, removeContext } from "../long_polling";
 import moment from "moment";
 import { emitter } from "../emitter";
 import { queryRequestCodes, operationModes } from "../constants";
 import { showMenuNewTabOuter, renameTab } from "../workspace";
-import { h } from "vue";
 
 import postgresqlIcon from '@src/assets/images/db_icons/postgresql.svg'
 import mysqlIcon from '@src/assets/images/db_icons/mysql.svg'
@@ -261,7 +259,7 @@ const useTabsStore = defineStore("tabs", {
 
       this.selectTab(tab);
     },
-    createConnectionTab(
+    createWorkspaceTab(
       index,
       createInitialTabs = true,
       name = false,
@@ -322,7 +320,7 @@ const useTabsStore = defineStore("tabs", {
 
           const connTab = this.addTab({
             name: connName,
-            component: "ConnectionTab",
+            component: "WorkspaceTab",
             icon: icon,
             tooltip: tooltipName,
             mode: "connection",
@@ -342,12 +340,12 @@ const useTabsStore = defineStore("tabs", {
                   messageModalStore.showModal(
                     "Some tabs have unsaved changes. Do you wish to discard all changes and close?",
                     () => {
-                      this.closeConnectionTab(primaryTab, secondaryTabs);
+                      this.closeWorkspaceTab(primaryTab, secondaryTabs);
                     },
                     null
                   );
                 } else {
-                  this.closeConnectionTab(primaryTab, secondaryTabs);
+                  this.closeWorkspaceTab(primaryTab, secondaryTabs);
                 }
               });
             },
@@ -389,7 +387,9 @@ const useTabsStore = defineStore("tabs", {
           emitter.emit(`${this.id}_resize`);
         },
         closeFunction: (e, tab) => {
-          this.terminalContextMenu(e, tab);
+          this.beforeCloseTab(e, () => {
+            this.closeTab(tab);
+          });
         },
       });
       tab.metaData.selectedDatabaseIndex = index;
@@ -421,6 +421,7 @@ const useTabsStore = defineStore("tabs", {
       tab.metaData.consoleHelp = primaryTab.metaData?.consoleHelp;
       tab.metaData.databaseIndex = primaryTab.metaData?.selectedDatabaseIndex;
       tab.metaData.dialect = primaryTab.metaData?.selectedDBMS;
+      tab.metaData.databaseName = primaryTab.metaData?.selectedDatabase;
 
       this.selectTab(tab);
     },
@@ -737,37 +738,6 @@ const useTabsStore = defineStore("tabs", {
           break;
       }
     },
-    terminalContextMenu(e, tab) {
-      let optionList = [
-        {
-          label: "Adjust Terminal Dimensions",
-          icon: "fas fa-window-maximize",
-          onClick: function () {
-            emitter.emit(`${tab.id}_adjust_terminal_dimensions`);
-          },
-        },
-        {
-          label: h("p", {
-            class: "mb-0",
-            innerHTML: "Close Terminal",
-          }),
-          icon: "fas fa-plug-circle-xmark",
-          onClick: () => {
-            ContextMenu.closeContextMenu();
-            this.closeTab(tab);
-          },
-        },
-      ];
-
-      ContextMenu.showContextMenu({
-        theme: "pgmanage",
-        x: e.x,
-        y: e.y,
-        zIndex: 1000,
-        minWidth: 230,
-        items: optionList,
-      });
-    },
     closeTab(tab) {
       if (
         ["query", "edit", "console", "outer_terminal"].includes(
@@ -808,11 +778,11 @@ const useTabsStore = defineStore("tabs", {
         callback(tab);
       }
     },
-    closeConnectionTab(connectionTab, secondaryTabs) {
+    closeWorkspaceTab(workspaceTab, secondaryTabs) {
       let tabsToRemove = [];
       let tab_ids = secondaryTabs.map((tab) => tab.id);
       tab_ids.forEach((tab_id) => {
-        let tab = this.getSecondaryTabById(tab_id, connectionTab.id);
+        let tab = this.getSecondaryTabById(tab_id, workspaceTab.id);
         if (
           tab.metaData.mode == "query" ||
           tab.metaData.mode == "edit" ||
@@ -825,7 +795,7 @@ const useTabsStore = defineStore("tabs", {
           let messageData = {
             tab_id: tab.id,
             tab_db_id: null,
-            workspace_id: connectionTab.id,
+            workspace_id: workspaceTab.id,
           };
           if (tab.metaData.mode == "query")
             messageData.tab_db_id = tab.metaData.initTabDatabaseId;
@@ -833,7 +803,7 @@ const useTabsStore = defineStore("tabs", {
         }
       });
       let messageData = {
-        workspace_id: connectionTab.id,
+        workspace_id: workspaceTab.id,
         tab_db_id: null,
         tab_id: null,
       };
@@ -842,8 +812,8 @@ const useTabsStore = defineStore("tabs", {
       if (tabsToRemove.length > 0) {
         createRequest(queryRequestCodes.CloseTab, tabsToRemove);
       }
-      dbMetadataStore.deleteDbMeta(connectionTab.metaData.selectedDatabaseIndex);
-      this.removeTab(connectionTab);
+      dbMetadataStore.deleteDbMeta(workspaceTab.metaData.selectedDatabaseIndex);
+      this.removeTab(workspaceTab);
     },
   },
 });

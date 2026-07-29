@@ -57,6 +57,7 @@ def get_commands_history(request):
     command_from: Optional[str] = data.get("command_from")
     command_to: Optional[str] = data.get("command_to")
     command_type: Union[Literal["Query"], Literal["Console"]] = data["command_type"]
+    page_size: int = min(int(data.get("page_size", settings.CH_CMDS_PER_PAGE)), 500)
 
     try:
         conn = Connection.objects.get(id=database_index)
@@ -85,7 +86,7 @@ def get_commands_history(request):
         if command_to:
             query = query.filter(start_time__lte=command_to)
 
-        p = Paginator(query, settings.CH_CMDS_PER_PAGE)
+        p = Paginator(query, page_size)
 
         if current_page not in list(p.page_range):
             current_page = 1

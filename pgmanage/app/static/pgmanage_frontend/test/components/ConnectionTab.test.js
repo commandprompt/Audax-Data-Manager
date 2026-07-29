@@ -1,6 +1,6 @@
 import { mount, flushPromises } from "@vue/test-utils";
 import { describe, it, expect, vi, beforeEach, beforeAll } from "vitest";
-import ConnectionTab from "@src/components/ConnectionTab.vue";
+import WorkspaceTab from "@src/components/WorkspaceTab.vue";
 import axios from "axios";
 import { emitter } from "@src/emitter";
 import { handleError } from "@src/logging/utils";
@@ -23,7 +23,7 @@ const connectionMock = {
   color_label: 1,
 };
 
-describe("ConnectionTab.vue", () => {
+describe("WorkspaceTab.vue", () => {
   let wrapper, connectionsStore, tabsStore, connTab;
 
   beforeAll(() => {
@@ -31,9 +31,11 @@ describe("ConnectionTab.vue", () => {
     tabsStore = useTabsStore();
     connTab = tabsStore.addTab({ name: "TestConnection" });
     tabsStore.selectTab(connTab);
-    connTab.metaData.selectedDatabaseIndex = 1;
-    connTab.metaData.selectedDBMS = "postgresql";
-    connTab.metaData.selectedDatabase = "testdb";
+    // $patch (rather than a direct field write) notifies subscribers with a
+    // "connections" payload, which sidebar_title_update_mixin.js reacts to by
+    // touching DOM nodes that don't exist in this shallow-mounted test. Do
+    // this once, before any component subscribes, so per-test resets below
+    // must use direct field writes instead.
     connectionsStore.$patch({
       connections: [connectionMock],
     });
@@ -43,9 +45,14 @@ describe("ConnectionTab.vue", () => {
     vi.useFakeTimers();
     vi.clearAllMocks();
 
+    connTab.metaData.selectedDatabaseIndex = 1;
+    connTab.metaData.selectedDBMS = "postgresql";
+    connTab.metaData.selectedDatabase = "testdb";
+    connectionMock.autocomplete = true;
+
     axios.post.mockResolvedValueOnce({});
 
-    wrapper = mount(ConnectionTab, {
+    wrapper = mount(WorkspaceTab, {
       props: { workspaceId: connTab.id },
       shallow: true,
     });
@@ -53,12 +60,12 @@ describe("ConnectionTab.vue", () => {
 
   it("renders correctly", () => {
     expect(wrapper.find('[data-testid="connection-tab"]').exists()).toBe(true);
-    expect(wrapper.vm.connectionTab.metaData.selectedDatabase).toBe("testdb");
+    expect(wrapper.vm.workspaceTab.metaData.selectedDatabase).toBe("testdb");
   });
 
   it("truncates SQLite databaseName correctly", () => {
-    wrapper.vm.connectionTab.metaData.selectedDBMS = "sqlite";
-    wrapper.vm.connectionTab.metaData.selectedDatabase = "averylongfilename.db";
+    wrapper.vm.workspaceTab.metaData.selectedDBMS = "sqlite";
+    wrapper.vm.workspaceTab.metaData.selectedDatabase = "averylongfilename.db";
     expect(wrapper.vm.databaseName.length).toBeLessThanOrEqual(13);
   });
 
@@ -152,7 +159,7 @@ describe("ConnectionTab.vue", () => {
       mssql: "TreeMssql",
     };
     for (const [tech, comp] of Object.entries(map)) {
-      wrapper.vm.connectionTab.metaData.selectedDBMS = tech;
+      wrapper.vm.workspaceTab.metaData.selectedDBMS = tech;
       expect(wrapper.vm.treeComponent).toBe(comp);
     }
   });

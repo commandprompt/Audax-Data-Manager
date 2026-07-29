@@ -2,6 +2,7 @@ import { mount, flushPromises } from "@vue/test-utils";
 import FileManagerActionsModal from "@src/components/FileManagerActionsModal.vue";
 import axios from "axios";
 import { describe, beforeEach, it, expect } from "vitest";
+import { mockErrorResponse } from "../helpers/fixtures.js";
 
 describe("FileManagerActionsModal.vue", () => {
   let wrapper;
@@ -110,9 +111,7 @@ describe("FileManagerActionsModal.vue", () => {
 
   it("handles API errors and displays toast on failure", async () => {
     const errorMsg = "Something went wrong";
-    axios.post.mockRejectedValueOnce({
-      response: { data: { data: errorMsg } },
-    });
+    axios.post.mockRejectedValueOnce(mockErrorResponse(errorMsg));
 
     const input = wrapper.find("input");
     await input.setValue("fail_name.txt");
