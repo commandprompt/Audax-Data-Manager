@@ -428,6 +428,9 @@ export default {
         })
         .then((resp) => {
           this.getCommandsHistory(true);
+          if (this.tabType === "Console") {
+            emitter.emit(`${this.tabId}_history_cleared`);
+          }
         })
         .catch((error) => {
           handleError(error);

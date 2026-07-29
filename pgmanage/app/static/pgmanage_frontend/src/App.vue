@@ -184,8 +184,6 @@ export default {
             if (tabsStore.selectedPrimaryTab.metaData.selectedTab.metaData.mode === 'query') {
               emitter.emit(`${tabsStore.selectedPrimaryTab.metaData.selectedTab.id}_run_query`)
             }
-            else if (tabsStore.selectedPrimaryTab.metaData.selectedTab.metaData.mode === 'console')
-              emitter.emit(`${tabsStore.selectedPrimaryTab.metaData.selectedTab.id}_run_console`, false)
             else if (tabsStore.selectedPrimaryTab.metaData.selectedTab.metaData.mode == 'edit')
               emitter.emit(`${tabsStore.selectedPrimaryTab.metaData.selectedTab.id}_query_edit`)
           }
