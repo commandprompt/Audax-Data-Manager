@@ -1,46 +1,94 @@
 <template>
   <div ref="erdContainer">
-    <div class="position-relative">
-      <div class="floating-toolbar floating-toolbar--filled floating-toolbar--right-top">
-        <span class="floating-toolbar__content">
-          <button class="btn btn-icon-secondary" @click="resetToDefault" title="Reset to default">
-            <i class="fa-solid fa-rotate-left"></i>
-          </button>
 
-          <span class="divider"></span>
+    <Controls
+    :in-fullscreen="inFullscreen"
+    :capturing-screenshot="capturingScreenshot"
+    @screenshot="doScreenshot"
+    @reset="resetToDefault"
+    @zoom-in="this.$refs.vueFlow.zoomIn()"
+    @zoom-out="this.$refs.vueFlow.zoomOut()"
+    @toggle-fullscreen="toggleFullScreen"
+      />
 
-          <!-- Zoom Out -->
-          <button class="btn btn-icon-secondary" @click="zoomOut" title="Zoom Out">
-            <i class="fas fa-search-minus"></i>
-          </button>
-          <!-- Zoom In -->
-          <button class="btn btn-icon-secondary" @click="zoomIn" title="Zoom In">
-            <i class="fas fa-search-plus"></i>
-          </button>
+    <div ref="vueFlowWrap">
+      <svg :style="{ position: 'absolute', top: 0, left: '-1000px' }">
+        <defs>
+          <marker :id="`erd-one-only-${tabId}`" viewBox="0 0 20 20" refX="18" refY="10" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
+            <line x1="6" y1="3" x2="6" y2="17" stroke="context-stroke" stroke-width="2" />
+            <line x1="12" y1="3" x2="12" y2="17" stroke="context-stroke" stroke-width="2" />
+          </marker>
 
-          <button :id="`bt_fullscreen_${tabId}`" type="button"
-          class="btn btn-icon-secondary" title='Fullscreen' @click="toggleFullScreen()">
-              <i :class="inFullscreen ? 'fas fa-compress':'fas fa-expand'"></i>
-          </button>
-        </span>
-      </div>
-      <div class="vh-100 w-100 invisible" ref="cyContainer"></div>
+          <marker :id="`erd-zero-one-${tabId}`" viewBox="0 0 20 20" refX="18" refY="10" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
+            <!-- fill="context-fill" lets you change the inside color via CSS if needed, or leave fill="white" for a hollow ring -->
+            <circle cx="6" cy="10" r="3.5" fill="white" stroke="context-stroke" stroke-width="2" />
+            <line x1="14" y1="3" x2="14" y2="17" stroke="context-stroke" stroke-width="2" />
+          </marker>
+
+          <marker :id="`erd-one-many-${tabId}`" viewBox="0 0 20 20" refX="18" refY="10" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
+            <line x1="4" y1="3" x2="4" y2="17" stroke="context-stroke" stroke-width="2" />
+            <path d="M 10 10 L 18 3 M 10 10 L 18 17 M 4 10 L 18 10" stroke="context-stroke" stroke-width="2" stroke-linecap="round" fill="none" />
+          </marker>
+
+          <marker :id="`erd-zero-many-${tabId}`" viewBox="0 0 20 20" refX="18" refY="10" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
+            <circle cx="4" cy="10" r="3.5" fill="white" stroke="context-stroke" stroke-width="2" />
+            <path d="M 10 10 L 18 3 M 10 10 L 18 17 M 4 10 L 18 10" stroke="context-stroke" stroke-width="2" stroke-linecap="round" fill="none" />
+          </marker>
+        </defs>
+      </svg>
+
+      <VueFlow
+        class="vh-100"
+        ref="vueFlow"
+        :node-types="nodeTypes"
+        :nodes="nodes"
+        :edges="edges"
+        :snap-to-grid="true"
+        :snap-grid="[10, 10]"
+        min-zoom="0.1"
+        @nodes-initialized="onNodesInitialized"
+        @viewport-change-end="saveGraphState"
+        @node-drag-stop="onNodeDragStop"
+        @node-drag="scheduleRerouteEdges"
+        @edge-click="onEdgeClick"
+        @node-click="onNodeClick"
+        @pane-click="clearErdSelection"
+      >
+        <Background variant="dots" />
+
+        <template #edge-bezierOrSmoothstep="edgeProps">
+          <ErdRelationEdge v-bind="edgeProps" :tab-id="tabId"/>
+        </template>
+      </VueFlow>
     </div>
   </div>
 </template>
 
 <script>
 import axios from 'axios'
-import ShortUniqueId from 'short-unique-id'
-import cytoscape from 'cytoscape';
-import nodeHtmlLabel from 'cytoscape-node-html-label'
 import { handleError } from '../logging/utils';
-import debounce from 'lodash/debounce'
-import isEmpty from 'lodash/isEmpty';
-
+import { VueFlow, MarkerType, getConnectedEdges } from '@vue-flow/core';
+import { Background } from '@vue-flow/background'
+import { markRaw } from 'vue';
+import { capture } from '@src/erd_plugins/screenshot';
+import TableNode from '@src/erd_plugins/TableNode.vue';
+import ColumnNode from '@src/erd_plugins/ColumnNode.vue';
+import Controls from '@src/erd_plugins/Controls.vue';
+import ErdRelationEdge from '@src/erd_plugins/ErdRelationEdge.vue';
+import {
+  TABLE_HEADER_HEIGHT,
+  COLUMN_HEIGHT,
+  getLayoutedNodes,
+} from '@src/erd_plugins/layout';
 
 export default {
   name: "ERDTab",
+  components: {
+    VueFlow,
+    Background,
+    Controls,
+    ErdRelationEdge,
+  },
   props: {
     schema: String,
     workspaceId: String,
@@ -48,74 +96,62 @@ export default {
     databaseIndex: Number,
     databaseName: String,
   },
-  setup(props) {
-    if (typeof cytoscape("core", "nodeHtmlLabel") === "undefined")
-      nodeHtmlLabel(cytoscape);
-  },
   data() {
     return {
+      nodeTypes: {
+        table: markRaw(TableNode),
+        column: markRaw(ColumnNode),
+      },
       nodes: [],
       edges: [],
-      cy: {},
-      layout: {},
-      instance_uid: '',
-      options: {
-        boxSelectionEnabled: false,
-        wheelSensitivity: 0.4,
-        style: [
-          {
-            selector: 'node',
-            style: {
-              "shape": "round-rectangle",
-              "background-color": "#F8FAFC",
-              "background-opacity": 1,
-              "height": 40,
-              "width": 140,
-              shape: "round-rectangle",
-            }
-          },
-          {
-            selector: 'edge',
-            style: {
-              'curve-style': 'straight',
-              'target-arrow-shape': 'triangle',
-              'width': 2,
-              'line-style': 'solid'
-            }
-          },
-          {
-            selector: 'edge:selected',
-            style: {
-              'width': 4,
-              'line-color': '#F76707',
-              'target-arrow-color': '#F76707',
-              'source-arrow-color': '#F76707',
-            }
-          },
-        ],
-      },
       inFullscreen: false,
+      jsonLayout: false,
+      rerouteFrame: null,
+      capturingScreenshot: false,
     };
   },
   mounted() {
-    this.loadSchemaGraph()
-    this.instance_uid = new ShortUniqueId({dictionary: 'alpha_upper', length: 4}).randomUUID()
-  },
-  updated() {
-    this.$refs.cyContainer.classList.remove('invisible');
+    this.loadSchemaGraph();
   },
   methods: {
-    resetToDefault() {
-      this.layout = this.cy.layout({
-          name: "grid",
-          padding: 50,
-          spacingFactor: 0.85,
-        })
+    onNodesInitialized() {
+      if (!this.jsonLayout) {
+        this.nodes = getLayoutedNodes(this.nodes, this.$refs.vueFlow.nodes,);
 
-        setTimeout(() => {
-        this.adjustSizes()
+        this.$nextTick(() => {
+          this.$refs.vueFlow.fitView();
+          this.rerouteEdgesByTableDistance();
+          this.applyGroupedZIndexes();
+        })
+      } else {
+        this.$nextTick(() => {
+          this.rerouteEdgesByTableDistance();
+          this.applyGroupedZIndexes();
+        })
+      }
+    },
+    doScreenshot() {
+      if (this.capturingScreenshot) {
+        return;
+      }
+
+      this.capturingScreenshot = true;
+
+      requestAnimationFrame(()=> {
+        requestAnimationFrame(() => {
+          capture(this.$refs.vueFlowWrap, { shouldDownload: true }).finally(() => this.capturingScreenshot = false)
+        })
+      })
+    },
+    resetToDefault() {
+      this.nodes = getLayoutedNodes(this.nodes, this.$refs.vueFlow.nodes);
+
+      this.$nextTick(() => {
+        this.applyGroupedZIndexes();
+        this.rerouteEdgesByTableDistance();
+        this.$refs.vueFlow.fitView()
         this.saveGraphState();
-      }, 100)
+      })
     },
     loadSchemaGraph() {
       axios.post('/draw_graph/', {
@@ -125,178 +161,54 @@ export default {
       })
       .then((response) => {
         if (response.data.layout) {
-          this.jsonLayout = response.data.layout
-          this.new_nodes = response.data.new_nodes
-          this.new_edges = response.data.new_edges
+          this.jsonLayout = true
+          this.restoreVueFlowLayout(
+            response.data.layout,
+            response.data.new_nodes || [],
+            response.data.new_edges || []
+          )
         } else {
-          this.nodes = response.data.nodes.map((node) => (
+          const tableNodes = response.data.nodes.map((node, index) => (
             {
+              id: node.id,
+              type: 'table',
+              position: { x: 0, y:0 },
               data: {
-                id: node.id,
-                html_id: node.id.replace(/[^a-zA-Z_.-:]+/, '_'),
                 label: node.label,
-                columns: node.columns.map((column) => (
-                  {
-                    name: column.name,
-                    type: column.type,
-                    cgid: column.cgid,
-                    is_pk: column.is_pk,
-                    is_fk: column.is_fk,
-                    is_highlighted: false
-                  }
-                )),
-                type: 'table'
               },
-              position: node?.position ?? {},
-              classes: 'group' + node.group
             }
-          ))
-  
-          this.edges = response.data.edges.map((edge) => (
-            {
-              data: {
-                source: edge.from,
-                target: edge.to,
-                source_col: edge.from_col,
-                target_col: edge.to_col,
-                label: edge.label,
-                cgid: edge.cgid
-              }
-            }
-          ))
+          ));
+          const columnNodes = [];
+
+          response.data.nodes.forEach((node) => {
+            node.columns.forEach((columnNode, index) => {
+              const isLast = index === node.columns.length - 1
+              const col = this.createColumnNode(node, columnNode, index, isLast)
+              columnNodes.push(col);
+            })
+          })
+          this.nodes = [...tableNodes, ...columnNodes]
+          this.edges = response.data.edges.map((edge) => this.createEdge(edge))
         }
       })
-      .then(() => { this.initGraph() })
       .catch((error) => {
         handleError(error);
       })
     },
-    columnClass(column) {
-      let classes = []
-      if(column.is_pk)
-        classes.push('pk-column')
-      if(column.is_fk)
-        classes.push('fk-column')
-      if(column.is_highlighted)
-        classes.push('highlighted')
-      return classes.join(' ')
-    },
-    initGraph() {
-      if (this.jsonLayout) {
-        this.cy = cytoscape({
-          container: this.$refs.cyContainer,
-          ...this.options,
-          elements: [],
-        })
-        this.cy.json(this.jsonLayout)
-
-        if (this.new_nodes && this.new_nodes.length > 0) {
-          const formattedNodes = this.new_nodes.map(node => ({
-            group: 'nodes',
-            data: {
-              id: node.id,
-              html_id: node.id.replace(/[^a-zA-Z_.-:]+/, '_'),
-              label: node.label,
-              columns: node.columns.map((column) => (
-                  {
-                    name: column.name,
-                    type: column.type,
-                    cgid: column.cgid,
-                    is_pk: column.is_pk,
-                    is_fk: column.is_fk,
-                    is_highlighted: false
-                  }
-                )),
-              type: 'table'
-            },
-            classes: 'group' + node.group
-          }));
-          this.cy.add(formattedNodes);
-        }
-
-        if (this.new_edges && this.new_edges.length > 0) {
-          const formattedEdges = this.new_edges.map(edge => ({
-            group: 'edges',
-            data: {
-              source: edge.from,
-                target: edge.to,
-                source_col: edge.from_col,
-                target_col: edge.to_col,
-                label: edge.label,
-                cgid: edge.cgid
-            }
-          }));
-          this.cy.add(formattedEdges);
-        }
-        
-      } else {
-        this.cy = cytoscape({
-          container: this.$refs.cyContainer,
-          ...this.options,
-          elements: {
-            selectable: true,
-            grabbable: false,
-            nodes: [...this.nodes],
-            edges: [...this.edges]
-          }
-        })
-        this.layout = this.cy.layout({
-          name: "grid",
-          padding: 50,
-          spacingFactor: 0.85,
-        })
-        
+    shortDataType(typename) {
+      const TYPEMAP = {
+        'character varying': 'varchar',
+        'timestamp with time zone': 'timestamptz',
+        'timestamp without time zone': 'timestamp',
+        'time without time zone': 'time',
+        'time with time zone': 'timetz',
+        'character': 'char',
+        'boolean': 'bool'
       }
-      setTimeout(() => {
-        this.adjustSizes();
-      }, 100);
-    
-      this.setupEvents();
-
-      this.cy.nodeHtmlLabel(
-        [{
-          query: 'node',
-          cssClass: 'erd-card',
-          tpl: (function(data) {
-            let coldivs = ''
-            if (data.columns)
-              coldivs = data.columns.map((c) => {
-                let dataAttr = c.cgid ? `data-cgid="${c.cgid}"` : ''
-                let colName = c.is_fk ?
-                `<a ${dataAttr} href="#" class="erd-card__column_name">${c.name}</a>` :
-                `<span class="erd-card__column_name">${c.name}</span>`
-                return `<div ${dataAttr} class="erd-card__column ${this.columnClass(c)}">
-                      ${colName}
-                  <span class="erd-card__column_type">${c.type}</span>
-                </div>`
-              }).join('')
-
-            return `<div class="erd-card__wrap"><div id="${this.instance_uid}-${data.html_id}">
-                <h3 class="erd-card__title clipped-text" title="${data.label}">${data.label}</h3>
-                ${coldivs}
-            </div></div>`;
-          }).bind(this)
-        }],
-      )
-
-      this.$refs.cyContainer.classList.remove('invisible');
-    },
-    adjustSizes() {
-      const padding = 2;
-      this.cy.nodes().forEach((node) => {
-        let el = document.querySelector(`#${this.instance_uid}-${node.data().html_id}`)
-        if (el) {
-          node.style('width', el.parentElement.clientWidth + padding)
-          node.style('height', el.parentElement.clientHeight + padding)
-        }
-      })
-      if (!isEmpty(this.layout)) {
-        this.layout.run();
-        this.cy.fit();
-      }
+      return TYPEMAP[typename] || typename
     },
     saveGraphState() {
-      const layoutData = this.cy.json(); 
+      const layoutData = this.$refs.vueFlow.toObject();
 
       axios.post('/save_graph_state/', {
         workspace_id: this.workspaceId,
@@ -308,63 +220,342 @@ export default {
         handleError(error);
       });
     },
-    setupEvents() {
-      this.cy.on('select unselect', 'edge', function(evt) {
-        let should_highlight = evt.type == 'select'
-        let {source_col, target_col} = evt.target.data()
-        let edge = evt.target
-        let srccols = edge.source().data('columns')
-        srccols.find((c) => c.name === source_col).is_highlighted = should_highlight
-        edge.source().data('columns', srccols)
-        let dstcols = edge.target().data('columns')
-        dstcols.find((c) => c.name === target_col).is_highlighted = should_highlight
-        edge.target().data('columns', dstcols)
-      });
-
-      this.cy.on('click', 'node', function (evt) {
-        if (evt.originalEvent) {
-          const element = document.elementFromPoint(evt.originalEvent.clientX, evt.originalEvent.clientY);
-          if(element.dataset.cgid) {
-            let edge = this.cy().edges().filter(( ele ) => ele.data('cgid') === element.dataset.cgid)
-            setTimeout(() => {edge.select()}, 1)
-          }
-        }
-      });
-
-      this.cy.on("dragfree", () => {
-        this.saveGraphState();
-      });
-
-      this.cy.on('viewport', debounce(() => {
-        this.saveGraphState();
-      }, 500));
-    },
-    zoomIn() {
-      if (this.cy) {
-        const currentZoom = this.cy.zoom();
-        this.cy.zoom({
-          level: currentZoom * 1.2,
-          renderedPosition: { x: this.cy.width() / 2, y: this.cy.height() / 2 }
-        });
-      }
-    },
-    zoomOut() {
-      if (this.cy) {
-        const currentZoom = this.cy.zoom();
-        this.cy.zoom({
-          level: currentZoom * 0.8,
-          renderedPosition: { x: this.cy.width() / 2, y: this.cy.height() / 2 }
-        });
-      }
-    },
     toggleFullScreen() {
       this.$refs.erdContainer.classList.toggle("omnidb__panel-view--full");
       this.inFullscreen = !this.inFullscreen;
     },
+    restoreVueFlowLayout(layoutData, newNodesData = [], newEdgesData = []) {
+      const savedNodes = layoutData.nodes || []
+      const savedEdges = layoutData.edges || []
+      const savedViewport = layoutData.viewport
+
+      let nextNodes = [...savedNodes]
+
+      const savedNodeIds = new Set(savedNodes.map((node) => node.id))
+      const changedTableIds = new Set(newNodesData.map((node) => node.id))
+
+      // If backend sends a table in new_nodes, rebuild its column nodes.
+      // This handles both fully new tables and existing tables with changed columns.
+      nextNodes = nextNodes.filter((node) => {
+        const parentId = node.parentNode
+
+        return !changedTableIds.has(parentId)
+      })
+
+      newNodesData.forEach((tableData) => {
+        const tableAlreadyExists = savedNodeIds.has(tableData.id)
+
+        if (tableAlreadyExists) {
+          nextNodes = nextNodes.map((node) => {
+            if (node.id !== tableData.id) {
+              return node
+            }
+
+            return {
+              ...node,
+              data: {
+                ...(node.data || {}),
+                label: tableData.label,
+              },
+            }
+          })
+        } else {
+          const tableCount = nextNodes.filter((node) => node.type === 'table').length
+          const position = {x: 0, y: 0}
+
+          nextNodes.push(this.createTableNode(tableData, position))
+        }
+
+        tableData.columns.forEach((columnNode, index) => {
+          const isLast = index === tableData.columns.length - 1
+          nextNodes.push(this.createColumnNode(tableData, columnNode, index, isLast))
+        })
+      })
+
+      const savedEdgeIds = new Set(savedEdges.map((edge) => edge.id))
+
+      const newEdges = newEdgesData
+        .map((edge) => this.createEdge(edge))
+        .filter((edge) => !savedEdgeIds.has(edge.id))
+
+      this.nodes = nextNodes
+      this.edges = [
+        ...savedEdges,
+        ...newEdges,
+      ]
+
+      this.$nextTick(() => {
+        if (savedViewport && this.$refs.vueFlow?.setViewport) {
+          this.$refs.vueFlow.setViewport(savedViewport)
+        } else {
+          this.$refs.vueFlow?.fitView?.({
+            padding: 0.2,
+          })
+        }
+      })
+    },
+    createTableNode(node, position = { x: 0, y: 0 }) {
+      return {
+        id: node.id,
+        type: 'table',
+        position,
+        data: {
+          label: node.label,
+        },
+      }
+    },
+    createColumnNode(tableNode, columnNode, index, isLast = false) {
+      return {
+        id: `${tableNode.id}_${columnNode.name}`,
+        type: 'column',
+        draggable: false,
+        expandParent: true,
+        parentNode: tableNode.id,
+        position: {
+          x: 0,
+          y: TABLE_HEADER_HEIGHT + index * COLUMN_HEIGHT,
+        },
+        data: {
+          label: columnNode.name,
+          type: this.shortDataType(columnNode.type),
+          cgid: columnNode.cgid,
+          is_pk: columnNode.is_pk,
+          is_fk: columnNode.is_fk,
+          is_highlighted: false,
+          is_last: isLast,
+        },
+      }
+    },
+    createEdge(edge) {
+      return {
+        id: `${edge.from}_${edge.from_col}-${edge.to}_${edge.to_col}`,
+        source: `${edge.from}_${edge.from_col}`,
+        target: `${edge.to}_${edge.to_col}`,
+        sourceHandle: 'source-right',
+        targetHandle: 'target-left',
+        label: edge.label,
+        cgid: edge.cgid,
+        type: 'bezierOrSmoothstep',
+        pathOptions: {
+          offset: 30,
+        },
+        markerEnd: 'erd-one-only',
+        markerStart: 'erd-one-many',
+        data: {
+          cgid: edge.cgid,
+          sourceTableId: edge.from,
+          targetTableId: edge.to,
+        },
+      }
+    },
+    clearErdSelection() {
+      this.edges.forEach((edge) => {
+        let storedEdge = this.$refs.vueFlow.findEdge(edge.id);
+        storedEdge.selected = false;
+        storedEdge.zIndex = 1;
+      });
+      this.nodes.forEach((node) => {
+        node.data.is_highlighted = false;
+      });
+    },
+    onEdgeClick({ edge }) {
+      this.clearErdSelection();
+      this.selectErdEdges([edge]);
+    },
+    onNodeClick({ node }) {
+      if (node.type === 'table') {
+
+        const edgesToSelect = [];
+        this.nodes.forEach((nodeObj) => {
+          if (nodeObj.parentNode == node.id) {
+            this.$refs.vueFlow.updateNode(nodeObj.id, {selected: true});
+            let relatedEdges = getConnectedEdges([nodeObj], this.edges);
+            if (relatedEdges.length) {
+              edgesToSelect.push(...relatedEdges);
+              return;
+            }
+          }
+        })
+        if (!edgesToSelect.length) {
+          this.clearErdSelection();
+          return;
+        }
+        this.selectErdEdges(edgesToSelect);
+      } else if (node.type === 'column') {
+        const relatedEdges = getConnectedEdges([node], this.edges);
+  
+        if (!relatedEdges.length) {
+          this.clearErdSelection();
+          return;
+        }
+  
+        this.selectErdEdges(relatedEdges);
+      }
+    },
+    selectErdEdges(edgesToSelect) {
+      const selectedEdgeKeys = new Set(edgesToSelect.map((edge) => edge.id));
+      const highlightedColumnIds = new Set();
+
+      edgesToSelect.forEach((edge) => {
+        if (edge.source) {
+          highlightedColumnIds.add(edge.source);
+        }
+
+        if (edge.target) {
+          highlightedColumnIds.add(edge.target);
+        }
+      });
+
+      this.edges.forEach((edge) => {
+        const shouldBeSelected = selectedEdgeKeys.has(edge.id);
+        let storedEdge = this.$refs.vueFlow.findEdge(edge.id);
+        if (storedEdge.selected !== shouldBeSelected) {
+          storedEdge.zIndex = 2;
+          storedEdge.selected = shouldBeSelected;
+        }
+      });
+
+      this.nodes.forEach((node) => {
+        if (node.type !== "column") {
+          return;
+        }
+
+        const shouldBeHighlighted = highlightedColumnIds.has(node.id);
+
+        let storedNode = this.$refs.vueFlow.findNode(node.id);
+
+        if (!storedNode.data) {
+          storedNode.data = {};
+        }
+
+        if (storedNode.data.is_highlighted !== shouldBeHighlighted) {
+          storedNode.data.is_highlighted = shouldBeHighlighted;
+        }
+      });
+    }, 
+    getTableBounds(tableNode) {
+      const width = tableNode.dimensions.width;
+      const height = tableNode.dimensions.height;
+      const x = tableNode.position?.x || 0;
+      const y = tableNode.position?.y || 0;
+    
+      return {
+        left: x,
+        right: x + width,
+        top: y,
+        bottom: y + height,
+      };
+    },
+    getBestHorizontalRoute(edge, nodes) {
+      const nodeById = new Map(nodes.map((node) => [node.id, node]));
+    
+      const sourceColumn = nodeById.get(edge.source);
+      const targetColumn = nodeById.get(edge.target);
+    
+      const sourceTableId = sourceColumn.parentNode || edge.data?.sourceTableId;
+    
+      const targetTableId = targetColumn.parentNode || edge.data?.targetTableId;
+    
+      const sourceTable = nodeById.get(sourceTableId);
+      const targetTable = nodeById.get(targetTableId);
+    
+      if (!sourceTable || !targetTable || sourceTable.id === targetTable.id) {
+        return null;
+      }
+
+      const sourceBounds = this.getTableBounds(sourceTable);
+      const targetBounds = this.getTableBounds(targetTable);
+
+      let target_switch_margin = 30;
+
+      const targetIsRightOfSource = targetBounds.left >= sourceBounds.right + target_switch_margin;
+      const targetIsLeftOfSource = targetBounds.right <= sourceBounds.left - target_switch_margin;
+
+      if (targetIsRightOfSource) {
+        return {
+          sourceHandle: 'source-right',
+          targetHandle: 'target-left',
+        };
+      }
+
+      if (targetIsLeftOfSource) {
+        return {
+          sourceHandle: 'source-left',
+          targetHandle: 'target-right',
+        };
+      }
+    
+      const leftToLeftDistance = Math.abs(sourceBounds.left - targetBounds.left);
+      const rightToRightDistance = Math.abs(sourceBounds.right - targetBounds.right);
+    
+       if (leftToLeftDistance <= rightToRightDistance) {
+        return {
+          sourceHandle: 'source-left',
+          targetHandle: 'target-left',
+        };
+      }
+
+      return {
+        sourceHandle: 'source-right',
+        targetHandle: 'target-right',
+      };
+    },
+    rerouteEdgesByTableDistance() {
+      const currentNodes = this.$refs.vueFlow.nodes;
+    
+      this.edges.forEach((edge) => {
+        let storedEdge = this.$refs.vueFlow.findEdge(edge.id);
+        const route = this.getBestHorizontalRoute(storedEdge, currentNodes);
+    
+        if (!route) {
+          return;
+        }
+    
+        if (
+          storedEdge.sourceHandle !== route.sourceHandle ||
+          storedEdge.targetHandle !== route.targetHandle
+        ) {
+          storedEdge.sourceHandle = route.sourceHandle;
+          storedEdge.targetHandle = route.targetHandle;
+        }
+      })
+    },
+    onNodeDragStop() {
+      this.rerouteEdgesByTableDistance();
+      this.saveGraphState();
+    },
+    scheduleRerouteEdges() {
+      if (this.rerouteFrame) {
+        cancelAnimationFrame(this.rerouteFrame);
+      }
+    
+      this.rerouteFrame = requestAnimationFrame(() => {
+        this.rerouteEdgesByTableDistance();
+        this.rerouteFrame = null;
+      })
+    },
+    applyGroupedZIndexes() {
+      const tableNodes = this.nodes.filter((node) => node.type === 'table');
+
+      const tableZIndexById = {};
+
+      tableNodes.forEach((tableNode, index) => {
+        tableZIndexById[tableNode.id] = (index + 1) * 10;
+      })
+
+      this.nodes.forEach((node) => {
+        if (node.type === 'table') {
+          this.$refs.vueFlow.updateNode(node.id, {zIndex: tableZIndexById[node.id] ?? 10});
+          return;
+        }
+
+        if (node.type === 'column') {
+          const tableId = node.parentNode;
+          const tableZIndex = tableZIndexById[tableId] ?? 10;
+          this.$refs.vueFlow.updateNode(node.id, {zIndex: tableZIndex + 1});
+        }
+      })
+    },
   },
 };
 </script>
-
-<style scoped>
-
-</style>

@@ -250,15 +250,15 @@ def draw_graph(request, database):
         tables = database.QueryTables(False, schema)
 
         for table in tables.Rows:
+            node_id = table.get('name_raw') or table["table_name"]
             node_data = {
-                "id": table["table_name"],
+                "id": node_id,
                 "label": table["table_name"],
                 "group": 1,
                 "columns": []
             }
-            table_name = table.get('name_raw') or table["table_name"]
             table_columns = database.QueryTablesFields(
-                table_name, False, schema
+                node_id, False, schema
             ).Rows
 
             node_data['columns'] = list(({
@@ -269,18 +269,32 @@ def draw_graph(request, database):
                 'is_fk': False,
                 } for c in table_columns))
 
-            node_dict[table["table_name"]] = node_data
+            node_dict[node_id] = node_data
+        
+        node_ids_by_label = {
+            node["label"]: node_id
+            for node_id, node in node_dict.items()
+        }
+
+        def resolve_node_id(name):
+            if name in node_dict:
+                return name
+
+            return node_ids_by_label.get(name)
 
         q_fks = database.QueryTablesForeignKeys(None, False, schema)
 
         for fk in q_fks.Rows:
-            # ensure that the new edge stays within the same schema and points to an existing table
-            # table partitions are *not* included in the node list
+            # ensure that the new edge stays within the same schema and that both
+            # endpoints reference an existing node; otherwise the graph would
+            # contain an edge pointing at a non-existent node and fail to render
             # FIXME: resolve FKs of partitioned table from its partitions
-            if fk["r_table_schema"] == schema and fk["table_name"] in node_dict.keys():
+            from_id = resolve_node_id(fk["table_name"])
+            to_id = resolve_node_id(fk["r_table_name"])
+            if fk["r_table_schema"] == schema and from_id and to_id:
                 edge_dict[fk["constraint_name"]] = {
-                    "from": fk["table_name"],
-                    "to": fk["r_table_name"],
+                    "from": from_id,
+                    "to": to_id,
                     "from_col": None,
                     "to_col": None,
                     "label": "",
@@ -291,12 +305,17 @@ def draw_graph(request, database):
         q_fkcols = database.QueryTablesForeignKeysColumns(list(edge_dict.keys()), None, False, schema)
         for fkcol in q_fkcols.Rows:
             cgid = fkcol['constraint_name']
-            edge = edge_dict[fkcol['constraint_name']]
+            edge = edge_dict.get(cgid)
+
+            if not edge:
+                continue
+
             edge['from_col'] = fkcol['column_name']
             edge['to_col'] = fkcol['r_column_name']
             edge['cgid'] = cgid
-            table = node_dict.get(fkcol['table_name'])
-            r_table = node_dict.get(fkcol['r_table_name'])
+
+            table = node_dict.get(resolve_node_id(fkcol["table_name"]))
+            r_table = node_dict.get(resolve_node_id(fkcol["r_table_name"]))
             if table and r_table:
                 for col in table['columns']:
                     if col['name'] == fkcol['column_name']:
@@ -321,40 +340,51 @@ def draw_graph(request, database):
         if layout_obj:
             layout_data = layout_obj.layout
 
-            layout_nodes = {node["data"]["id"]: node for node in layout_data.get('elements', {}).get('nodes', [])}
-            layout_edges = {edge["data"]["cgid"]: edge for edge in layout_data.get("elements", {}).get("edges", []) if edge["data"]["cgid"] is not None}
-
             current_node_ids = set(node_dict.keys())
             current_edge_ids = set(edge_dict.keys())
+            
+            # Vue Flow has separate table and column nodes.
+            # Tables use table id, columns use: table_id + "_" + column_name.
+            for table_id, table_data in node_dict.items():
+                for column in table_data.get("columns", []):
+                    column_name = column.get("name")
+                    if column_name:
+                        current_node_ids.add(f"{table_id}_{column_name}")
+
+            layout_nodes = {node["id"]: node for node in layout_data.get('nodes', []) if node.get("id")}
+
+            layout_edges = {edge["cgid"]: edge for edge in layout_data.get("edges", []) if edge["cgid"] is not None}
+
 
             filtered_nodes = [node for id_, node in layout_nodes.items() if id_ in current_node_ids]
 
-            for layout_node in filtered_nodes:
-                layout_node["data"]["columns"] = [
-                    {
-                    "name" : column["name"],
-                    "type" : column["type"],
-                    "cgid": column["cgid"],
-                    "is_pk": column["is_pk"],
-                    "is_fk": column["is_fk"],
-                    "is_highlighted": False
-                    }
-                    for column in node_dict[layout_node["data"]["id"]]["columns"]
-                ]
-
-            new_nodes = [v for k, v in node_dict.items() if k not in layout_nodes.keys()]
-
             filtered_edges = [edge for id_, edge in layout_edges.items() if id_ in current_edge_ids]
+
+            
+            saved_node_ids = set(layout_nodes.keys())
+
+            new_nodes = []
+
+            for table_id, table_data in node_dict.items():
+                column_ids = {
+                    f"{table_id}_{column['name']}"
+                    for column in table_data.get("columns", [])
+                    if column.get("name")
+                }
+
+                table_is_new = table_id not in saved_node_ids
+                has_new_columns = bool(column_ids - saved_node_ids)
+
+                if table_is_new or has_new_columns:
+                    new_nodes.append(table_data)
 
             new_edges = [
                 edge for edge in edge_dict.values()
-                if  edge['cgid'] not in layout_edges.keys()
+                if edge['cgid'] not in layout_edges.keys()
             ]
 
-            layout_data["elements"] = {
-                "nodes": filtered_nodes,
-                "edges": filtered_edges
-            }
+            layout_data["nodes"] = filtered_nodes
+            layout_data["edges"] = filtered_edges
 
             return JsonResponse(data={
                 "layout": layout_data,
