@@ -35,7 +35,7 @@ vi.mock("@src/stores/stores_initializer.js", () => ({
       metaData: { secondaryTabs: [], selectedTab: null },
     },
     createTerminalTab: vi.fn(),
-    createConnectionTab: vi.fn(),
+    createWorkspaceTab: vi.fn(),
   },
   connectionsStore: {
     connections: [],
@@ -294,7 +294,7 @@ describe("workspace.js", () => {
       expect(connectionsGroup.children).toHaveLength(1);
 
       connectionsGroup.children[0].onClick();
-      expect(tabsStore.createConnectionTab).toHaveBeenCalledWith(
+      expect(tabsStore.createWorkspaceTab).toHaveBeenCalledWith(
         1,
         true,
         "My DB",
