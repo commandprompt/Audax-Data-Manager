@@ -3,7 +3,7 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header align-items-center">
-          <h2 class="modal-title font-weight-bold">About</h2>
+          <h2 class="modal-title font-weight-bold">About Audax Data Manager</h2>
           <button
             type="button"
             class="btn-close"
@@ -57,7 +57,7 @@
 
           <div class="row mb-3">
             <div class="col-5">
-              <p class="font-weight-semibold">Primary Supporter:</p>
+              <p class="font-weight-semibold">Brought to you by:</p>
             </div>
             <div class="col-7">
               <a
@@ -66,8 +66,7 @@
                 class="font-weight-bold"
                 href="https://www.commandprompt.com/"
               >
-                Command Prompt Inc
-                <!-- <img src="{{url_folder}}/static/OmniDB_app/images/supporters/command_prompt_inc.png" title="CommandPrompt Inc."/> -->
+                Command Prompt, Inc.
               </a>
             </div>
           </div>
@@ -82,7 +81,7 @@
                 class="font-weight-bold"
                 target="_blank"
                 href="https://github.com/commandprompt/pgmanage"
-                >PgManage</a
+                >Github</a
               >
             </div>
           </div>
