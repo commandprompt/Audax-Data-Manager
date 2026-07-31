@@ -2,11 +2,9 @@
 <div class="welcome pt-3 overflow-auto">
     <div class='welcome__container'>
       <div class="welcome__header mt-1 mb-4">
-        <p class='mb-0'>Welcome to</p>
+        <p class='mb-0 ps-1'>Welcome to</p>
         <div class="welcome__logo d-flex mt-3 mb-4">
           <img :src="logoUrl" alt="">
-          <img id="gears" :src="gearsUrl">
-
         </div>
       </div>
 
@@ -99,7 +97,6 @@ import { colorLabelMap } from "../constants";
 import { startTutorial } from '../tutorial'
 import { endLoading } from "../ajax_control";
 import { default_shortcuts } from '../shortcuts'
-import gearsUrl from '../../src/assets/images/gears.svg'
 import logoUrl from '../../src/assets/images/logo.svg'
 
 
