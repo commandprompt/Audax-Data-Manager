@@ -64,9 +64,9 @@
                     <i class="fa-solid fa-circle-info me-1"></i>
                     Get Started
                   </a>
-                  <a href='https://pgmanage.readthedocs.io' target='_blank' class='links__item' title="Handbook">
+                  <a href='https://audax.readthedocs.io' target='_blank' class='links__item' title="User Guide">
                     <i class="fa-solid fa-book-bookmark me-1"></i>
-                    PgManage Handbook
+                    Docs
                   </a>
                 </div>
 
