@@ -79,10 +79,6 @@ Section "Program" AppFiles
   ;Create uninstaller
   WriteUninstaller "$INSTDIR\Uninstall.exe"
 
-  IfFileExists "$PROFILE\.pgmanage" 0 +3
-    DetailPrint "Migrating PgManage user data (copying)..."
-    CopyFiles /SILENT "$PROFILE\.pgmanage\*.*" "$PROFILE\.audaxdm"
-
 SectionEnd
 
 
