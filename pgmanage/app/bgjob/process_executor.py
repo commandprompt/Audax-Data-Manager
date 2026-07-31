@@ -23,6 +23,7 @@ import logging
 import os
 import re
 import secrets
+import shlex
 import signal
 import subprocess
 import sys
@@ -71,6 +72,36 @@ def psql_supports_restrict(psql_path):
         return b"\\restrict" in result.stdout
     except Exception:
         return False
+
+
+def _is_pigz_executable(token):
+    return os.path.basename(token).lower() == "pigz"
+
+
+def parse_pigz_tail(tail):
+    """Parse the synthetic pigz pipeline string appended as the last argv
+    element by get_args_params_values/get_args_param_values (e.g.
+    "| pigz -6 > /path/to/file.gz" or "pigz -dc /path/to/file.gz", with the
+    executable and file path individually shlex-quoted by that code).
+
+    Returns the shlex-split tokens, or None if `tail` isn't shaped like one
+    of those generated strings - e.g. an ordinary filename that happens to
+    contain whitespace, an unbalanced quote (a literal apostrophe), or even
+    a literal "-dc" word, any of which would otherwise raise from
+    shlex.split or be misdetected as a pigz tail.
+    """
+    try:
+        tokens = shlex.split(tail)
+    except ValueError:
+        return None
+
+    if len(tokens) < 3:
+        return None
+    if tokens[0] == "|":
+        is_pigz_tail = _is_pigz_executable(tokens[1]) and ">" in tokens
+    else:
+        is_pigz_tail = _is_pigz_executable(tokens[0]) and "-dc" in tokens
+    return tokens if is_pigz_tail else None
 
 
 def inject_restrict_args(command, dash_f_index, is_pigz_into_psql):
@@ -228,8 +259,9 @@ class ProcessExecutor:
                     if arg == "-f" and i + 1 < len(command):
                         dash_f_index = i
                         break
-            pigz_tail = len(command[-1].split()) >= 3
-            is_pigz_into_psql = is_psql and pigz_tail and "-dc" in command[-1].split()
+            pigz_tokens = parse_pigz_tail(command[-1])
+            pigz_tail = pigz_tokens is not None
+            is_pigz_into_psql = is_psql and pigz_tail and "-dc" in pigz_tokens
             # this block handles filtering of psql slash commands
             # if psql supports \restrict - use it
             # otherwise process executor will strip dangerous slash commands
@@ -240,15 +272,15 @@ class ProcessExecutor:
                         command, dash_f_index, is_pigz_into_psql
                     )
                     if is_pigz_into_psql:
-                        self._execute_with_pigz(command, kwargs)
+                        self._execute_with_pigz(command, kwargs, pigz_tokens)
                     else:
                         self._execute_without_pigz(command, kwargs)
                 elif is_pigz_into_psql:
-                    self._execute_psql_filtered_from_pigz(command, kwargs)
+                    self._execute_psql_filtered_from_pigz(command, kwargs, pigz_tokens)
                 else:
                     self._execute_psql_filtered_from_file(command, dash_f_index, kwargs)
             elif pigz_tail:
-                self._execute_with_pigz(command, kwargs)
+                self._execute_with_pigz(command, kwargs, pigz_tokens)
             else:
                 self._execute_without_pigz(command, kwargs)
         except OSError as exc:
@@ -350,10 +382,9 @@ class ProcessExecutor:
         self._run_filtered_restore(process, source())
 
     def _execute_psql_filtered_from_pigz(
-        self, command: List[str], kwargs: Dict[str, Any]
+        self, command: List[str], kwargs: Dict[str, Any], pigz_command: List[str]
     ) -> None:
         # Same as _execute_psql_filtered_from_file, but sourced from pigz's decompressed output
-        pigz_command = command[-1].split()
         psql_command = command[:-1]
 
         pigz_process = subprocess.Popen(
@@ -429,10 +460,11 @@ class ProcessExecutor:
             except Exception:
                 pass
 
-    def _execute_with_pigz(self, command: List[str], kwargs: Dict[str, Any]):
+    def _execute_with_pigz(
+        self, command: List[str], kwargs: Dict[str, Any], pigz_command: List[str]
+    ):
         """Execute the command with pigz compression."""
 
-        pigz_command = command[-1].split()
         utility_command = command[:-1]
 
         if "-dc" in pigz_command:

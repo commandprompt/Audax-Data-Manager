@@ -1,5 +1,6 @@
 import functools
 import operator
+import shlex
 from abc import ABC, abstractmethod
 
 from app.bgjob.jobs import BatchJob, IJobDesc, escape_dquotes_process_arg
@@ -297,7 +298,7 @@ def get_args_params_values(data, conn, backup_obj_type, backup_file):
         pigz_path = data.get("pigz_path", "pigz")
 
         pigz_line = [
-            f"| {pigz_path} {pigz_number_of_jobs} {pigz_compression_ratio} > {file_name}"
+            f"| {shlex.quote(pigz_path)} {pigz_number_of_jobs} {pigz_compression_ratio} > {shlex.quote(file_name)}"
         ]
         new_args = args[2:] + pigz_line
         return new_args

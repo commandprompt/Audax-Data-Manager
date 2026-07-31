@@ -1,4 +1,5 @@
 import os
+import shlex
 import unittest
 from datetime import datetime, timedelta
 from functools import partial
@@ -355,6 +356,15 @@ class GetArgsParamsValuesTests(TestCase):
         )
         self.assertTrue(args[-1].endswith("/tmp/backup.dump.gz"))
         self.assertFalse(args[-1].endswith(".gz.gz"))
+
+    def test_pigz_quotes_filename_containing_spaces(self):
+        args = get_args_params_values(
+            {"database": "mydb", "pigz": True, "number_of_jobs": "4", "compression_ratio": 6},
+            self.conn, "objects", "/tmp/test backup.dump",
+        )
+        self.assertEqual(args[-1], "| pigz -p4 -6 > '/tmp/test backup.dump.gz'")
+        # the quoted path round-trips back into a single shell token
+        self.assertEqual(shlex.split(args[-1])[-1], "/tmp/test backup.dump.gz")
 
     def test_objects_missing_database_key_raises_clear_value_error(self):
         with self.assertRaises(ValueError):
