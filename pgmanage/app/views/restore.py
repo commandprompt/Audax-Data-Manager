@@ -1,3 +1,5 @@
+import shlex
+
 from app.bgjob.jobs import BatchJob, IJobDesc
 from app.file_manager.file_manager import FileManager
 from app.models.main import Connection
@@ -97,7 +99,9 @@ def get_args_param_values(data, conn, backup_file, listing_file=None):
             else ""
         )
         pigz_path = data.get("pigz_path", "pigz")
-        pigz_line = [f"{pigz_path} -dc {pigz_number_of_jobs} {backup_file}"]
+        pigz_line = [
+            f"{shlex.quote(pigz_path)} -dc {pigz_number_of_jobs} {shlex.quote(backup_file)}"
+        ]
 
     if data.get("type") == "server":
         set_param("quiet", "--quiet", data, args)

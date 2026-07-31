@@ -1,4 +1,5 @@
 import os
+import shlex
 import unittest
 from datetime import datetime, timedelta
 from functools import partial
@@ -257,6 +258,13 @@ class GetArgsParamValuesTests(TestCase):
     def test_pg_restore_with_pigz_appends_pipe_source_instead_of_backup_file(self):
         args = get_args_param_values({"pigz": True, "pigz_number_of_jobs": "2"}, self.conn, "/tmp/backup.dump.gz")
         self.assertEqual(args, self.base_args() + ["pigz -dc -p2 /tmp/backup.dump.gz"])
+
+    def test_pg_restore_with_pigz_quotes_filename_containing_spaces(self):
+        args = get_args_param_values(
+            {"pigz": True, "pigz_number_of_jobs": "2"}, self.conn, "/tmp/test backup.dump.gz"
+        )
+        self.assertEqual(args[-1], "pigz -dc -p2 '/tmp/test backup.dump.gz'")
+        self.assertEqual(shlex.split(args[-1])[-1], "/tmp/test backup.dump.gz")
 
 
 class RestoreURLTests(TestCase):
