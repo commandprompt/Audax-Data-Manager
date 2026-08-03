@@ -307,6 +307,11 @@ a:not([href]):not([tabindex]){
 .omnidb__tab-menu--primary .nav-tabs .nav-item:first-child span.omnidb__menu__btn.omnidb__tab-menu__link-icon {
   background-color: unset;
 }
+
+.omnidb__tab-menu--primary .nav-tabs .nav-item span.omnidb__menu__btn.omnidb__tab-menu__link-icon {
+  border-radius: unset;
+}
+
 .omnidb__tab-menu--primary .nav-tabs .nav-item:first-child img {
   height: 32px;
 }
@@ -324,7 +329,7 @@ a:not([href]):not([tabindex]){
 }
 .omnidb__tab-menu--primary .omnidb__tab-menu__link-icon img {
   max-width: 100%;
-  width: 20px;
+  width: 1.2rem;
 }
 .omnidb__tab-menu--primary .omnidb__tab-menu__link-icon:hover i ,
 .omnidb__tab-menu--primary .omnidb__tab-menu__link-icon:hover img {

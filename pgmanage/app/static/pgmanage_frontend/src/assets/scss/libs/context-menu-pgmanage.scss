@@ -33,15 +33,20 @@
         }
 
         .mx-right-arrow {
+            width: 0.75rem;
+            height: 0.75rem;
             @include themify() {
                 fill: themed($color);
             }
         }
-
+        .mx-icon-placeholder {
+            width: 1.25rem;
+        }
         i {
-            width: 20px;
-            height: 16px;
+            width: 1.5rem;
+            height: 1.25rem;
             &.icon {
+                font-size: 1.2rem;
                 @include themify() {
                     color: themed($primaryBlueWhiteSwitching);
                 }                    
@@ -55,6 +60,7 @@
         }
         span.label {
             font-size: inherit;
+            padding-left: 0.5rem;
         }
     }
 
