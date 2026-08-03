@@ -90,8 +90,8 @@ cd -
 tar -xzvf /deploy/$NWJS_ARCHIVE
 mv $NWJS_DIR audaxdm-app_$VERSION
 cd audaxdm-app_$VERSION
-mkdir audaxdm-server
-cp $HOME/audaxdm-server ./audaxdm-server/audaxdm-server
+
+cp -r $HOME/audaxdm-server ./
 cp $HOME/process_executor ./audaxdm-server/
 # copy index.html .desktop and pgmanage_icon.png to the output dir
 cp $HOME/pgmanage/deploy/app/* .
