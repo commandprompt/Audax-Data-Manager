@@ -165,6 +165,12 @@ class GetArgsParamsValuesTests(TestCase):
         args = get_args_params_values({"database": "mydb"}, self.conn, "objects", "/tmp/backup.dump")
         self.assertEqual(args, self.base_args() + ["--dbname", "mydb"])
 
+    def test_database_name_with_spaces_and_punctuation_stays_one_argument(self):
+        args = get_args_params_values(
+            {"database": "pgManage QA! DB"}, self.conn, "objects", "/tmp/backup.dump"
+        )
+        self.assertEqual(args, self.base_args() + ["--dbname", "pgManage QA! DB"])
+
     def test_globals_type_uses_active_service_for_database_flag(self):
         args = get_args_params_values({}, self.conn, "globals", "/tmp/backup.dump")
         self.assertEqual(args, self.base_args() + ["--database", "mydb"])
