@@ -149,6 +149,7 @@ export default {
       showTreeTabsLoading: false,
       lastTreeTabsData: null,
       lastTreeTabsView: null,
+      treeTabsDataStale: false,
       skipTransitions: true,
     };
   },
@@ -316,10 +317,12 @@ export default {
       this.lastTreeTabsData = data;
       this.lastTreeTabsView = view;
 
-      // don't load anything if properties/ddl panel is hidden
-      if (!this.isTreeTabsVisible)
+      if (!this.isTreeTabsVisible) {
+        this.treeTabsDataStale = true;
         return;
+      }
 
+      this.treeTabsDataStale = false;
       this.debouncedFetchProperties(view, data);
     },
     clearTreeTabsData() {
@@ -330,7 +333,7 @@ export default {
       this.skipTransitions = false
       setTimeout(() => { this.skipTransitions = true }, 350); ;
       this.treeTabsPaneSize = this.lastTreeTabsPaneSize || 40;
-      if (!!this.lastTreeTabsData && !!this.lastTreeTabsView)
+      if (this.treeTabsDataStale && !!this.lastTreeTabsData && !!this.lastTreeTabsView)
         this.getProperties({
           data: this.lastTreeTabsData,
           view: this.lastTreeTabsView,

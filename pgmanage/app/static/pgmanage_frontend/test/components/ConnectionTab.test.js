@@ -164,7 +164,7 @@ describe("WorkspaceTab.vue", () => {
     }
   });
 
-  it("shows tree tabs pane and calls getProperties when previous tab data exists", async () => {
+  it("shows tree tabs pane and calls getProperties when the tree selection changed while hidden", async () => {
     const getPropertiesSpy = vi
       .spyOn(wrapper.vm, "getProperties")
       .mockResolvedValue();
@@ -173,6 +173,7 @@ describe("WorkspaceTab.vue", () => {
     wrapper.vm.lastTreeTabsPaneSize = 35;
     wrapper.vm.lastTreeTabsView = "/v";
     wrapper.vm.lastTreeTabsData = { id: 1 };
+    wrapper.vm.treeTabsDataStale = true;
 
     await wrapper.vm.showTreeTabPane();
 
@@ -181,6 +182,38 @@ describe("WorkspaceTab.vue", () => {
       data: { id: 1 },
       view: "/v",
     });
+  });
+
+  it("does not refetch DDL/properties on show when nothing changed while hidden", async () => {
+    const getPropertiesSpy = vi
+      .spyOn(wrapper.vm, "getProperties")
+      .mockResolvedValue();
+
+    wrapper.vm.treeTabsPaneSize = 2;
+    wrapper.vm.lastTreeTabsPaneSize = 35;
+    wrapper.vm.lastTreeTabsView = "/v";
+    wrapper.vm.lastTreeTabsData = { id: 1 };
+    wrapper.vm.treeTabsDataStale = false;
+    wrapper.vm.ddlData = "existing ddl";
+    wrapper.vm.propertiesData = [["a", "b"]];
+
+    await wrapper.vm.showTreeTabPane();
+
+    expect(wrapper.vm.treeTabsPaneSize).toBe(35);
+    expect(getPropertiesSpy).not.toHaveBeenCalled();
+    expect(wrapper.vm.ddlData).toBe("existing ddl");
+    expect(wrapper.vm.propertiesData).toEqual([["a", "b"]]);
+  });
+
+  it("getProperties marks data stale instead of fetching while the panel is hidden", () => {
+    wrapper.vm.treeTabsPaneSize = 2;
+    const callsBefore = axios.post.mock.calls.length;
+
+    wrapper.vm.getProperties({ view: "/v", data: { id: 2 } });
+
+    expect(wrapper.vm.treeTabsDataStale).toBe(true);
+    expect(wrapper.vm.lastTreeTabsData).toEqual({ id: 2 });
+    expect(axios.post).toHaveBeenCalledTimes(callsBefore);
   });
 
   it("hides tree tabs pane and stores last size", () => {
