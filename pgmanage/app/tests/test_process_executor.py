@@ -47,6 +47,9 @@ class ParsePigzTailTests(unittest.TestCase):
         # leading "|" and a pigz executable alone aren't enough without ">"
         self.assertIsNone(parse_pigz_tail("| pigz -6 -p4 /tmp/backup.dump.gz"))
 
+    def test_database_name_with_spaces_and_punctuation_is_not_a_pigz_tail(self):
+        self.assertIsNone(parse_pigz_tail("pgManage QA! DB"))
+
 
 if __name__ == "__main__":
     unittest.main()
