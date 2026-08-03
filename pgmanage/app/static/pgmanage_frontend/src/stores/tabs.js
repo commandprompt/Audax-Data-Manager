@@ -815,6 +815,18 @@ const useTabsStore = defineStore("tabs", {
       dbMetadataStore.deleteDbMeta(workspaceTab.metaData.selectedDatabaseIndex);
       this.removeTab(workspaceTab);
     },
+    closeTabsForConnection(connectionId) {
+      const tabsToClose = this.tabs.filter(
+        (tab) => tab.metaData?.selectedDatabaseIndex === connectionId
+      );
+      tabsToClose.forEach((tab) => {
+        if (tab.component === "WorkspaceTab") {
+          this.closeWorkspaceTab(tab, this.getSecondaryTabs(tab.id));
+        } else {
+          this.closeTab(tab);
+        }
+      });
+    },
   },
 });
 
