@@ -1,10 +1,10 @@
 {
-  "name": "PgManage",
+  "name": "Audax Data Manager",
   "main": "index.html",
   "window": {
     "frame": false,
     "transparent": false,
     "show": false,
-    "icon": "pgmanage_icon.png"
+    "icon": "audaxdm_icon.png"
   }
 }

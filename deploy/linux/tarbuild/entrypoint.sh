@@ -52,7 +52,7 @@ sed -i -e 's/DESKTOP_MODE = False/DESKTOP_MODE = True/g' pgmanage/custom_setting
 echo "Done."
 
 # setting up versions in custom_settins.py
-sed -i "s/Dev/PgManage $VERSION/" pgmanage/custom_settings.py
+sed -i "s/Dev/Audax Data Manager $VERSION/" pgmanage/custom_settings.py
 sed -i "s/dev/$VERSION/" pgmanage/custom_settings.py
 
 # building vite bundle
@@ -66,10 +66,10 @@ echo "Removing sass and map files"
 find ./ -name "*.map" -delete
 find ./ -name "*.scss" -delete
 
-rm -f pgmanage.db pgmanage.log
-touch pgmanage.db
+rm -f audaxdm.db audaxdm.log
+touch audaxdm.db
 pyinstaller process_executor-lin.spec
-pyinstaller pgmanage-lin.spec
+pyinstaller audaxdm-lin.spec
 mv dist/* $HOME
 rm -rf build dist
 cd $HOME
@@ -88,20 +88,20 @@ curl -C - -LO https://github.com/AppImage/appimagetool/releases/download/1.9.1/a
 
 cd -
 tar -xzvf /deploy/$NWJS_ARCHIVE
-mv $NWJS_DIR pgmanage-app_$VERSION
-cd pgmanage-app_$VERSION
-
-cp -r $HOME/pgmanage-server ./
-cp $HOME/process_executor ./pgmanage-server/
+mv $NWJS_DIR audaxdm-app_$VERSION
+cd audaxdm-app_$VERSION
+mkdir audaxdm-server
+cp $HOME/audaxdm-server ./audaxdm-server/audaxdm-server
+cp $HOME/process_executor ./audaxdm-server/
 # copy index.html .desktop and pgmanage_icon.png to the output dir
 cp $HOME/pgmanage/deploy/app/* .
 # adjust the version
 sed -i "s/version_placeholder/v$VERSION/" index.html
-sed -i "s/X-AppImage-Version=dev/X-AppImage-Version=$VERSION/" pgmanage.desktop
-# rename nwjs runtime as pgmanage-app
-mv nw pgmanage-app && ln -s ./pgmanage-app AppRun
+sed -i "s/X-AppImage-Version=dev/X-AppImage-Version=$VERSION/" audaxdm.desktop
+# rename nwjs runtime as audaxdm-app
+mv nw audaxdm-app && ln -s ./audaxdm-app AppRun
 cd $HOME
-/deploy/appimagetool-x86_64.AppImage --appimage-extract-and-run pgmanage-app_$VERSION/ pgmanage-app_$VERSION.AppImage
+/deploy/appimagetool-x86_64.AppImage --appimage-extract-and-run audaxdm-app_$VERSION/ audaxdm-$VERSION.AppImage
 # tar -czvf pgmanage-app_$VERSION-linux-x64.tar.gz pgmanage-app_$VERSION/
 # mv pgmanage-app_$VERSION-linux-x64.tar.gz /tmp/
-mv pgmanage-app_$VERSION.AppImage /deploy
+mv audaxdm-$VERSION.AppImage /deploy

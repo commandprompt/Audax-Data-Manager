@@ -155,7 +155,7 @@ LOGGING = {
     'handlers': {
         "logfile_frontend": {
             'class':'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(HOME_DIR, 'pgmanage.log'),
+            'filename': os.path.join(HOME_DIR, 'audaxdm.log'),
             'maxBytes': 1024*1024*5, # 5 MB
             'backupCount': 5,
             'formatter': 'frontend_error',
@@ -163,14 +163,14 @@ LOGGING = {
         },
         'logfile_pgmanage': {
             'class':'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(HOME_DIR, 'pgmanage.log'),
+            'filename': os.path.join(HOME_DIR, 'audaxdm.log'),
             'maxBytes': 1024*1024*5, # 5 MB
             'backupCount': 5,
             'formatter': 'standard',
         },
         'logfile_django': {
             'class':'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(HOME_DIR, 'pgmanage.log'),
+            'filename': os.path.join(HOME_DIR, 'audaxdm.log'),
             'maxBytes': 1024*1024*5, # 5 MB
             'backupCount': 5,
             'formatter': 'standard',

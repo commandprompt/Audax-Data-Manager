@@ -1,11 +1,11 @@
 [Desktop Entry]
-Name=PgManage
+Name=Audax Data Manager
 Exec=AppRun
 Terminal=false
 Type=Application
-Icon=pgmanage_icon
-StartupWMClass=pgmanage
+Icon=audaxdm_icon
+StartupWMClass=audaxdm
 X-AppImage-Version=dev
-Comment=PgManage - a lightweight database management tool
+Comment=Audax Data Manager - a modern SQL Editor and Database Client for Developers and Administrators
 MimeType=application/vnd.sqlite3;x-scheme-handler/mariadb;x-scheme-handler/mysql;x-scheme-handler/postgresql;x-scheme-handler/postgres;x-scheme-handler/psql;x-scheme-handler/sqlite;
 Categories=Development;

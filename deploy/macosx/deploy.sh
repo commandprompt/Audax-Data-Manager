@@ -25,8 +25,8 @@ NWJS_URL='https://dl.nwjs.io/v0.77.0/nwjs-v0.77.0-osx-x64.zip'
 NWJS_ARCHIVE='nwjs-v0.77.0-osx-x64.zip'
 NWJS_DIR='nwjs-v0.77.0-osx-x64'
 
-APP_LONG_VERSION=pgmanage-$APP_VERSION
-APP_NAME=PgManage
+APP_LONG_VERSION=audaxdm-$APP_VERSION
+APP_NAME='Audax Data Manager'
 RELEASE_DIR=$DEPLOY_DIR/release_$APP_VERSION
 
 rm -rf $RELEASE_DIR $TEMP_DIR
@@ -81,21 +81,21 @@ echo -n "Removing sass and map files"
 find ./ -name "*.map" -delete
 find ./ -name "*.scss" -delete
 
-touch pgmanage.db
+touch audaxdm.db
 
 # set up versions in custom_settins.py
-sed -i '' "s/Dev/PgManage $APP_VERSION/" pgmanage/custom_settings.py
+sed -i '' "s/Dev/Audax Data Manager $APP_VERSION/" pgmanage/custom_settings.py
 sed -i '' "s/dev/$APP_VERSION/" pgmanage/custom_settings.py
 
 echo "running pyinstaller"
-pyinstaller pgmanage-mac.spec
+pyinstaller audaxdm-mac.spec
 pyinstaller process_executor-mac.spec
 
-mkdir pgmanage-server 
+mkdir audaxdm-server 
 echo 'Removing signature from libpython3.11.dylib library'
-codesign --remove-signature dist/pgmanage-server/libpython3.11.dylib
-mv dist/process_executor pgmanage-server/
-mv dist/pgmanage-server/* pgmanage-server/
+codesign --remove-signature dist/audaxdm-server/libpython3.11.dylib
+mv dist/process_executor audaxdm-server/
+mv dist/audaxdm-server/* audaxdm-server/
 
 cd $DEPLOY_DIR
 
@@ -106,7 +106,7 @@ cd $TEMP_DIR
 mv $NWJS_DIR/nwjs.app $APP_LONG_VERSION.app
 
 mkdir $APP_LONG_VERSION.app/Contents/Resources/app.nw
-mv pgmanage/pgmanage-server $APP_LONG_VERSION.app/Contents/Resources/app.nw/
+mv pgmanage/audaxdm-server $APP_LONG_VERSION.app/Contents/Resources/app.nw/
 
 cp deploy/app/* $APP_LONG_VERSION.app/Contents/Resources/app.nw/
 sed -i '' "s/version_placeholder/v$APP_VERSION/" $APP_LONG_VERSION.app/Contents/Resources/app.nw/index.html
@@ -134,16 +134,16 @@ plutil -replace CFBundleShortVersionString -string $APP_VERSION $APP_LONG_VERSIO
 echo CFBundleDisplayName = \"$APP_NAME\" >> $APP_LONG_VERSION.app/Contents/Resources/el.lproj/InfoPlist.strings
 
 # rename nwjs executable
-mv $APP_LONG_VERSION.app/Contents/MacOS/nwjs $APP_LONG_VERSION.app/Contents/MacOS/$APP_NAME
+mv $APP_LONG_VERSION.app/Contents/MacOS/nwjs "$APP_LONG_VERSION.app/Contents/MacOS/$APP_NAME"
 
-mv $APP_LONG_VERSION.app $RELEASE_DIR/$APP_NAME.app
+mv $APP_LONG_VERSION.app "$RELEASE_DIR/$APP_NAME.app"
 
 # Create dmg file
 
 # Install dmgbuild command line tool
 pip3 install dmgbuild
 
-dmgbuild -s $DEPLOY_DIR/settings.py -D app=$RELEASE_DIR/$APP_NAME.app "$APP_NAME" "$APP_LONG_VERSION"_mac_x64.dmg
+dmgbuild -s $DEPLOY_DIR/settings.py -D app="$RELEASE_DIR/$APP_NAME.app" "$APP_NAME" "$APP_LONG_VERSION"_mac_x64.dmg
 
 mv "$APP_LONG_VERSION"_mac_x64.dmg $RELEASE_DIR
 
