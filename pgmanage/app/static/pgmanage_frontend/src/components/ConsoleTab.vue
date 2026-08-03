@@ -166,8 +166,8 @@ export default {
     this.updateHeightOffset()
   },
   mounted() {
+    this.setupTerminal()
     if (tabsStore.selectedPrimaryTab.metaData.selectedTab.id === this.tabId) {
-      this.setupTerminal()
       requestAnimationFrame(() => {
         this.onResize();
       })
@@ -212,7 +212,9 @@ export default {
 
       this.terminal.write(this.consoleHelp);
       this.inputController.beginNewInputLine(this.terminal);
-      this.terminal.focus();
+      if (tabsStore.selectedPrimaryTab.metaData.selectedTab.id === this.tabId) {
+        this.terminal.focus();
+      }
       this.preloadHistory();
     },
     onData(data) {
