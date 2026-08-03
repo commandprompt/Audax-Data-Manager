@@ -211,6 +211,7 @@ export default {
     deleteConnection(connection) {
       axios.post('/delete_connection/', connection)
       .then((response) => {
+        tabsStore.closeTabsForConnection(connection.id);
         this.loadData()
         this.selectedConnection = {}
         this.activeForm = undefined

@@ -4,6 +4,7 @@ import { useTabsStore } from "@src/stores/tabs";
 import { emitter } from "@src/emitter";
 import * as worspaceModule from "@src/workspace";
 import { operationModes } from "@src/constants";
+import axios from "axios";
 
 vi.mock("@src/workspace");
 
@@ -16,7 +17,10 @@ vi.mock("@src/stores/stores_initializer", () => {
     updateConnection: vi.fn(),
   };
   const messageModalStore = vi.fn();
-  return { connectionsStore, messageModalStore };
+  const dbMetadataStore = {
+    deleteDbMeta: vi.fn(),
+  };
+  return { connectionsStore, messageModalStore, dbMetadataStore };
 });
 
 describe("useTabsStore", () => {
@@ -234,6 +238,40 @@ describe("useTabsStore", () => {
     expect(tab).toBeTruthy();
     expect(tab.component).toBe("TerminalTab");
     expect(store.selectedPrimaryTab).toBe(tab);
+  });
+
+  describe("closeTabsForConnection", () => {
+    it("closes a workspace tab referencing the deleted connection", async () => {
+      axios.post.mockResolvedValue({ data: { returning_rows: [] } });
+      const store = useTabsStore();
+      const workspaceTab = await store.createWorkspaceTab(1);
+      expect(store.tabs).toContainEqual(workspaceTab);
+
+      store.closeTabsForConnection(1);
+
+      expect(store.tabs).not.toContainEqual(workspaceTab);
+    });
+
+    it("closes a terminal tab referencing the deleted connection", () => {
+      const store = useTabsStore();
+      store.createTerminalTab(1, "TestAlias", "Test Details");
+      const tab = store.tabs.find((tab) => tab.name === "TestAlias");
+      expect(tab).toBeTruthy();
+
+      store.closeTabsForConnection(1);
+
+      expect(store.tabs.find((tab) => tab.name === "TestAlias")).toBeUndefined();
+    });
+
+    it("leaves tabs for other connections untouched", () => {
+      const store = useTabsStore();
+      store.createTerminalTab(1, "TestAlias", "Test Details");
+      const tab = store.tabs.find((tab) => tab.name === "TestAlias");
+
+      store.closeTabsForConnection(999);
+
+      expect(store.tabs).toContainEqual(tab);
+    });
   });
 
   it("should create a Console tab", () => {
