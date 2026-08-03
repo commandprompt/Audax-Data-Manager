@@ -249,8 +249,8 @@ export default {
       });
 
       emitter.on(`${this.tabId}_focus`, () => {
-        this.$refs.editor.focus();
-        flashHighlight(this.$refs.editor.$el);
+        this.terminal.focus();
+        flashHighlight(this.$refs.console);
       });
     },
     clearEvents() {
