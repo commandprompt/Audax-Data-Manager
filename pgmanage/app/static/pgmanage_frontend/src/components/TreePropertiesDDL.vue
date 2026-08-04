@@ -172,6 +172,11 @@ export default {
 
       this.table.on("tableBuilt", () => {
         this.tableBuilt = true;
+        // remove tabindex from propertiews datagrid,
+        // prevents layout artifacts when tabbing into it
+        this.table.element
+          .querySelector(".tabulator-tableholder")
+          ?.setAttribute("tabindex", "-1");
       });
     },
   },
