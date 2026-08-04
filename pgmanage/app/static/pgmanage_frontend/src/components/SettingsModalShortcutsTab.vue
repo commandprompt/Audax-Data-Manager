@@ -23,10 +23,10 @@
     </div>
 
     <div v-for="(shortcut, idx) in shortcuts" :key="idx" class="row">
-      <label :for="idx" class="col-sm-6 col-form-label">{{
+      <label :for="idx" class="col-sm-8 col-form-label">{{
         shortcutLabel(shortcut)
       }}</label>
-      <div class="form-group col-6">
+      <div class="form-group col-4 mb-2">
         <div class="d-grid">
           <button
             :id="idx"
@@ -39,7 +39,7 @@
       </div>
     </div>
 
-    <div class="text-end">
+    <div class="text-end mt-1">
       <button class="btn btn-success" @click="$emit('saveSettings')">
         Save
       </button>
