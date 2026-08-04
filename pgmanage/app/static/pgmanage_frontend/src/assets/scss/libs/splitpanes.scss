@@ -33,9 +33,7 @@
       }
     }
 
-    &--dragging * {
-      user-select: none;
-
+    &--dragging {
       .splitpanes__pane {
         transition: none;
       }

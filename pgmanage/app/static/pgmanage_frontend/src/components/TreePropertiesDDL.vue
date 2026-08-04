@@ -77,7 +77,7 @@
           :id="`${workspaceId}_tree_properties`"
           role="tabpanel"
           :aria-labelledby="`${workspaceId}_tree_properties_nav`"
-          style="height: 90%"
+          style="height: calc(100% - 1.75rem);"
         >
           <div ref="tabulator" class="tabulator-custom simple pt-2"></div>
         </div>
@@ -91,7 +91,7 @@
           <PreviewBox
             :database-technology="databaseTechnology"
             class="pb-3"
-            style="height: 90%"
+            style="height: calc(100% - 1.75rem);"
             :editor-text="ddlData"
             :show-label="false"
           />

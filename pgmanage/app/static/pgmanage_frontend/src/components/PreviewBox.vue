@@ -51,15 +51,6 @@ export default {
   },
   mounted() {
     this.setupEditor();
-
-    // ace doesn't redraw on container resize on its own
-    this.resizeObserver = new ResizeObserver(() => {
-      this.editor.resize();
-    });
-    this.resizeObserver.observe(this.$refs.editor);
-  },
-  beforeUnmount() {
-    this.resizeObserver?.disconnect();
   },
   watch: {
     editorText(newValue, oldValue) {

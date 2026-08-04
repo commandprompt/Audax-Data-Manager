@@ -87,7 +87,7 @@
         <pane min-size="2">
           <div
             :id="`${workspaceId}_div_right`"
-            class="omnidb__workspace__div-right col position-relative right-div-height"
+            class="omnidb__workspace__div-right col position-relative vh-100"
           >
             <div class="row">
               <DatabaseTabs
@@ -150,7 +150,6 @@ export default {
       lastTreeTabsData: null,
       lastTreeTabsView: null,
       treeTabsDataStale: false,
-      skipTransitions: true,
     };
   },
   computed: {
@@ -180,9 +179,6 @@ export default {
         return truncateText(this.workspaceTab.metaData.selectedDatabase, 10);
       }
       return this.workspaceTab.metaData.selectedDatabase;
-    },
-    paneTransitionStyle() {
-      return this.skipTransitions ? 'none' : '0.35s';
     },
     treeComponent() {
       const treeTechnologiesMap = {
@@ -330,8 +326,6 @@ export default {
       this.propertiesData=[];
     },
     showTreeTabPane() {
-      this.skipTransitions = false
-      setTimeout(() => { this.skipTransitions = true }, 350); ;
       this.treeTabsPaneSize = this.lastTreeTabsPaneSize || 40;
       if (this.treeTabsDataStale && !!this.lastTreeTabsData && !!this.lastTreeTabsView)
         this.getProperties({
@@ -340,8 +334,6 @@ export default {
         });
     },
     hideTreeTabpane() {
-      this.skipTransitions = false
-      setTimeout(() => { this.skipTransitions = true }, 350); ;
       this.lastTreeTabsPaneSize = this.treeTabsPaneSize;
       this.treeTabsPaneSize = 2;
     },
@@ -370,17 +362,9 @@ export default {
   height: calc(100vh - 30px);
 }
 
-.right-div-height {
-  height: 100vh;
-}
-
 .database-tree {
   overflow: auto;
   transition: scroll 0.3s;
   height: 100%;
-}
-
-.splitpanes .splitpanes__pane {
-  transition: v-bind(paneTransitionStyle);
 }
 </style>
