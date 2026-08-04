@@ -353,6 +353,10 @@ export default {
     },
     handleDatabaseTreeWidthChange(event) {
       this.dbExplorerWidth = event[1].size;
+      const selectedTab = tabsStore.getSelectedSecondaryTab(this.workspaceId);
+      if (selectedTab) {
+        emitter.emit(`${selectedTab.id}_resize`);
+      }
     },
     showQuickSearch(event) {
       emitter.emit(`${this.workspaceId}_show_quick_search`, event);
