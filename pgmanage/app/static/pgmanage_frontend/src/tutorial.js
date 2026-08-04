@@ -237,7 +237,7 @@ function startTutorial(p_tutorial_name) {
         p_message: `
         <p>This is <strong>optional</strong>.</p>
         <p>If you don't save the user password, you will be required to manually input it everytime a new connection to this database is started.</p>
-        <p>If saved, this password will be stored in the database configured for PgManage (default is pgmanage.db).</p>
+        <p>If saved, this password will be stored in the application database.</p>
         `,
         p_target: function() {var v_target = document.getElementById('connectionPassword'); return v_target},
         p_title: 'User password'

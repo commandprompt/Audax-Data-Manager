@@ -38,6 +38,6 @@ describe("AboutModal.vue", () => {
 
     const websiteLink = wrapper.find('a[data-testid="pgmanage-github-link"]');
     expect(websiteLink.exists()).toBe(true);
-    expect(websiteLink.text()).toContain("PgManage");
+    expect(websiteLink.text()).toContain("Github");
   });
 });

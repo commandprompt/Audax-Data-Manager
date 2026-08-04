@@ -38,7 +38,7 @@ import { dbMetadataStore, settingsStore, tabsStore } from "./stores/stores_initi
 import { default_shortcuts } from "@src/shortcuts";
 
 export default {
-  name: "PgManage",
+  name: "Audax Data Manager",
   components: {
     SettingsModal,
     SideBarTabs,
