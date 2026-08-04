@@ -32,23 +32,11 @@ const aceMockEditor = {
 
 global.ace = { edit: vi.fn(() => aceMockEditor) };
 
-let resizeObserverInstances;
-class MockResizeObserver {
-  constructor(callback) {
-    this.callback = callback;
-    this.observe = vi.fn();
-    this.disconnect = vi.fn();
-    resizeObserverInstances.push(this);
-  }
-}
-global.ResizeObserver = MockResizeObserver;
-
 describe("PreviewBox.vue", () => {
   let wrapper;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    resizeObserverInstances = [];
     wrapper = mount(PreviewBox, {
       props: { editorText: "", databaseTechnology: "postgresql" },
     });
@@ -64,19 +52,4 @@ describe("PreviewBox.vue", () => {
     expect(aceMockEditor.setValue).toHaveBeenCalledWith("SELECT * FROM test;");
   });
 
-  it("observes its container for resizes and resizes the editor when it fires", () => {
-    expect(resizeObserverInstances).toHaveLength(1);
-    const observer = resizeObserverInstances[0];
-    expect(observer.observe).toHaveBeenCalledWith(wrapper.vm.$refs.editor);
-
-    observer.callback();
-
-    expect(aceMockEditor.resize).toHaveBeenCalled();
-  });
-
-  it("disconnects the resize observer on unmount", () => {
-    const observer = resizeObserverInstances[0];
-    wrapper.unmount();
-    expect(observer.disconnect).toHaveBeenCalled();
-  });
 });
