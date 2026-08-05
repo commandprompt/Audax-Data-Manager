@@ -232,7 +232,7 @@ const light_terminal_theme = {
       brightGreen: '#4b9800',
       foreground: '#454545',
       cursor: '#454545',
-      cursorAccent: '#454545',
+      cursorAccent: '#FFFFFF',
       selectionBackground: '#1560AD15'
     }
 
