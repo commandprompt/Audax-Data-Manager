@@ -22,9 +22,9 @@ then
     APP_VERSION=$(git describe --tags $(git rev-list --tags --max-count=1))
 fi
 
-NWJS_URL='https://dl.nwjs.io/v0.77.0/nwjs-v0.77.0-win-x64.zip'
-NWJS_ARCHIVE='nwjs-v0.77.0-win-x64.zip'
-NWJS_DIR='nwjs-v0.77.0-win-x64'
+NWJS_URL='https://dl.nwjs.io/v0.114.0/nwjs-v0.114.0-win-x64.zip'
+NWJS_ARCHIVE='nwjs-v0.114.0-win-x64.zip'
+NWJS_DIR='nwjs-v0.114.0-win-x64'
 
 APP_LONG_VERSION=PgManage.$APP_VERSION
 
