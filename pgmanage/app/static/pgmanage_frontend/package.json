@@ -4,8 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "dev:enterprise": "vite --mode enterprise",
+    "dev": "cross-env NODE_OPTIONS=--max-old-space-size=8192 vite",
+    "dev:enterprise": "cross-env NODE_OPTIONS=--max-old-space-size=8192 vite --mode enterprise",
     "build:enterprise": "cross-env NODE_OPTIONS=--max-old-space-size=8192 vite build --base=./ --mode enterprise",
     "build": "cross-env NODE_OPTIONS=--max-old-space-size=8192 vite build --base=./",
     "preview": "vite preview",
