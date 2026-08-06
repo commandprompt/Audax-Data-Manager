@@ -245,7 +245,7 @@ export default {
 
     emitter.on(`${this.tabId}_focus`, () => {
       this.focus();
-      flashHighlight(this.$refs.editorDiv);
+      flashHighlight(this.$refs.tabulator);
     });
 
     settingsStore.$onAction((action) => {
