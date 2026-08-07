@@ -8,12 +8,12 @@ for PostgreSQL, MySQL, MariaDB, SQL Server, SQLite, and Oracle — all from one 
 you don't need a different tool per database. It's a database manager that does not get
 in your way.
 
-- **One client, six databases:** PostgreSQL, MySQL, MariaDB, SQL Server, SQLite, and
+- **One Client, Six Databases:** PostgreSQL, MySQL, MariaDB, SQL Server, SQLite, and
   Oracle — no more switching tools per engine.
-- **Free & open source (MIT license).** No license fees, source available on GitHub.
-- **Privacy-first:** zero tracking, zero telemetry — we respect our users.
-- **Actively developed:** a new release every 6–8 weeks.
-- **Trusted by the community:** 1,100+ GitHub stars and 8,000+ downloads.
+- **Free & Open Source (MIT License).** No license fees, source available on GitHub.
+- **Privacy-First:** zero tracking, zero telemetry — we respect our users.
+- **Actively Developed:** a new release every 6–8 weeks.
+- **Trusted by the Community:** 1,100+ GitHub stars and 8,000+ downloads.
 
 ![Audax Data Manager Showcase](/artwork/showcase.gif)
 
@@ -55,7 +55,7 @@ Audax Data Manager works on **Linux** **macOS** and **Windows** platforms: https
 We love your input! We want to make contributing to this project as easy and
 transparent as possible, whether it's:
 - [Reporting a bug, proposing a feature](https://github.com/commandprompt/audax-data-manager/issues/new)
-- [Asking questions, Discussing the current state of the code](https://github.com/commandprompt/audax-data-manager/discussions/new)
+- [Asking questions, discussing the current state of the code](https://github.com/commandprompt/audax-data-manager/discussions/new)
 
 Pull-requests are welcome, please read [Development.md](DEVELOPMENT.MD) for instructions on how to spin-up your local dev copy of the project.  
 Contribute to Audax Data Manager Handbook by opening a [pull-request](https://github.com/commandprompt/pgmanage-docs/pulls) in the corresponding project.  
@@ -83,7 +83,7 @@ Built with [Django](https://www.djangoproject.com/) on the backend and [Vue.js](
 
 Postgres query plan visualization is powered by [Pev2](https://github.com/dalibo/pev2).  
 Entity Relationship Diagrams are powered by [Vue Flow](https://vueflow.dev/).  
-SQL Query generation in Schema editor is powered by [Knex.js](https://knexjs.org).  
+SQL query generation in Schema editor is powered by [Knex.js](https://knexjs.org).  
 SQL code completion is powered by [ANTLR](https://www.antlr.org/).  
 Data tables handled by an awesome [Tabulator.js](https://tabulator.info/) library.  
 Database console and builtin SSH terminal are powered by [xterm.js](https://xtermjs.org/).  
