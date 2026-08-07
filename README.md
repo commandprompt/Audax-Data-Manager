@@ -4,14 +4,14 @@
 ![Audax Data Manager Banner](/artwork/readme_banner.png)
 
 **Audax Data Manager** is a free, open-source database client and administration tool
-for PostgreSQL, MySQL, MariaDB, SQL Server, SQLite, and Oracle — all from one app, so
+for PostgreSQL, MySQL, MariaDB, SQL Server, SQLite, and Oracle - all from one app, so
 you don't need a different tool per database. It's a database manager that does not get
 in your way.
 
 - **One Client, Six Databases:** PostgreSQL, MySQL, MariaDB, SQL Server, SQLite, and
-  Oracle — no more switching tools per engine.
+  Oracle - no more switching tools per engine.
 - **Free & Open Source (MIT License).** No license fees, source available on GitHub.
-- **Privacy-First:** zero tracking, zero telemetry — we respect our users.
+- **Privacy-First:** zero tracking, zero telemetry - we respect our users.
 - **Actively Developed:** a new release every 6–8 weeks.
 - **Trusted by the Community:** 1,100+ GitHub stars and 8,000+ downloads.
 
