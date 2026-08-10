@@ -25,7 +25,10 @@
                         </div>
                         <div class="recent-conections__item_text d-flex flex-column">
                             <p class="recent-conections__item_title d-flex align-items-center">{{ connection.alias }}</p>
-                            <span class="recent-conections__item_subtitle muted-text clipped-text">{{connectionSubtitle(connection)}}</span>
+                            <span class="recent-conections__item_subtitle muted-text" :title="connectionSubtitle(connection)">
+                                <span class="recent-conections__item_subtitle-prefix clipped-text">{{subtitlePrefix(connection)}}</span>
+                                <span class="recent-conections__item_subtitle-suffix">{{subtitleSuffix(connection)}}</span>
+                            </span>
                             <span class="muted-text">{{ ago(connection.last_access_date) }}</span>
                         </div>
                     </div>
@@ -141,6 +144,16 @@ export default {
       if(connection.technology === 'sqlite') return connection.service
       if(connection.technology === 'terminal') return `${connection.tunnel.server}:${connection.tunnel.port}`
       return `${connection.server}:${connection.port}/${connection.service}`
+    },
+    subtitlePrefix(connection) {
+      const text = this.connectionSubtitle(connection);
+      const idx = text.lastIndexOf('/');
+      return idx === -1 ? '' : text.slice(0, idx + 1);
+    },
+    subtitleSuffix(connection) {
+      const text = this.connectionSubtitle(connection);
+      const idx = text.lastIndexOf('/');
+      return idx === -1 ? text : text.slice(idx + 1);
     },
     selectConnection(conn_id) {
       connectionsStore.selectConnection(conn_id);

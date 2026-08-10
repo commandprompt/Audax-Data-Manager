@@ -69,9 +69,20 @@
             }
 
             &_subtitle {
-                display: -webkit-box;
-                -webkit-line-clamp: 2;
-                -webkit-box-orient: vertical;  
+                display: flex;
+                min-width: 0;
+                overflow: hidden;
+
+                &-prefix {
+                    white-space: nowrap;
+                    min-width: 0;
+                    flex: 1 1 auto;
+                }
+
+                &-suffix {
+                    white-space: nowrap;
+                    flex-shrink: 0;
+                }
             }
 
             &_logo {
