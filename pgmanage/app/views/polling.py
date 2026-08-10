@@ -1129,6 +1129,7 @@ def thread_query(self, args) -> None:
                     "notices": notices,
                     "inserted_id": inserted_id,
                     "status": database.connection.GetStatus(),
+                    "rows_affected": database.connection.GetRowsAffected(),
                     "con_status": database.connection.GetConStatus(),
                     "chunks": True,
                 }
@@ -1197,6 +1198,7 @@ def thread_query(self, args) -> None:
                         "notices": notices,
                         "inserted_id": inserted_id,
                         "status": database.connection.GetStatus(),
+                        "rows_affected": database.connection.GetRowsAffected(),
                         "con_status": database.connection.GetConStatus(),
                         "chunks": True,
                     }

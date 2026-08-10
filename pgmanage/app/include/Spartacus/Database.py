@@ -662,6 +662,10 @@ class Generic(ABC):
         pass
 
     @abstractmethod
+    def GetRowsAffected(self):
+        pass
+
+    @abstractmethod
     def GetConStatus(self):
         pass
 
@@ -1137,6 +1141,27 @@ class SQLite(Generic):
     def GetStatus(self):
         return None
 
+    def GetRowsAffected(self):
+        try:
+            if self.con is None:
+                raise Spartacus.Database.Exception(
+                    "This method should be called in the middle of Open() and Close() calls."
+                )
+            else:
+                # operations like DELETE, INSERT, UPDATE don't set cur.description
+                # unless ... RETURNING X is used, so we can assume that if description
+                # no rows affected should be returned
+                if self.cur.description:
+                    return None
+                rowcount = self.cur.rowcount
+                return rowcount if rowcount is not None and rowcount >= 0 else None
+        except Spartacus.Database.Exception as exc:
+            raise exc
+        except sqlite3.Error as exc:
+            raise Spartacus.Database.Exception(str(exc))
+        except Exception as exc:
+            raise Spartacus.Database.Exception(str(exc))
+
     def GetConStatus(self):
         try:
             if self.con is None:
@@ -1422,6 +1447,9 @@ class Memory(Generic):
         pass
 
     def GetStatus(self):
+        return None
+
+    def GetRowsAffected(self):
         return None
 
     def GetConStatus(self):
@@ -1953,6 +1981,27 @@ class PostgreSQL(Generic):
                 )
             else:
                 return self.cur.statusmessage
+        except Spartacus.Database.Exception as exc:
+            raise exc
+        except psycopg2.Error as exc:
+            raise Spartacus.Database.Exception(str(exc))
+        except Exception as exc:
+            raise Spartacus.Database.Exception(str(exc))
+
+    def GetRowsAffected(self):
+        try:
+            if self.con is None:
+                raise Spartacus.Database.Exception(
+                    "This method should be called in the middle of Open() and Close() calls."
+                )
+            else:
+                # operations like DELETE, INSERT, UPDATE don't set cur.description
+                # unless ... RETURNING X is used, so we can assume that if description
+                # no rows affected should be returned
+                if self.cur.description:
+                    return None
+                rowcount = self.cur.rowcount
+                return rowcount if rowcount is not None and rowcount >= 0 else None
         except Spartacus.Database.Exception as exc:
             raise exc
         except psycopg2.Error as exc:
@@ -2589,6 +2638,24 @@ class MySQL(Generic):
         except Exception as exc:
             raise Spartacus.Database.Exception(str(exc))
 
+    def GetRowsAffected(self):
+        try:
+            if self.con is None:
+                raise Spartacus.Database.Exception(
+                    "This method should be called in the middle of Open() and Close() calls."
+                )
+            else:
+                if self.cur.description:
+                    return None
+                rowcount = self.status
+                return rowcount if rowcount is not None and rowcount >= 0 else None
+        except Spartacus.Database.Exception as exc:
+            raise exc
+        except pymysql.Error as exc:
+            raise Spartacus.Database.Exception(str(exc))
+        except Exception as exc:
+            raise Spartacus.Database.Exception(str(exc))
+
     def GetConStatus(self):
         try:
             if self.con is None or not self.con.open:
@@ -3045,6 +3112,24 @@ class MariaDB(Generic):
         except Exception as exc:
             raise Spartacus.Database.Exception(str(exc))
 
+    def GetRowsAffected(self):
+        try:
+            if self.con is None:
+                raise Spartacus.Database.Exception(
+                    "This method should be called in the middle of Open() and Close() calls."
+                )
+            else:
+                if self.cur.description:
+                    return None
+                rowcount = self.status
+                return rowcount if rowcount is not None and rowcount >= 0 else None
+        except Spartacus.Database.Exception as exc:
+            raise exc
+        except pymysql.Error as exc:
+            raise Spartacus.Database.Exception(str(exc))
+        except Exception as exc:
+            raise Spartacus.Database.Exception(str(exc))
+
     def GetConStatus(self):
         try:
             if self.con is None:
@@ -3419,6 +3504,9 @@ class Firebird(Generic):
     def GetStatus(self):
         return None
 
+    def GetRowsAffected(self):
+        return None
+
     def GetConStatus(self):
         try:
             if self.con is None:
@@ -3767,6 +3855,24 @@ class Oracle(Generic):
                 )
             else:
                 return self.cur.rowcount
+        except Spartacus.Database.Exception as exc:
+            raise exc
+        except oracledb.Error as exc:
+            raise Spartacus.Database.Exception(str(exc))
+        except Exception as exc:
+            raise Spartacus.Database.Exception(str(exc))
+
+    def GetRowsAffected(self):
+        try:
+            if self.con is None:
+                raise Spartacus.Database.Exception(
+                    "This method should be called in the middle of Open() and Close() calls."
+                )
+            else:
+                if self.cur.description:
+                    return None
+                rowcount = self.cur.rowcount
+                return rowcount if rowcount is not None and rowcount >= 0 else None
         except Spartacus.Database.Exception as exc:
             raise exc
         except oracledb.Error as exc:
@@ -4189,6 +4295,24 @@ class MSSQL(Generic):
     def GetStatus(self):
         return None
 
+    def GetRowsAffected(self):
+        try:
+            if self.con is None:
+                raise Spartacus.Database.Exception(
+                    "This method should be called in the middle of Open() and Close() calls."
+                )
+            else:
+                if self.cur.description:
+                    return None
+                rowcount = self.cur.rowcount
+                return rowcount if rowcount is not None and rowcount >= 0 else None
+        except Spartacus.Database.Exception as exc:
+            raise exc
+        except pymssql.Error as exc:
+            raise Spartacus.Database.Exception(str(exc))
+        except Exception as exc:
+            raise Spartacus.Database.Exception(str(exc))
+
     def GetConStatus(self):
         try:
             if self.con is None:
@@ -4512,6 +4636,9 @@ class IBMDB2(Generic):
         pass
 
     def GetStatus(self):
+        return None
+
+    def GetRowsAffected(self):
         return None
 
     def GetConStatus(self):
