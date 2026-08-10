@@ -123,7 +123,7 @@
           </p>
           <p v-show="showStartTimeAndDuration" class="h6 m-0  me-2">
             <b>Start time:</b> {{ formattedStartTime }}<br/>
-            <b>Duration:</b> {{ queryDuration }}
+            <b>Duration:</b> {{ formattedCompletionStatus }}
           </p>
           <p v-show="showStartTime" class=" m-0 h6">
             <b>Start time:</b> {{ formattedStartTime }}
@@ -195,6 +195,7 @@ export default {
       autocommit: true,
       queryStartTime: "",
       queryDuration: "",
+      queryRowsAffected: null,
       queryOffset: 0,
       data: "",
       context: "",
@@ -259,6 +260,11 @@ export default {
     },
     formattedStartTime() {
       return this.queryStartTime ? this.queryStartTime.format() : '';
+    },
+    formattedCompletionStatus() {
+      return this.queryRowsAffected !== null
+        ? `${this.queryDuration}, ${this.queryRowsAffected} rows affected`
+        : this.queryDuration;
     }
   },
   mounted() {
@@ -297,6 +303,7 @@ export default {
         } else {
           let tab = tabsStore.getSelectedSecondaryTab(this.workspaceId);
           this.queryDuration = "";
+          this.queryRowsAffected = null;
           this.cancelled = false;
           this.showFetchButtons = false;
           this.longQuery = false;
@@ -405,6 +412,7 @@ export default {
           this.$refs.queryResults.renderResult(data, context);
 
           this.queryDuration = data.data.duration;
+          this.queryRowsAffected = data.data.rows_affected ?? null;
 
           context.tab.metaData.isReady = false;
           context.tab.metaData.isLoading = false;
