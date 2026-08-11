@@ -120,7 +120,6 @@ export default {
   data() {
     return {
         shortcuts: [],
-        gearsUrl: gearsUrl,
         logoUrl: logoUrl
     };
   },
