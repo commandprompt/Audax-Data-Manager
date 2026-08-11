@@ -35,8 +35,7 @@ body {
 
 	&__header {
 		position: relative;
-		padding-left: 5px;
-		padding-top: 15px;
+		padding: 20px 20px 0 20px;
 
 		&:after {
 			content: "";
@@ -44,55 +43,32 @@ body {
 			background: linear-gradient(to right, #90949A, transparent);
 			height: 1px;
 			width: 75%;
-			margin-left: 15px;
-
 		}
 		/* Animated Logo styles */
 		svg {
 			margin-bottom: 0.5rem;
 
-			#gear-0 path,
-			#gear-0 rect {
-			  animation: fadeIn 0.5s ease forwards 0.2s;
-			  opacity: 0;
-			}
-
-			#gear-1 path,
-			#gear-1 rect {
-			  animation: fadeIn 0.5s ease forwards 0.5s;
-			  opacity: 0;
-			}
-
-			#gear-2 path,
-			#gear-2 rect {
-			  animation: fadeIn 0.5s ease forwards 0.9s;
-			  opacity: 0;
-			}
-
-			#gear-3 path,
-			#gear-3 rect {
-			  animation: fadeIn 0.5s ease forwards 1.2s;
-			  opacity: 0;
-			}
-
-			#text_pg path,
-			#text_pg rect,
-			#text_manage path,
-			#text_manage rect {
+			#wordmark_audax path {
 			  fill-opacity: 0;
-			  stroke: #818181;
-			  stroke-width: 1px;
+			  stroke: #1560ad;
+			  stroke-width: 0.5px;
 			  stroke-dasharray: 100;
 			  stroke-dashoffset: 100;
-			}
 
-			#text_pg path,
-			#text_pg rect,
-			#text_manage path,
-			#text_manage rect {
 			  animation: svgDrawStrokes 1s linear forwards 0.3s,
 				fadeInInfill 0.6s linear forwards 1.3s,
 				svgFadeStrokes 0.6s linear forwards 1.3s;
+			}
+
+			#wordmark_data path,
+			#wordmark_manager path {
+			  fill-opacity: 0;
+			  animation: fadeInInfillMuted 0.5s linear forwards 0.3s;
+			}
+
+			#wordmark_divider {
+			  fill-opacity: 0;
+			  animation: fadeInInfillMuted 0.5s linear forwards 0.3s;
 			}
 		}
 	}
@@ -170,6 +146,12 @@ body {
 @keyframes fadeInInfill {
   to {
 	fill-opacity: 1;
+  }
+}
+
+@keyframes fadeInInfillMuted {
+  to {
+	fill-opacity: 0.6;
   }
 }
 
