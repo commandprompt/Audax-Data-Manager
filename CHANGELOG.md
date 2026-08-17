@@ -11,8 +11,8 @@
     - the Windows uninstaller no longer removes application data by default
 
   - New features:
-    - rewrote the Entity Relationship Diagram tab on top of Vue Flow: added snap-to-grid positioning, intelligent relationship-edge routing, node/edge selection, viewport save/restore and a dedicated full-screen controls panel #904
-    - rewrote the Database Console tab on top of xterm.js: added command history navigation with the Up/Down keys and active database switching via the "\c" meta-command for Postgres #894
+    - rewrote the Entity Relationship Diagram: intelligent relationship-edge routing, added snap-to-grid positioning, improved node/edge selection, add cardinality markers, viewport save/restore and a dedicated full-screen controls panel #885
+    - rewrote the Database Console: make it behave like a real console, added command history navigation with the Up/Down keys and active database switching via the "\c" meta-command for Postgres #894
     - implemented visual feedback and keyboard navigation for moving focus between application panels #842
     - added support for SQLite3 database file paths containing a tilde (~)
     - implemented "rows affected" display on Query tab toolbar #701
@@ -32,6 +32,7 @@
     - fixed database passwords being retained in the backup/restore process environment
     - fixed backup argument handling: missing --dbname option, invalid backup type validation, and pigz pipeline formatting in command previews
     - fixed pigz backup failing when file paths contain spaces #909
+    - fixed ERD tab failing to generate relationship edges for foreign keys referencing quoted/uppercase table names #882
     - fixed DDL content being lost when toggling the Properties panel #907
     - fixed layout breakage when tabbing through DDL/Properties panel elements #906
     - closing a connection now also closes its open tabs #911
