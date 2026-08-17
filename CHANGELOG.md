@@ -19,7 +19,7 @@
 
   - UI/UX Improvements:
     - Database object icons and context menu icons/paddings now scale with the app font size setting #908
-    - limited the minimum size of the application container and added scrollbars when the window is smaller than it, preventing UI breakage
+    - limited the minimum size of the application container and added scrollbars when the window is smaller than it, preventing UI breakage #726
     - the onboarding widget is now only shown on the Welcome screen #784
     - improved text truncation of recent connections subtitles to keep the most important part visible #804
     - improved Settings > Hotkeys tab layout: more rows fit on screen and columns are wide enough for larger key combinations like Ctrl+Shift+Space
