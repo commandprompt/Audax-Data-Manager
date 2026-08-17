@@ -37,7 +37,7 @@
 
   <div ref="bottomToolbar" class="data-editor__footer d-flex align-items-center justify-content-end p-2">
     <p class="text-info me-2" v-if="!hasPK" ><i class="fa-solid fa-circle-info"></i> The table has no primary key, existing rows can not be updated</p>
-    <button type="submit" class="btn btn-success btn-sm me-5" :disabled="!hasChanges"
+    <button type="submit" class="btn btn-success btn-sm" :disabled="!hasChanges"
       @click.prevent="applyChanges">
       {{this.applyBtnTitle()}}
     </button>
