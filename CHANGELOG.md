@@ -143,7 +143,7 @@
     - bump vite from 5.4.10 to 6.3.5
     - bump vitest from 2.1.9 to 3.2.4
     - bump @vitest/ui from 2.1.9 to 3.2.4
-    - bump @vitest/coverage-v from 2.1.9 to 3.2.4
+    - bump @vitest/coverage-v8 from 2.1.9 to 3.2.4
     - bump vite-plugin-node-polyfills from 0.22.0 to 0.25.0
     - bump @vitejs/plugin-vue from 5.1.5 to 5.2.4
     - bump happy-dom from 15.11.7 to 20.6.2
@@ -155,7 +155,7 @@
 ## Release Notes
 
   - Bugs fixed:
-    - fixed unwanted change of last used database when when Databases tree node is clicked in DB Explorer #806
+    - fixed unwanted change of last used database when Databases tree node is clicked in DB Explorer #806
     - fixed Postgres DB connection close when Cancel Query is clicked in Query tab #802
     - fixed incorrect tab displayed in Settings modal when clicking Shortcuts icon on the Welcome screen #801
     - fixed selected database not always changing when using Quick Search #814
@@ -180,7 +180,7 @@
     - implemented "pin database" feature for quicker navigation #237
     - implemented postgres server log viewer #658
     - implemented pan, zoom and layout save/restore in ERD tab, added a dedicated toolbar for pan/zoom #659
-    - implemented support for mDNS resolvig when connecting to database server #673
+    - implemented support for mDNS resolving when connecting to database server #673
     - implemented redraw of customized dashboard widgets when widget settings change #626
     - implemented display of table index details in DDL tab for MariaDB and MySQL #704
     - implemented foreign key support in schema editor #251
