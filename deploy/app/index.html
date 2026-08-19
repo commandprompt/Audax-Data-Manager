@@ -608,7 +608,7 @@
     openMoreButton.addEventListener('click', function () {
       outputContainer.classList.toggle("opened");
       stagesContainer.classList.toggle("hidden");
-      win.height = outputContainer.classList.contains("opened") ? 360 : 280;
+      win.resizeTo(win.width, outputContainer.classList.contains("opened") ? 360 : 280);
     });
 
     var winState;
@@ -630,8 +630,7 @@
             }
         } else {
             currWinMode = 'normal';
-            win.width = 1024;
-            win.height = 768;
+            win.resizeTo(1024, 768);
             dumpWindowState();
         }
 
@@ -760,11 +759,12 @@
     const url = require('url')
 
     // Prepare loading interface
-    win.width = 600;
-    win.height = 280;
+    const splashWidth = 600;
+    const splashHeight = 280;
+    win.resizeTo(splashWidth, splashHeight);
 
-    win.x = Math.floor((window.screen.availWidth/2) - (win.width/2));
-    win.y = Math.floor((window.screen.availHeight/2) - (win.height/2));
+    win.x = Math.floor((window.screen.availWidth/2) - (splashWidth/2));
+    win.y = Math.floor((window.screen.availHeight/2) - (splashHeight/2));
     win.show()
     v_loading_data_container.style.display = '';
 
