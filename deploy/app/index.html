@@ -747,7 +747,9 @@
 
       win.setMinimumSize(1024, 768);
       initWindowState();
+    });
 
+    v_webview.addEventListener('loadstop', () => {
       v_webview.contentWindow.postMessage(
         { type: "pgmanage:desktop-host-ready" },
         "*"
