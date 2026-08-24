@@ -2204,13 +2204,15 @@ class PostgreSQL(Generic):
         Spartacus.Database.Exception on failure without touching
         self.con/self.cur/self.service - the old connection is left intact.
         """
-        args = sql.strip().rstrip(";").split()[1:]
-        if len(args) > 1:
-            raise Spartacus.Database.Exception(
-                '\\c: only a single "dbname" argument is supported '
-                "(switching user/host/port via \\c is not supported)."
-            )
-        target_service = args[0].strip('"').strip("'") if args else self.service
+        args = sql.strip().rstrip(";").split(maxsplit=1)[1:]
+        target_service = args[0].strip() if args else ""
+        if (
+            len(target_service) > 1
+            and target_service[0] == target_service[-1]
+            and target_service[0] in "\"'"
+        ):
+            target_service = target_service[1:-1]
+        target_service = target_service or self.service
 
         if target_service == self.service and self.con is not None:
             # Bare "\c" or "\c samedb" while already connected - just reconfirm
