@@ -132,11 +132,10 @@ def filter_psql_line(line, state):
             state["in_copy"] = False
         return line
 
-    stripped = line.lstrip()
-    if stripped.startswith(b"\\"):
-        token = stripped.split(None, 1)[0].rstrip(b"\r\n").lower()
-        if token in _BLOCKED_META_COMMANDS:
-            return b"-- " + line.rstrip(b"\r\n") + b"\n"
+    if b"\\" in line:
+        for token in line.split():
+            if token.lower() in _BLOCKED_META_COMMANDS:
+                return b"-- " + line.rstrip(b"\r\n") + b"\n"
         return line
 
     if _COPY_FROM_STDIN_RE.search(line):
