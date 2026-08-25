@@ -308,6 +308,7 @@ import { showToast } from "../notification_control";
 import { fileManagerStore, settingsStore } from "../stores/stores_initializer";
 import { Modal } from "bootstrap";
 import { handleError } from "../logging/utils";
+import escape from "lodash/escape";
 
 export default {
   name: "FileManager",
@@ -526,7 +527,7 @@ export default {
     createNotifyMessage(title, desc) {
       return `<div class="v-toast__body p-0">
                   <h3 class="fw-bold">${title}</h3>
-                  <p>${desc}</p>
+                  <p>${escape(desc)}</p>
                   <div class="text-end">
                     <button class="btn v-toast__details fw-bold">Open File Manager</button>
                   </div>

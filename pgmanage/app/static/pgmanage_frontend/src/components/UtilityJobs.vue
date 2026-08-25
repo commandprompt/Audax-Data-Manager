@@ -53,6 +53,7 @@ import { utilityJobStore } from "../stores/stores_initializer";
 import axios from "axios";
 import moment from "moment";
 import { handleError } from "../logging/utils";
+import escape from "lodash/escape";
 
 const JobState = {
   PROCESS_NOT_STARTED: 0,
@@ -198,7 +199,7 @@ export default {
     createNotifyMessage(title, desc) {
       return `<div class="v-toast__body p-0">
                   <h3 class="fw-bold">${title}</h3>
-                  <p>${desc}</p>
+                  <p>${escape(desc)}</p>
                   <div class="text-end">
                     <button class="btn v-toast__details fw-bold">View details</button>
                   </div>
