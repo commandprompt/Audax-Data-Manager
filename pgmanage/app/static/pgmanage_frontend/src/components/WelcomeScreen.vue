@@ -39,7 +39,7 @@
 
             </div>
             <div class='col-4 welcome__col'>
-              <div class="hotkeys">
+              <div class="hotkeys mx-xxl-5">
                 <div class="mb-3">
                   <h2 class='d-inline-block me-2 mb-0'>Hotkeys</h2>
                   <a @click="showSettings" href="#" class="links__item">
@@ -47,11 +47,13 @@
                   </a>
                 </div>
                 <div class='hotkeys__list'>
-                  <div v-for="(shortcut, idx) in shortcuts" :key="idx" class="mb-1 hotkeys__list_item hotkey">
+                  <div v-for="(shortcut, idx) in shortcuts" :key="idx" class="mb-1 d-flex justify-content-between hotkeys__list_item hotkey">
                       <p class='hotkey__label'>{{shortcutLabel(shortcut)}}</p>
-                      <span v-for="(button, idx) in shortcutKeyNames(shortcut)" :key="idx" class='hotkey__button me-2'>
+                      <div>
+                      <span v-for="(button, idx) in shortcutKeyNames(shortcut)" :key="idx" class='hotkey__button me-1'>
                         {{button}}
                       </span>
+                      </div>
                   </div>
                 </div>
               </div>
