@@ -34,12 +34,6 @@ SOFTWARE.
 
   .omnidb__theme-bg--menu-primary {
     background-color: #1560AD;
-    &::-webkit-scrollbar-track {
-      background: #4A81d4;
-    }
-    &::-webkit-scrollbar-thumb {
-      background: #325B9A;
-    }
   }
 
   .omnidb__theme-bg--menu-utilities {
@@ -291,11 +285,6 @@ SOFTWARE.
       color: #888;
       background-color: #FFF;
     }
-  }
-
-  /* SCROLLBAR FIREFOX (new versions) */
-  * {
-    scrollbar-color: #DEDEDE #EFEFEF;
   }
 
   /* Aimara Tree */
