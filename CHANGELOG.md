@@ -1,6 +1,6 @@
 # Audax Data Manager 1.6 Release
 
-## Release Date: Aug 18 2026
+## Release Date: Sep 01 2026
 
 ## Release Notes
 
