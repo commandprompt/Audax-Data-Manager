@@ -19,7 +19,7 @@
       <div v-if="commentable" class="col-3">
         <p class="h6">Comment</p>
       </div>
-      <div class="col">
+      <div class="col-1">
         <p class="h6">Actions</p>
       </div>
     </div>
@@ -59,13 +59,13 @@
             <input type='checkbox' class="custom-checkbox" v-model="column.isPK" :disabled="disabledPrimaryKey || column.nullable"/>
           </div>
 
-          <div v-if="commentable" class="col-3">
+          <div v-if="commentable" :class="[this.movable(column) ? 'col': 'col-3']">
             <input v-model="column.comment" class="form-control mb-0"
             type="text"
             :placeholder="this.mode === operationModes.UPDATE ? '' : 'column comment...'" />
           </div>
 
-          <div :class="['col d-flex me-1', this.movable(column) ? 'justify-content-between': 'justify-content-end']">
+          <div :class="['d-flex me-1', this.movable(column) ? 'col-auto justify-content-between': 'col justify-content-end']">
             <button v-if="column.deleted && !column.new || column.is_dirty" @click='revertColumn(index)' type="button"
               class="btn btn-icon btn-icon-success ps-2 pe-2" title="Revert">
               <i class="fas fa-rotate-left"></i>

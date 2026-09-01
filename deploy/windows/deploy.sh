@@ -75,7 +75,7 @@ mv dist/audaxdm-server $DEPLOY_DIR/release_$APP_VERSION/
 mv dist/process_executor $DEPLOY_DIR/release_$APP_VERSION/audaxdm-server/
 
 cd $DEPLOY_DIR
-curl -C - -LO $NWJS_URL
+# curl -C - -LO $NWJS_URL
 unzip -o $NWJS_ARCHIVE -d $TEMP_DIR/
 
 mv $TEMP_DIR/$NWJS_DIR/* release_$APP_VERSION/
