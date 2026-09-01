@@ -75,11 +75,11 @@
 
                 <div class="links__group links__involved d-flex flex-column">
                   <h2 class="mb-3">Get Involved</h2>
-                  <a href='https://github.com/commandprompt/pgmanage/discussions/' target='_blank' class='links__item' title="Discuss">
+                  <a href='https://github.com/commandprompt/audax-data-manager/discussions/' target='_blank' class='links__item' title="Discuss">
                     <i class="fa-solid fa-comments me-1"></i>
                     Discuss
                   </a>
-                  <a href='https://github.com/commandprompt/pgmanage/issues' target='_blank' class='links__item' title="Report a Bug">
+                  <a href='https://github.com/commandprompt/audax-data-manager/issues' target='_blank' class='links__item' title="Report a Bug">
                     <i class="fa-solid fa-bug me-1"></i>
                     Report a Bug
                   </a>

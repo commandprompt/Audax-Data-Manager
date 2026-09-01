@@ -24,7 +24,7 @@ We currently build PgManage for Linux, Windows and OSX.
 
 ## PgManage Repositories
 
-- [https://github.com/commandprompt/pgmanage](https://github.com/commandprompt/pgmanage): Main
+- [https://github.com/commandprompt/audax-data-manager](https://github.com/commandprompt/audax-data-manager): Main
 application and server, deployment scripts and tests.
 
 
@@ -51,10 +51,10 @@ under the same [MIT License](http://choosealicense.com/licenses/mit/) that
 covers the project. Feel free to contact the maintainers if that's a concern.
 
 
-## Report bugs using Github's [issues](https://github.com/commandprompt/pgmanage/issues)
+## Report bugs using Github's [issues](https://github.com/commandprompt/audax-data-manager/issues)
 
 We use GitHub issues to track public bugs. Report a bug by
-[opening a new issue](https://github.com/commandprompt/pgmanage/issues/new); it's that
+[opening a new issue](https://github.com/commandprompt/audax-data-manager/issues/new); it's that
 easy!
 
 

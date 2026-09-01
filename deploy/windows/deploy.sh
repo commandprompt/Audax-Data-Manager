@@ -4,7 +4,7 @@
 set -e
 
 APP_VERSION="$1"
-REPO="https://github.com/commandprompt/pgmanage"
+REPO="https://github.com/commandprompt/audax-data-manager"
 
 BRANCH="${2:-master}"
 DEPLOY_DIR=$(pwd)

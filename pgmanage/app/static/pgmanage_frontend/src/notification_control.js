@@ -155,7 +155,7 @@ function showToast(type, message) {
   let title = titleMap[type] || titleMap['default']
   let scrollableClass = type === 'error' ? 'v-toast-scrollable' : ''
   let message_lines = message.split("\n").filter(l => l.trim())
-  let message_formatted = message_lines.map((line) => {return `<p>${escape(line).replace('$install_guide$', '<a target="_blank" href="https://pgmanage.readthedocs.io/en/latest/en/02_quick_start.html#install-guide">Postgresql Client Installation</a>')}</p>`}).join('')
+  let message_formatted = message_lines.map((line) => {return `<p>${escape(line).replace('$install_guide$', '<a target="_blank" href="https://audax.readthedocs.io/en/latest/en/01_installation.html#install-postgres-client-binaries">Postgresql Client Installation</a>')}</p>`}).join('')
   let html_msg = `<div class="v-toast__body p-0" >
                     <h3 class="fw-bold">${title}</h3>
                     <p class="${scrollableClass}">${message_formatted}</p>
