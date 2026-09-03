@@ -191,10 +191,11 @@ def change_active_database(request, session: Session):
 
     session.tabs_databases[workspace_id] = new_database
 
-    conn = Connection.objects.get(id=conn_id)
-    conn.last_used_database = new_database
-    conn.last_access_date = datetime.now(tz=timezone.utc)
-    conn.save()
+    conn = Connection.objects.filter(id=conn_id, user_id=request.user.id).first()
+    if conn:
+        conn.last_used_database = new_database
+        conn.last_access_date = datetime.now(tz=timezone.utc)
+        conn.save()
 
     request.session["pgmanage_session"] = session
 
@@ -414,8 +415,11 @@ def save_graph_state(request):
             else data.get("database_name")
         )
         layout_name = f"{database_name}@{data.get('schema')}"
-        conn = Connection.objects.get(id=database_index)
+        conn = Connection.objects.filter(id=database_index, user_id=request.user.id).first()
 
+        if not conn:
+            return JsonResponse(data={"data": "Connection not found."}, status=404)
+        
         layout_obj, _ = ERDLayout.objects.update_or_create(
                 connection=conn,
                 name=layout_name,
@@ -614,7 +618,10 @@ def toggle_pin_database(request):
     if not database_index or not database_name:
         return JsonResponse(data={"data": "database_index and database_name cannot be empty."}, status=400)
 
-    connection = Connection.objects.filter(id=database_index).first()
+    connection = Connection.objects.filter(id=database_index, user_id=request.user.id).first()
+
+    if not connection:
+        return JsonResponse(data={"data": "Connection not found."}, status=404)
 
     if pinned:
         if database_name not in connection.pinned_databases:
