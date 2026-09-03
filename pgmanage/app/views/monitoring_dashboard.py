@@ -302,7 +302,7 @@ def widget_template(request, widget_id):
     widget_data = {}
 
     if not widget_plugin_name:
-        widget = MonWidgets.objects.filter(id=widget_id).first()
+        widget = MonWidgets.objects.filter(id=widget_id, user_id=request.user.id).first()
 
         if widget:
             widget_data = {
