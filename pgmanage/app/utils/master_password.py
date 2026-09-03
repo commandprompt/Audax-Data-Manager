@@ -25,7 +25,7 @@ def validate_master_password(current_user, password):
         else:
             return True
     except Exception:
-        False
+        return False
 
 
 def set_masterpass_check_text(current_user, password, reset=False):
