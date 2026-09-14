@@ -293,6 +293,7 @@ class Client:
             if hasattr(main_tab_database, "connection_params")
             else None
         )
+        credentials_extra = getattr(main_tab_database, "credentials_extra", None)
 
         database_new = OmniDatabase.Generic.InstantiateDatabase(
             db_type=main_tab_database.db_type,
@@ -306,6 +307,7 @@ class Client:
             conn_string=main_tab_database.conn_string,
             parse_conn_string=False,
             connection_params=connection_params,
+            credentials_extra=credentials_extra,
         )
 
         # check if database connection is valid
