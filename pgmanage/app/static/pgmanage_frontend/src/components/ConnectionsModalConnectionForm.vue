@@ -102,7 +102,7 @@
 
             <div class="form-group col-3">
               <label for="connectionSSL" class="fw-bold mb-2">SSL</label>
-                <select v-if="postgresqlTechnologies.includes(connectionLocal.technology)" id="connectionSSL" class="form-select" v-model="connectionLocal.connection_params.sslmode" :disabled="dbFormDisabled">
+                <select v-if="isPostgresFamily" id="connectionSSL" class="form-select" v-model="connectionLocal.connection_params.sslmode" :disabled="dbFormDisabled">
                     <option v-for="mode in sslModes" :key="mode" :value="mode">{{ mode }}</option>
                 </select>
                 <select v-else-if="connectionLocal.technology === 'mssql'" id="connectionSSL" class="form-select" v-model="connectionLocal.connection_params.encryption" :disabled="dbFormDisabled">
@@ -343,7 +343,7 @@ import { dbTechNames } from '../constants'
 
         if(['mariadb', 'mysql'].includes(this.connectionLocal.technology)) {
           return ipv4re.test(value) || ipv6re.test(value) || hostre.test(value) || pathre.test(value)
-        }else if (this.postgresqlTechnologies.includes(this.connectionLocal.technology)){
+        }else if (this.isPostgresFamily){
           return ipv4re.test(value) || ipv6re.test(value) || hostre.test(value) || pathre.test(value) || !helpers.req(value)
         } else {
           return ipv4re.test(value) || ipv6re.test(value) || hostre.test(value)
@@ -374,7 +374,7 @@ import { dbTechNames } from '../constants'
 
       if(needsServer) {
         if(!this.connectionLocal.conn_string) {
-          if([...this.postgresqlTechnologies, 'mariadb', 'mysql'].includes(this.connectionLocal.technology)){
+          if(['postgresql', 'rdspostgresql', 'mariadb', 'mysql'].includes(this.connectionLocal.technology)){
             baseRules.connectionLocal.server = {
               hostOrIp: helpers.withMessage('Must be a valid hostname, IP or a UNIX socket base path', hostOrIp)
             }
@@ -469,8 +469,8 @@ import { dbTechNames } from '../constants'
       technologies: Array,
     },
     computed: {
-      postgresqlTechnologies() {
-        return ['postgresql', 'rdspostgresql']
+      isPostgresFamily() {
+        return ['postgresql', 'rdspostgresql'].includes(this.connectionLocal.technology)
       },
       isRdsPostgresql() {
         return this.connectionLocal.technology === 'rdspostgresql'
@@ -560,7 +560,7 @@ import { dbTechNames } from '../constants'
         ['terminal', 'sqlite'].includes(this.connectionLocal.technology))
       },
       sslModes() {
-        if (this.postgresqlTechnologies.includes(this.connectionLocal.technology)) {
+        if (this.isPostgresFamily) {
           return this.postgresql_ssl_modes
         } else if (this.connectionLocal.technology === 'oracle') {
           return this.oracle_modes

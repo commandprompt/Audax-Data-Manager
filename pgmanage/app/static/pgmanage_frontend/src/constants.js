@@ -119,7 +119,7 @@ const dbTechNames = {
   mysql: 'MySQL',
   mariadb: 'MariaDB',
   postgresql: 'PostgreSQL',
-  rdspostgresql: 'PostgreSQL on AWS RDS',
+  rdspostgresql: 'RDS Postgresql',
   oracle: 'Oracle',
   mssql: 'SQL Server'
 }
