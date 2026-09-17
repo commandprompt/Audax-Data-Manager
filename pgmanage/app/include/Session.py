@@ -225,11 +225,11 @@ class Session(object):
                 ):
                     # Try passwordless connection
                     self.databases[database_index]["database"].connection.password = ""
-                    test_response = self.databases[database_index][
+                    test_response, status = self.databases[database_index][
                         "database"
                     ].TestConnection()
 
-                    if test_response == "Connection successful.":
+                    if status:
                         s = SessionStore(session_key=self.user_key)
                         s["pgmanage_session"].databases[database_index][
                             "prompt_timeout"

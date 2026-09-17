@@ -298,9 +298,9 @@ def test_connection(request):
                 database.connection.host = '127.0.0.1'
                 database.connection.port = server.local_bind_port
 
-                message = database.TestConnection()
+                message, status = database.TestConnection()
                 server.close()
-                if message != 'Connection successful.':
+                if not status:
                     return JsonResponse({"data": message}, status=400)
 
             except Exception as exc:
@@ -310,11 +310,11 @@ def test_connection(request):
                 return JsonResponse({"data": msg}, status=400)
 
         else:
-            message = database.TestConnection()
-            if message != 'Connection successful.':
+            message, status = database.TestConnection()
+            if not status:
                 return JsonResponse({"data": message}, status=400)
 
-    return HttpResponse(status=200)
+    return JsonResponse({"data": message})
 
 
 @user_authenticated

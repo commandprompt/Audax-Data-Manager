@@ -632,8 +632,8 @@ import { dbTechNames } from '../constants'
         if(!this.v$.$invalid) {
           this.testIsRunning = true
           connectionsStore.testConnection(connection)
-          .then(() => {
-            showToast("success", "Connection successful.")
+          .then((response) => {
+            showToast("success", response.data.data)
             this.testIsRunning = false;
           })
           .catch((error) => {

@@ -304,12 +304,23 @@ class ConnectionsTests(TestCase):
 
     @patch.object(PostgreSQL, "TestConnection")
     def test_test_connection_view_authorized(self, testConnection_mock):
-        testConnection_mock.return_value = "Connection successful."
+        testConnection_mock.return_value = ("Connection successful.", True)
         response = self.client.post(
             reverse("test_connection"), data=self.test_connection_data
         )
 
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["data"], "Connection successful.")
+
+    @patch.object(PostgreSQL, "TestConnection")
+    def test_test_connection_view_reports_a_failure(self, testConnection_mock):
+        testConnection_mock.return_value = ("No such host.", False)
+        response = self.client.post(
+            reverse("test_connection"), data=self.test_connection_data
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["data"], "No such host.")
 
     def test_test_connection_view_unauthorized(self):
         self.client.logout()
