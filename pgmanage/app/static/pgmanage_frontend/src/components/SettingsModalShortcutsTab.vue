@@ -167,10 +167,6 @@ export default {
         return true;
       }
 
-      if (event.shiftKey && code.startsWith("Arrow")) {
-        return true;
-      }
-
       if (event.ctrlKey) {
         const ctrlBlocked = new Set(["c", "v", "z"]);
         if (ctrlBlocked.has(key)) return true;
