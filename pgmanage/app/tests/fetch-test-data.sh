@@ -1,9 +1,10 @@
 #!/bin/bash
 # Downloads external sample-database fixtures used by the docker-compose test
-# services (dellstore2 for Postgres, Northwind for MSSQL). Not committed to
-# git due to their size.
+# services (dellstore2 for Postgres, Northwind for MSSQL, classicmodels for MySQL
+# and MariaDB).
+# Not committed to git due to their size.
 #
-# Usage: ./fetch-test-data.sh [dellstore|northwind|all]
+# Usage: ./fetch-test-data.sh [dellstore|northwind|classicmodels|all]
 set -e
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -53,15 +54,25 @@ fetch_northwind() {
         "$DIR/instnwnd.sql"
 }
 
+fetch_classicmodels() {
+    # The classicmodels sample database used by the MySQL tutorial site.
+    # The MySQL and the MariaDB test services both use it.
+    fetch \
+        "https://www.mysqltutorial.org/wp-content/uploads/2023/10/mysqlsampledatabase.zip" \
+        "$DIR/mysqlsampledatabase.sql"
+}
+
 case "${1:-all}" in
     dellstore) fetch_dellstore ;;
     northwind) fetch_northwind ;;
+    classicmodels) fetch_classicmodels ;;
     all)
         fetch_dellstore
         fetch_northwind
+        fetch_classicmodels
         ;;
     *)
-        echo "usage: $0 [dellstore|northwind|all]" >&2
+        echo "usage: $0 [dellstore|northwind|classicmodels|all]" >&2
         exit 1
         ;;
 esac

@@ -19,6 +19,35 @@ services:
       timeout: 3s
       retries: 15
 
+  mysql_test_db:
+    image: mysql:8.4.11
+    environment:
+      MYSQL_ROOT_PASSWORD: mysql
+      MYSQL_ROOT_HOST: "%"
+    ports:
+      - 3307:3306
+    volumes:
+      - ./mysqlsampledatabase.sql:/docker-entrypoint-initdb.d/db.sql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  mariadb_test_db:
+    image: mariadb:11.8.9
+    environment:
+      MARIADB_ROOT_PASSWORD: mariadb
+    ports:
+      - 3308:3306
+    volumes:
+      - ./mysqlsampledatabase.sql:/docker-entrypoint-initdb.d/db.sql
+    healthcheck:
+      test: ["CMD-SHELL", "healthcheck.sh --connect --innodb_initialized"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
   mssql_test_db:
     image: mcr.microsoft.com/mssql/server:2022-latest
     environment:
