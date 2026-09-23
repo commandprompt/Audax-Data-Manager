@@ -1,10 +1,10 @@
 #!/bin/bash
 # Downloads external sample-database fixtures used by the docker-compose test
 # services (dellstore2 for Postgres, Northwind for MSSQL, classicmodels for MySQL
-# and MariaDB).
+# and MariaDB, HR for Oracle).
 # Not committed to git due to their size.
 #
-# Usage: ./fetch-test-data.sh [dellstore|northwind|classicmodels|all]
+# Usage: ./fetch-test-data.sh [dellstore|northwind|classicmodels|hr|all]
 set -e
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -62,17 +62,32 @@ fetch_classicmodels() {
         "$DIR/mysqlsampledatabase.sql"
 }
 
+fetch_hr() {
+    # Oracle's own HR sample schema, pinned to a tag. init-oracle.sh runs the
+    # three scripts unchanged; hr_install.sql is not used.
+    local commit="e3325a83e56c516815844025418a96ecaf219751"
+    local file
+    mkdir -p "$DIR/hr"
+    for file in hr_create.sql hr_populate.sql hr_code.sql; do
+        fetch \
+            "https://raw.githubusercontent.com/oracle-samples/db-sample-schemas/$commit/human_resources/$file" \
+            "$DIR/hr/$file"
+    done
+}
+
 case "${1:-all}" in
     dellstore) fetch_dellstore ;;
     northwind) fetch_northwind ;;
     classicmodels) fetch_classicmodels ;;
+    hr) fetch_hr ;;
     all)
         fetch_dellstore
         fetch_northwind
         fetch_classicmodels
+        fetch_hr
         ;;
     *)
-        echo "usage: $0 [dellstore|northwind|classicmodels|all]" >&2
+        echo "usage: $0 [dellstore|northwind|classicmodels|hr|all]" >&2
         exit 1
         ;;
 esac

@@ -48,6 +48,22 @@ services:
       timeout: 3s
       retries: 30
 
+  oracle_test_db:
+    image: container-registry.oracle.com/database/free:latest
+    environment:
+      ORACLE_PWD: oracle
+    ports:
+      - 1522:1521
+    volumes:
+      - ./hr:/tmp/hr:ro
+      - ./init-oracle.sh:/opt/oracle/scripts/startup/init-oracle.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "echo \"select 'PGM_READY' from all_objects where owner='HR' and rownum=1;\" | sqlplus -s system/$$ORACLE_PWD@localhost:1521/FREEPDB1 | grep -q PGM_READY"]
+      interval: 10s
+      timeout: 10s
+      retries: 60
+      start_period: 120s
+
   mssql_test_db:
     image: mcr.microsoft.com/mssql/server:2022-latest
     environment:
