@@ -271,10 +271,10 @@
             min-width: 220px;
 
             i {
-                width: 24px;
-                height: 16px;
+                width: 1.5rem;
+                height: 1.25rem;
                 vertical-align: middle;
-                font-size: var(--mx-menu-icon-size);
+                font-size: 1.2rem;
                 @include themify() {
                     color: themed($primaryBlueWhiteSwitching);
                 }

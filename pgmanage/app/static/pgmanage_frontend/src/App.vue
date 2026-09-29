@@ -38,7 +38,7 @@ import { dbMetadataStore, settingsStore, tabsStore } from "./stores/stores_initi
 import { default_shortcuts } from "@src/shortcuts";
 
 export default {
-  name: "PgManage",
+  name: "Audax Data Manager",
   components: {
     SettingsModal,
     SideBarTabs,
@@ -62,6 +62,14 @@ export default {
   computed: {
     shortcuts() {
       return settingsStore.shortcuts;
+    },
+    selectedPrimaryTab() {
+      return tabsStore.selectedPrimaryTab;
+    },
+  },
+  watch: {
+    selectedPrimaryTab() {
+      this.updateOmnisVisibility();
     },
   },
   mounted() {
@@ -91,13 +99,21 @@ export default {
     this.ensureDefaultShortcuts();
 
     document.body.addEventListener("keydown", this.keyBoardShortcuts);
+
+    emitter.on("omnisVisibilityChanged", this.updateOmnisVisibility);
   },
   methods: {
     initialSetup() {
       this.initialized = true;
-      v_omnis.div.style.opacity = 1;
+      this.updateOmnisVisibility();
 
       this.enterpriseComps = this?.enterpriseComponents ?? [];
+    },
+    updateOmnisVisibility() {
+      if (!this.initialized || !v_omnis?.div) return;
+      const isWelcomeScreen = tabsStore.selectedPrimaryTab?.component === "WelcomeScreen";
+      const isWalkthroughActive = !!v_omnis.omnis_ui_assistant;
+      v_omnis.div.style.display = (isWelcomeScreen || isWalkthroughActive) ? "" : "none";
     },
     createOmnisAssistant() {
       v_omnis = createOmnis();
@@ -110,7 +126,7 @@ export default {
       v_omnis.div.style.left =
         v_omnis.root.getBoundingClientRect().width - 60 + "px";
       v_omnis.div.style["z-index"] = "99999999";
-      v_omnis.div.style.opacity = 0;
+      v_omnis.div.style.display = "none";
       v_omnis.div.innerHTML = v_omnis.template;
       document.body.appendChild(v_omnis.div);
       v_omnis.div.addEventListener("click", function () {

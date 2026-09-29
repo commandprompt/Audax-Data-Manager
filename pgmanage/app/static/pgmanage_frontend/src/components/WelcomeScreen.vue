@@ -2,11 +2,9 @@
 <div class="welcome pt-3 overflow-auto">
     <div class='welcome__container'>
       <div class="welcome__header mt-1 mb-4">
-        <p class='mb-0'>Welcome to</p>
+        <p class='mb-0 ps-1'>Welcome to</p>
         <div class="welcome__logo d-flex mt-3 mb-4">
           <img :src="logoUrl" alt="">
-          <img id="gears" :src="gearsUrl">
-
         </div>
       </div>
 
@@ -25,7 +23,10 @@
                         </div>
                         <div class="recent-conections__item_text d-flex flex-column">
                             <p class="recent-conections__item_title d-flex align-items-center">{{ connection.alias }}</p>
-                            <span class="recent-conections__item_subtitle muted-text clipped-text">{{connectionSubtitle(connection)}}</span>
+                            <span class="recent-conections__item_subtitle muted-text" :title="connectionSubtitle(connection)">
+                                <span class="recent-conections__item_subtitle-prefix clipped-text">{{subtitlePrefix(connection)}}</span>
+                                <span class="recent-conections__item_subtitle-suffix">{{subtitleSuffix(connection)}}</span>
+                            </span>
                             <span class="muted-text">{{ ago(connection.last_access_date) }}</span>
                         </div>
                     </div>
@@ -38,7 +39,7 @@
 
             </div>
             <div class='col-4 welcome__col'>
-              <div class="hotkeys">
+              <div class="hotkeys mx-xxl-5">
                 <div class="mb-3">
                   <h2 class='d-inline-block me-2 mb-0'>Hotkeys</h2>
                   <a @click="showSettings" href="#" class="links__item">
@@ -46,11 +47,13 @@
                   </a>
                 </div>
                 <div class='hotkeys__list'>
-                  <div v-for="(shortcut, idx) in shortcuts" :key="idx" class="mb-1 hotkeys__list_item hotkey">
+                  <div v-for="(shortcut, idx) in shortcuts" :key="idx" class="mb-1 d-flex justify-content-between hotkeys__list_item hotkey">
                       <p class='hotkey__label'>{{shortcutLabel(shortcut)}}</p>
-                      <span v-for="(button, idx) in shortcutKeyNames(shortcut)" :key="idx" class='hotkey__button me-2'>
+                      <div>
+                      <span v-for="(button, idx) in shortcutKeyNames(shortcut)" :key="idx" class='hotkey__button me-1'>
                         {{button}}
                       </span>
+                      </div>
                   </div>
                 </div>
               </div>
@@ -72,11 +75,11 @@
 
                 <div class="links__group links__involved d-flex flex-column">
                   <h2 class="mb-3">Get Involved</h2>
-                  <a href='https://github.com/commandprompt/pgmanage/discussions/' target='_blank' class='links__item' title="Discuss">
+                  <a href='https://github.com/commandprompt/audax-data-manager/discussions/' target='_blank' class='links__item' title="Discuss">
                     <i class="fa-solid fa-comments me-1"></i>
                     Discuss
                   </a>
-                  <a href='https://github.com/commandprompt/pgmanage/issues' target='_blank' class='links__item' title="Report a Bug">
+                  <a href='https://github.com/commandprompt/audax-data-manager/issues' target='_blank' class='links__item' title="Report a Bug">
                     <i class="fa-solid fa-bug me-1"></i>
                     Report a Bug
                   </a>
@@ -96,7 +99,6 @@ import { colorLabelMap } from "../constants";
 import { startTutorial } from '../tutorial'
 import { endLoading } from "../ajax_control";
 import { default_shortcuts } from '../shortcuts'
-import gearsUrl from '../../src/assets/images/gears.svg'
 import logoUrl from '../../src/assets/images/logo.svg'
 
 
@@ -120,7 +122,6 @@ export default {
   data() {
     return {
         shortcuts: [],
-        gearsUrl: gearsUrl,
         logoUrl: logoUrl
     };
   },
@@ -141,6 +142,16 @@ export default {
       if(connection.technology === 'sqlite') return connection.service
       if(connection.technology === 'terminal') return `${connection.tunnel.server}:${connection.tunnel.port}`
       return `${connection.server}:${connection.port}/${connection.service}`
+    },
+    subtitlePrefix(connection) {
+      const text = this.connectionSubtitle(connection);
+      const idx = text.lastIndexOf('/');
+      return idx === -1 ? '' : text.slice(0, idx + 1);
+    },
+    subtitleSuffix(connection) {
+      const text = this.connectionSubtitle(connection);
+      const idx = text.lastIndexOf('/');
+      return idx === -1 ? text : text.slice(idx + 1);
     },
     selectConnection(conn_id) {
       connectionsStore.selectConnection(conn_id);

@@ -46,10 +46,12 @@ function startTutorial(p_tutorial_name) {
       delete v_omnis.omnis_ui_assistant;
       // Enabling interactions with omnis.
       v_omnis.div.classList.remove('omnis--active');
+      emitter.emit('omnisVisibilityChanged');
     },
     // Omnis Object
     p_omnis: v_omnis
   });
+  emitter.emit('omnisVisibilityChanged');
   // Setting the tutorial to the default example tutorial `main`.
   var v_tutorial_name = (p_tutorial_name) ? p_tutorial_name : 'main';
   var v_button_inner_query_attr = ' disabled title="Open a new connection first." ';
@@ -237,7 +239,7 @@ function startTutorial(p_tutorial_name) {
         p_message: `
         <p>This is <strong>optional</strong>.</p>
         <p>If you don't save the user password, you will be required to manually input it everytime a new connection to this database is started.</p>
-        <p>If saved, this password will be stored in the database configured for PgManage (default is pgmanage.db).</p>
+        <p>If saved, this password will be stored in the application database.</p>
         `,
         p_target: function() {var v_target = document.getElementById('connectionPassword'); return v_target},
         p_title: 'User password'

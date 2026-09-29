@@ -87,7 +87,7 @@
         <pane min-size="2">
           <div
             :id="`${workspaceId}_div_right`"
-            class="omnidb__workspace__div-right col position-relative right-div-height"
+            class="omnidb__workspace__div-right col position-relative vh-100"
           >
             <div class="row">
               <DatabaseTabs
@@ -149,7 +149,7 @@ export default {
       showTreeTabsLoading: false,
       lastTreeTabsData: null,
       lastTreeTabsView: null,
-      skipTransitions: true,
+      treeTabsDataStale: false,
     };
   },
   computed: {
@@ -179,9 +179,6 @@ export default {
         return truncateText(this.workspaceTab.metaData.selectedDatabase, 10);
       }
       return this.workspaceTab.metaData.selectedDatabase;
-    },
-    paneTransitionStyle() {
-      return this.skipTransitions ? 'none' : '0.35s';
     },
     treeComponent() {
       const treeTechnologiesMap = {
@@ -316,10 +313,12 @@ export default {
       this.lastTreeTabsData = data;
       this.lastTreeTabsView = view;
 
-      // don't load anything if properties/ddl panel is hidden
-      if (!this.isTreeTabsVisible)
+      if (!this.isTreeTabsVisible) {
+        this.treeTabsDataStale = true;
         return;
+      }
 
+      this.treeTabsDataStale = false;
       this.debouncedFetchProperties(view, data);
     },
     clearTreeTabsData() {
@@ -327,18 +326,14 @@ export default {
       this.propertiesData=[];
     },
     showTreeTabPane() {
-      this.skipTransitions = false
-      setTimeout(() => { this.skipTransitions = true }, 350); ;
       this.treeTabsPaneSize = this.lastTreeTabsPaneSize || 40;
-      if (!!this.lastTreeTabsData && !!this.lastTreeTabsView)
+      if (this.treeTabsDataStale && !!this.lastTreeTabsData && !!this.lastTreeTabsView)
         this.getProperties({
           data: this.lastTreeTabsData,
           view: this.lastTreeTabsView,
         });
     },
     hideTreeTabpane() {
-      this.skipTransitions = false
-      setTimeout(() => { this.skipTransitions = true }, 350); ;
       this.lastTreeTabsPaneSize = this.treeTabsPaneSize;
       this.treeTabsPaneSize = 2;
     },
@@ -350,6 +345,10 @@ export default {
     },
     handleDatabaseTreeWidthChange(event) {
       this.dbExplorerWidth = event[1].size;
+      const selectedTab = tabsStore.getSelectedSecondaryTab(this.workspaceId);
+      if (selectedTab) {
+        emitter.emit(`${selectedTab.id}_resize`);
+      }
     },
     showQuickSearch(event) {
       emitter.emit(`${this.workspaceId}_show_quick_search`, event);
@@ -363,17 +362,9 @@ export default {
   height: calc(100vh - 30px);
 }
 
-.right-div-height {
-  height: 100vh;
-}
-
 .database-tree {
   overflow: auto;
   transition: scroll 0.3s;
   height: 100%;
-}
-
-.splitpanes .splitpanes__pane {
-  transition: v-bind(paneTransitionStyle);
 }
 </style>

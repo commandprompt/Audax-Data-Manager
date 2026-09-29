@@ -28,13 +28,13 @@ fi
 # if change nwjs and build options for debug
 if [ "$DEBUG" == false ]
 then
-    NWJS_URL='https://dl.nwjs.io/v0.77.0/nwjs-v0.77.0-linux-x64.tar.gz'
-    NWJS_ARCHIVE='nwjs-v0.77.0-linux-x64.tar.gz'
-    NWJS_DIR='nwjs-v0.77.0-linux-x64'
+    NWJS_URL='https://dl.nwjs.io/v0.114.0/nwjs-v0.114.0-linux-x64.tar.gz'
+    NWJS_ARCHIVE='nwjs-v0.114.0-linux-x64.tar.gz'
+    NWJS_DIR='nwjs-v0.114.0-linux-x64'
 else
-    NWJS_URL='https://dl.nwjs.io/v0.77.0/nwjs-sdk-v0.77.0-linux-x64.tar.gz'
-    NWJS_ARCHIVE='nwjs-sdk-v0.77.0-linux-x64.tar.gz'
-    NWJS_DIR='nwjs-sdk-v0.77.0-linux-x64'
+    NWJS_URL='https://dl.nwjs.io/v0.114.0/nwjs-sdk-v0.114.0-linux-x64.tar.gz'
+    NWJS_ARCHIVE='nwjs-sdk-v0.114.0-linux-x64.tar.gz'
+    NWJS_DIR='nwjs-sdk-v0.114.0-linux-x64'
     echo "*****************************************************"
     echo "*********** BUILDING DEBUG CONFIGURATION ************"
     echo "*****************************************************"

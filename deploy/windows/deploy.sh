@@ -4,7 +4,7 @@
 set -e
 
 APP_VERSION="$1"
-REPO="https://github.com/commandprompt/pgmanage"
+REPO="https://github.com/commandprompt/audax-data-manager"
 
 BRANCH="${2:-master}"
 DEPLOY_DIR=$(pwd)
@@ -22,9 +22,9 @@ then
     APP_VERSION=$(git describe --tags $(git rev-list --tags --max-count=1))
 fi
 
-NWJS_URL='https://dl.nwjs.io/v0.77.0/nwjs-v0.77.0-win-x64.zip'
-NWJS_ARCHIVE='nwjs-v0.77.0-win-x64.zip'
-NWJS_DIR='nwjs-v0.77.0-win-x64'
+NWJS_URL='https://dl.nwjs.io/v0.114.0/nwjs-v0.114.0-win-x64.zip'
+NWJS_ARCHIVE='nwjs-v0.114.0-win-x64.zip'
+NWJS_DIR='nwjs-v0.114.0-win-x64'
 
 APP_LONG_VERSION=PgManage.$APP_VERSION
 
@@ -75,7 +75,7 @@ mv dist/audaxdm-server $DEPLOY_DIR/release_$APP_VERSION/
 mv dist/process_executor $DEPLOY_DIR/release_$APP_VERSION/audaxdm-server/
 
 cd $DEPLOY_DIR
-curl -C - -LO $NWJS_URL
+# curl -C - -LO $NWJS_URL
 unzip -o $NWJS_ARCHIVE -d $TEMP_DIR/
 
 mv $TEMP_DIR/$NWJS_DIR/* release_$APP_VERSION/

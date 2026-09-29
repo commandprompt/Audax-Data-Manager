@@ -35,13 +35,6 @@ SOFTWARE.
 
   .omnidb__theme-bg--menu-primary {
     background-color: #162d4e;
-
-    &::-webkit-scrollbar-track {
-      background: #373944;
-    }
-    &::-webkit-scrollbar-thumb {
-      background: #4C4E58;
-    }
   }
   .omnidb__theme-bg--menu-utilities {
     background-color: #1560AD;
@@ -351,10 +344,6 @@ SOFTWARE.
     }
   }
 
-  /* SCROLLBAR FIREFOX (new versions) */
-  * {
-    scrollbar-color: #47505D transparent;
-  }
 
   /* Workspace Connection Info */
   .omnidb__workspace__connection-details b {

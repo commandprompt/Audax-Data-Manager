@@ -28,11 +28,13 @@ def get_utility_path(utility: str, current_user: User, pg_version: int | None = 
     utility_path = check_utility_path(utility=utility, binary_path=binary_path)
 
     if utility_path is None or not os.path.exists(utility_path):
-        error_msg = f"<b>{utility_path if utility_path else utility}</b> not found."
+        error_msg = f"{utility_path if utility_path else utility} not found."
         if utility == "pigz":
-            error_msg += "<br>Please make sure that you have pigz installed."
+            error_msg += "\nPlease make sure that you have pigz installed."
         else:
-            error_msg += "<br>Please make sure that you have Postgresql Client installed.<br>\
-                          More information: <a target='_blank' href='https://pgmanage.readthedocs.io/en/latest/en/02_quick_start.html#install-guide'>Postgresql Client Installation</a>"
+            error_msg += (
+                "\nPlease make sure that you have Postgresql Client installed."
+                "\nMore information: $install_guide$"
+            )
         raise FileNotFoundError(error_msg)
     return utility_path

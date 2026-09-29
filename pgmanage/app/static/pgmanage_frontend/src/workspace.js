@@ -4,6 +4,7 @@ import { showAlertHtml, showConfirm } from './notification_control'
 import { emitter } from './emitter'
 import { tabsStore, connectionsStore } from './stores/stores_initializer.js'
 import { Modal } from 'bootstrap'
+import escape from 'lodash/escape'
 
 
 /// <summary>
@@ -35,7 +36,7 @@ function checkBeforeChangeDatabase(p_cancel_function, p_ok_function) {
 /// </summary>
 function renameTab(tab) {
 
-	showConfirm('<input id="tab_name"/ class="form-control" value="' + tab.name + '" style="width: 100%;">',
+	showConfirm('<input id="tab_name"/ class="form-control" value="' + escape(tab.name) + '" style="width: 100%;">',
     function() {
       tab.name = document.getElementById('tab_name').value
     },

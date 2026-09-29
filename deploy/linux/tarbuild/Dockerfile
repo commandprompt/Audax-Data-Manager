@@ -36,7 +36,7 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 USER root
 
-ENV REPO="https://github.com/commandprompt/pgmanage"
+ENV REPO="https://github.com/commandprompt/audax-data-manager"
 ENV BRANCH="dev"
 ENV VERSION=""
 ENV HOME=/root

@@ -11,7 +11,7 @@ sudo apt-get install python3.9 python3.9-dev python3.9-venv python3-wheel libpq-
 ## Set up app environment
 Clone pgmanage repository; change to the root directory of cloned repository, checkout dev branch:
 ```
-git clone https://github.com/commandprompt/pgmanage.git
+git clone https://github.com/commandprompt/audax-data-manager.git
 cd pgmanage
 git checkout dev
 ```

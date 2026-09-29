@@ -1,4 +1,5 @@
 import os
+import shlex
 import unittest
 from datetime import datetime, timedelta
 from functools import partial
@@ -163,6 +164,12 @@ class GetArgsParamsValuesTests(TestCase):
     def test_objects_type_appends_database_name_at_end(self):
         args = get_args_params_values({"database": "mydb"}, self.conn, "objects", "/tmp/backup.dump")
         self.assertEqual(args, self.base_args() + ["--dbname", "mydb"])
+
+    def test_database_name_with_spaces_and_punctuation_stays_one_argument(self):
+        args = get_args_params_values(
+            {"database": "pgManage QA! DB"}, self.conn, "objects", "/tmp/backup.dump"
+        )
+        self.assertEqual(args, self.base_args() + ["--dbname", "pgManage QA! DB"])
 
     def test_globals_type_uses_active_service_for_database_flag(self):
         args = get_args_params_values({}, self.conn, "globals", "/tmp/backup.dump")
@@ -355,6 +362,15 @@ class GetArgsParamsValuesTests(TestCase):
         )
         self.assertTrue(args[-1].endswith("/tmp/backup.dump.gz"))
         self.assertFalse(args[-1].endswith(".gz.gz"))
+
+    def test_pigz_quotes_filename_containing_spaces(self):
+        args = get_args_params_values(
+            {"database": "mydb", "pigz": True, "number_of_jobs": "4", "compression_ratio": 6},
+            self.conn, "objects", "/tmp/test backup.dump",
+        )
+        self.assertEqual(args[-1], "| pigz -p4 -6 > '/tmp/test backup.dump.gz'")
+        # the quoted path round-trips back into a single shell token
+        self.assertEqual(shlex.split(args[-1])[-1], "/tmp/test backup.dump.gz")
 
     def test_objects_missing_database_key_raises_clear_value_error(self):
         with self.assertRaises(ValueError):

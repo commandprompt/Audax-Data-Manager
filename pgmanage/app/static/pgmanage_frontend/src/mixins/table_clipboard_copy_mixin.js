@@ -1,4 +1,5 @@
 import last from "lodash/last";
+import { handleError } from "../logging/utils";
 import { settingsStore } from "../stores/stores_initializer";
 
 export default {
@@ -40,12 +41,25 @@ export default {
       }
     },
     copyToClipboard(text) {
-      navigator.clipboard
-        .writeText(text)
-        .then(() => {})
-        .catch((error) => {
-          handleError(error);
-        });
+      // the nwjs webview does not permit navigator.clipboard writes
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      textArea.style.position = "fixed";
+      textArea.style.left = "-9999px";
+
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+
+      try {
+        if (!document.execCommand("copy")) {
+          throw new Error("Could not copy the data to the clipboard.");
+        }
+      } catch (error) {
+        handleError(error);
+      } finally {
+        textArea.remove();
+      }
     },
     generateJson(data, headers, headerIndexMap) {
       const mappedData = data.map((row) => {

@@ -80,7 +80,7 @@
                 data-testid="pgmanage-github-link"
                 class="font-weight-bold"
                 target="_blank"
-                href="https://github.com/commandprompt/pgmanage"
+                href="https://github.com/commandprompt/audax-data-manager"
                 >Github</a
               >
             </div>

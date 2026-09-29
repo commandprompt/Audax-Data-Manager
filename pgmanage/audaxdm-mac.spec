@@ -7,7 +7,6 @@ import os
 
 exclude_patterns = [
   '.dist-info',
-  '.py',
   'django/contrib/humanize',
   'django/contrib/gis',
   'django/contrib/flatpages',
@@ -45,7 +44,13 @@ a = Analysis(['pgmanage-server.py'],
              noarchive=False)
 # config.py gets removed by the next expression, keep it for restoring later
 configpy = [entry for entry in a.datas if 'config.py' in entry[0]]
-a.datas = [entry for entry in a.datas if not any(pattern in entry[0] for pattern in exclude_patterns)]
+a.datas = [
+    entry for entry in a.datas
+    if not entry[0].endswith('.py')
+    and not entry[0].endswith('.pyc')
+    and '__pycache__' not in entry[0]
+    and not any(pattern in entry[0] for pattern in exclude_patterns)
+]
 # strip non-English Django locale catalogs; keep 'en' since Django's gettext machinery
 # requires the default language's catalog to exist even though the app never switches languages
 a.datas = [entry for entry in a.datas if '/locale/' not in entry[0] or '/locale/en/' in entry[0]]

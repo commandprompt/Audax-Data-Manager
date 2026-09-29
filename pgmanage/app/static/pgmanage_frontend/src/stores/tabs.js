@@ -252,7 +252,7 @@ const useTabsStore = defineStore("tabs", {
         name: "Welcome",
         component: "WelcomeScreen",
         icon: '<i class="fas fa-hand-spock"></i>',
-        tooltip: "Welcome to PgManage",
+        tooltip: "Welcome to Audax Data Manager",
         closable: false,
         isDraggable: false,
       });
@@ -325,7 +325,7 @@ const useTabsStore = defineStore("tabs", {
             tooltip: tooltipName,
             mode: "connection",
             selectFunction: () => {
-              document.title = "PgManage";
+              document.title = "Audax Data Manager";
               this.checkTabStatus();
             },
             closeFunction: (e, primaryTab) => {
@@ -610,7 +610,7 @@ const useTabsStore = defineStore("tabs", {
         component: "ERDTab",
         icon: '<i class="fab fa-hubspot icon-tab-title"></i>',
         selectFunction: function () {
-          document.title = "PgManage";
+          document.title = "Audax Data Manager";
         },
         closeFunction: (e, tab) => {
           this.closeTab(tab);
@@ -814,6 +814,18 @@ const useTabsStore = defineStore("tabs", {
       }
       dbMetadataStore.deleteDbMeta(workspaceTab.metaData.selectedDatabaseIndex);
       this.removeTab(workspaceTab);
+    },
+    closeTabsForConnection(connectionId) {
+      const tabsToClose = this.tabs.filter(
+        (tab) => tab.metaData?.selectedDatabaseIndex === connectionId
+      );
+      tabsToClose.forEach((tab) => {
+        if (tab.component === "WorkspaceTab") {
+          this.closeWorkspaceTab(tab, this.getSecondaryTabs(tab.id));
+        } else {
+          this.closeTab(tab);
+        }
+      });
     },
   },
 });

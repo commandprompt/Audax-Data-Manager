@@ -1,3 +1,67 @@
+# Audax Data Manager 1.6 Release
+
+## Release Date: Sep 01 2026
+
+## Release Notes
+
+  - Upgrade Notes:
+    - rebranded the application as "Audax Data Manager": new logos, icons, splash screen and installer graphics throughout the app #886
+    - the application data directory has been renamed from ~/.pgmanage to ~/.audaxdm (on Windows: %USERPROFILE%\.pgmanage to %USERPROFILE%\.audaxdm); existing data is migrated automatically on first launch #889
+    - the database and log files have been renamed from pgmanage.db/pgmanage.log to audaxdm.db/audaxdm.log as part of the same automatic migration #889
+    - the Windows uninstaller no longer removes application data by default
+
+  - New features:
+    - rewrote the Entity Relationship Diagram: intelligent relationship-edge routing, added snap-to-grid positioning, improved node/edge selection, add cardinality markers, viewport save/restore and a dedicated full-screen controls panel #885
+    - rewrote the Database Console: make it behave like a real console, added command history navigation with the Up/Down keys and active database switching via the "\c" meta-command for Postgres #894
+    - implemented visual feedback and keyboard navigation for moving focus between application panels #842
+    - added support for SQLite3 database file paths containing a tilde (~)
+    - implemented "rows affected" display on Query tab toolbar #701
+
+  - UI/UX Improvements:
+    - Database object icons and context menu icons/paddings now scale with the app font size setting #908
+    - limited the minimum size of the application container and added scrollbars when the window is smaller than it, preventing UI breakage #726
+    - the onboarding widget is now only shown on the Welcome screen #784
+    - improved text truncation of recent connections subtitles to keep the most important part visible #804
+    - improved Settings > Hotkeys tab layout: more rows fit on screen and columns are wide enough for larger key combinations like Ctrl+Shift+Space
+    - implemented live resize of the built-in SSH terminal when font size or window size changes #897
+    - improved desktop app startup time by switching the Linux build to PyInstaller's one-directory mode, avoiding double compression with AppImage #879
+
+  - Bugs fixed:
+    - fixed a remote code execution (RCE) vulnerability via psql meta-commands during plain-format server restore #899
+    - fixed an XSS vulnerability in backup/restore preview alert messages #902
+    - fixed database passwords being retained in the backup/restore process environment
+    - fixed backup argument handling: missing --dbname option, invalid backup type validation, and pigz pipeline formatting in command previews
+    - fixed pigz backup failing when file paths contain spaces #909
+    - fixed ERD tab failing to generate relationship edges for foreign keys referencing quoted/uppercase table names #882
+    - fixed DDL content being lost when toggling the Properties panel #907
+    - fixed layout breakage when tabbing through DDL/Properties panel elements #906
+    - closing a connection now also closes its open tabs #911
+    - fixed Data Editor footer bar jumping when the tab regains focus
+    - fixed light terminal theme rendering the cursor's character invisible
+
+  - Other Changes
+    - updated the docs link and wording of the onboarding wizard link on the Welcome screen #898
+    - updated pev2 to 1.22
+    - bumped nwjs from 0.77.0 to 0.114.0 to fix CSS rendering issues in ERD tab on Windows and macOS
+    - bump cryptography from 45.0.5 to 46.0.7
+    - bump django from 5.2.12 to 5.2.15
+    - bump psycopg2 from 2.9.11 to 2.9.12
+    - bump RestrictedPython from 8.0 to 8.3
+    - bump oracledb from 3.4.2 to 4.0.1
+    - bump pymysql from 1.1.2 to 1.1.3
+    - bump django-vite from 3.0.4 to 3.0.6
+    - bump prettytable from 3.16.0 to 3.17.0
+    - bump ace-builds from 1.39.1 to 1.43.6
+    - bump axios from 1.16.0 to 1.17.0
+    - bump bootstrap from 5.3.3 to 5.3.8
+    - bump fuse.js from 7.1.0 to 7.3.0
+    - bump knex from 3.1.0 to 3.2.10
+    - bump lodash from 4.17.21 to 4.18.1
+    - bump pinia from 2.2.2 to 2.3.1
+    - bump sql-formatter from 15.4.1 to 15.7.4
+    - bump vue from 3.5.13 to 3.5.32
+    - excluded django.contrib.admin and non-English locale/timezone data files from the PyInstaller bundle to reduce binary size #498
+
 # Audax Data Manager 1.5 Release
 
 ## Release Date: Jun 16 2026
@@ -80,7 +144,7 @@
     - bump vite from 5.4.10 to 6.3.5
     - bump vitest from 2.1.9 to 3.2.4
     - bump @vitest/ui from 2.1.9 to 3.2.4
-    - bump @vitest/coverage-v from 2.1.9 to 3.2.4
+    - bump @vitest/coverage-v8 from 2.1.9 to 3.2.4
     - bump vite-plugin-node-polyfills from 0.22.0 to 0.25.0
     - bump @vitejs/plugin-vue from 5.1.5 to 5.2.4
     - bump happy-dom from 15.11.7 to 20.6.2
@@ -92,7 +156,7 @@
 ## Release Notes
 
   - Bugs fixed:
-    - fixed unwanted change of last used database when when Databases tree node is clicked in DB Explorer #806
+    - fixed unwanted change of last used database when Databases tree node is clicked in DB Explorer #806
     - fixed Postgres DB connection close when Cancel Query is clicked in Query tab #802
     - fixed incorrect tab displayed in Settings modal when clicking Shortcuts icon on the Welcome screen #801
     - fixed selected database not always changing when using Quick Search #814
@@ -117,7 +181,7 @@
     - implemented "pin database" feature for quicker navigation #237
     - implemented postgres server log viewer #658
     - implemented pan, zoom and layout save/restore in ERD tab, added a dedicated toolbar for pan/zoom #659
-    - implemented support for mDNS resolvig when connecting to database server #673
+    - implemented support for mDNS resolving when connecting to database server #673
     - implemented redraw of customized dashboard widgets when widget settings change #626
     - implemented display of table index details in DDL tab for MariaDB and MySQL #704
     - implemented foreign key support in schema editor #251

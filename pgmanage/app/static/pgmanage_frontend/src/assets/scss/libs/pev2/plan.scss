@@ -100,6 +100,15 @@ $connectorLine: 2px solid darken($lineColor, 10%);
     }
   }
 
+  // pev2 puts its own Bootstrap "bg-body-tertiary" utility class (!important) on both
+  // splitpanes panes (the diagram pane and the .plan pane), painting Bootstrap's stock
+  // --bs-tertiary-bg instead of our themed panel color. Override both here.
+  .splitpanes__pane {
+    @include themify() {
+      background-color: themed($panelsBg) !important;
+    }
+  }
+
   .plan {
     .btn-close {
       border-radius: 50%;

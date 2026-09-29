@@ -32,29 +32,63 @@
     border-radius: $borderRadius;
 }
 
-::-webkit-scrollbar {
-    width: $scrollbarSize;
-    height: $scrollbarSize;
-
-    &-track {
-        background-color: transparent;
+// Firefox: scrollbar-width only accepts auto|thin|none (no custom px width possible);
+// "thin" renders too narrow to grab, so use auto (native width). scrollbar-color has no
+// hover state, so it can't go fully transparent like the splitpanes divider at rest -
+// use the divider's hover color at low opacity as a static thumb color instead.
+@-moz-document url-prefix() {
+    * {
+        scrollbar-color: rgba($secondaryGrey, 0.25) transparent;
+        scrollbar-width: auto;
     }
+}
 
-    &-thumb {
-        background-color: rgba($secondaryGrey, 0.25);
-        border-radius: 2px;
+// Chrome only (selector(::-webkit-scrollbar) is false in Firefox, so this
+// can never collide with the block above). Same color family as the splitpanes divider
+// ($primaryBlue), but kept faintly visible at rest so the scrollbar stays discoverable.
+@supports selector(::-webkit-scrollbar) {
+    * {
+        &::-webkit-scrollbar {
+            width: $scrollbarSize;
+            height: $scrollbarSize;
+        }
 
-        &:hover {
-            background-color: rgba($secondaryGrey, 0.8);
+        &::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background-color: rgba($secondaryGrey, 0.25);
+            transition: $transition;
+            border-radius: 4px;
+
+            @include themify() {
+                border: 2px solid themed($surfaceBg);
+            }
+
+            &:hover {
+                // background-color: $secondaryGrey;
+                padding-right:1px;
+                border: none;
+            }
+        }
+
+        &::-webkit-scrollbar-button {
+            display: none;
+        }
+
+        &::-webkit-scrollbar-corner {
+            background: transparent;
         }
     }
+}
 
-    &-button {
-        display: none;
-    }
-
-    &-corner {
-        background: transparent;
+@supports selector(::-webkit-scrollbar) {
+    .omnidb__tab-menu--primary {
+        &::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.25);
+            border-color: transparent;
+        }
     }
 }
 
