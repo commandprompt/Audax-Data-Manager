@@ -6,6 +6,10 @@ from typing import Optional, Dict, Any
 from pgmanage.settings import DESKTOP_MODE, HOME_DIR
 
 
+class FileManagerError(Exception):
+    """Raised deliberately by FileManager with a message that is safe to show to the client."""
+
+
 class FileManager:
     def __init__(self, current_user):
         self.user = current_user
@@ -40,12 +44,19 @@ class FileManager:
     def _assert_not_exists(self, path: str) -> None:
         """Raise an error if the path already exists."""
         if os.path.exists(path):
-            raise FileExistsError("File or directory with given name already exists.")
+            raise FileManagerError("File or directory with given name already exists.")
+
+    def validate_name(self, name: str) -> None:
+        """Raise an error if the given file/directory name is not a single, well-formed path segment."""
+        if not name or name in (".", "..") or any(
+            char in name for char in ("/", "\\", "\x00")
+        ):
+            raise ValueError("Invalid file or directory name.")
 
     def assert_exists(self, path: str) -> None:
         """Raise an error if the path does not exist."""
         if not os.path.exists(path):
-            raise FileNotFoundError("Invalid file or directory path.")
+            raise FileManagerError("Invalid file or directory path.")
 
     def _format_size(self, num: float, suffix: str = "B") -> str:
         """
@@ -74,6 +85,8 @@ class FileManager:
             name: The name of the file or directory to create.
             file_type: The type of entity to create ("file" or "dir").
         """
+        self.validate_name(name)
+
         normalized_path = "." if path == "/" else os.path.normpath(path.lstrip('/'))
         abs_path = self.resolve_path(normalized_path)
         full_path = os.path.abspath(os.path.join(abs_path, name))
@@ -170,6 +183,8 @@ class FileManager:
             path: The relative path of the file or directory.
             name: The new name.
         """
+        self.validate_name(name)
+
         abs_path = self.resolve_path(path)
 
         self.check_access_permission(abs_path)
@@ -211,7 +226,7 @@ class FileManager:
             path: The absolute or relative path to check.
 
         Raises:
-            PermissionError: If the path is outside the allowed storage directory.
+            FileManagerError: If the path is outside the allowed storage directory.
         """
         if DESKTOP_MODE:
             return
@@ -219,7 +234,7 @@ class FileManager:
         abs_path = os.path.abspath(path)
 
         if not pathlib.Path(abs_path).is_relative_to(self.storage):
-            raise PermissionError("Access denied")
+            raise FileManagerError("Access denied")
 
     def _get_file_extension(self, file_name: str) -> str:
         """

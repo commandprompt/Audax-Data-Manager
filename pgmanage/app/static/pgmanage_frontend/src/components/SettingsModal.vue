@@ -151,7 +151,7 @@
 
                       <a data-testid="validate-binary-path-button"
                         class="btn btn-outline-primary ms-2"
-                        @click="validateBinaryPath(binaryPaths[k], ['pg_dump', 'pg_dumpall', 'pg_restore', 'psql'])"
+                        @click="validateBinaryPath(binaryPaths[k], 'postgres')"
                         title="Validate">
                         Validate
                       </a>
@@ -172,7 +172,7 @@
                         <input type="file" @change="setPigzPath" nwdirectory hidden>
                       </label>
                     </div>
-                    <a class="btn btn-outline-primary ms-2" @click="validateBinaryPath(pigzPath, ['pigz'])" title="Validate">
+                    <a class="btn btn-outline-primary ms-2" @click="validateBinaryPath(pigzPath, 'pigz')" title="Validate">
                       Validate
                     </a>
                   </div>
@@ -492,10 +492,10 @@ export default {
         this.buttonFormDisabled = true;
       }
     },
-    validateBinaryPath(binary_path,utilies) {
+    validateBinaryPath(binary_path, utilityGroup) {
       axios.post('/validate_binary_path/', {
         binary_path: binary_path,
-        utilities: utilies
+        utility_group: utilityGroup
       })
         .then((resp) => {
           const binary_paths = Object.entries(resp.data.data)

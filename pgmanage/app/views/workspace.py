@@ -651,13 +651,24 @@ def reset_master_password(request):
     return HttpResponse(status=200)
 
 
+BINARY_UTILITY_GROUPS = {
+    "postgres": ["pg_dump", "pg_dumpall", "pg_restore", "psql"],
+    "pigz": ["pigz"],
+}
+
+
 @user_authenticated
 def validate_binary_path(request):
     data = request.data
 
     binary_path = data.get("binary_path")
 
-    utilities = data.get("utilities")
+    utility_group = data.get("utility_group")
+
+    utilities = BINARY_UTILITY_GROUPS.get(utility_group)
+
+    if utilities is None:
+        return JsonResponse(data={"data": "Invalid utility group."}, status=400)
 
     result = {}
 
@@ -675,13 +686,17 @@ def validate_binary_path(request):
             result[utility] = "not found on the specifed binary path."
             continue
 
-        shell_result = subprocess.run(
-            f'"{full_path}" --version',
-            shell=True,
-            env=env,
-            capture_output=True,
-            text=True,
-        )
+        try:
+            shell_result = subprocess.run(
+                [full_path, "--version"],
+                shell=False,
+                env=env,
+                capture_output=True,
+                text=True,
+            )
+        except OSError:
+            utility_version = ""
+        
 
         utility_version = shell_result.stdout
 

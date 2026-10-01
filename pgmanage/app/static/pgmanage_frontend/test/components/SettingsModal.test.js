@@ -107,7 +107,7 @@ describe("SettingsModal.vue", () => {
     await validateButton.trigger("click");
     expect(validateBinaryPathSpy).toHaveBeenCalledWith(
       wrapper.vm.binaryPaths["pg-16"],
-      ["pg_dump", "pg_dumpall", "pg_restore", "psql"],
+      "postgres",
     );
   });
 

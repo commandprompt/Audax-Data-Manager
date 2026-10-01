@@ -5,7 +5,7 @@ import time
 from types import SimpleNamespace
 from unittest.mock import mock_open, patch
 
-from app.file_manager.file_manager import FileManager
+from app.file_manager.file_manager import FileManager, FileManagerError, FileManagerError
 from app.views.file_manager import (
     create,
     delete,
@@ -92,7 +92,10 @@ class FileManagerViewsTests(TestCase):
             reverse("get_directory"), data, content_type="application/json"
         )
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), {"data": "Test error"})
+        self.assertEqual(
+            response.json(),
+            {"data": "An error occurred while processing the request."},
+        )
 
     def test_get_directory_url_resolves_get_directory_view(self):
         view = resolve("/file_manager/get_directory/")
@@ -117,7 +120,10 @@ class FileManagerViewsTests(TestCase):
             reverse("rename_file_or_directory"), data, content_type="application/json"
         )
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), {"data": "Test error"})
+        self.assertEqual(
+            response.json(),
+            {"data": "An error occurred while processing the request."},
+        )
         mock_rename.assert_called_once_with(data["path"], data["name"])
 
     def test_rename_url_resolves_rename_view(self):
@@ -136,7 +142,7 @@ class FileManagerViewsTests(TestCase):
 
     @patch("app.file_manager.file_manager.FileManager.delete")
     def test_delete_file_not_found(self, mock_delete):
-        mock_delete.side_effect = FileNotFoundError("File not found")
+        mock_delete.side_effect = FileManagerError("File not found")
         data = {"path": "nonexistent_file.txt"}
         response = self.client.post(
             reverse("delete_file_or_directory"), data, content_type="application/json"
@@ -201,7 +207,10 @@ class FileManagerViewsTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), {"data": "Test error"})
+        self.assertEqual(
+            response.json(),
+            {"data": "An error occurred while processing the request."},
+        )
 
     def test_download_url_resolves_download_view(self):
         view = resolve("/file_manager/download/")
@@ -412,7 +421,7 @@ class FileManagerTests(SimpleTestCase):
         # An absolute path replaces the storage directory. check_access_permission refuses it.
         self.assertEqual(self.file_manager.resolve_path("/etc/passwd"), "/etc/passwd")
 
-        with self.assertRaises(PermissionError):
+        with self.assertRaises(FileManagerError):
             self.file_manager.check_access_permission("/etc/passwd")
 
     def test_check_access_permission_permits_a_path_in_the_storage_directory(self):
@@ -422,12 +431,24 @@ class FileManagerTests(SimpleTestCase):
         )
 
     def test_check_access_permission_refuses_a_path_outside_the_storage_directory(self):
-        with self.assertRaisesMessage(PermissionError, "Access denied"):
+        with self.assertRaisesMessage(FileManagerError, "Access denied"):
             self.file_manager.check_access_permission("/etc/passwd")
 
     def test_check_access_permission_refuses_a_path_that_goes_up(self):
-        with self.assertRaisesMessage(PermissionError, "Access denied"):
+        with self.assertRaisesMessage(FileManagerError, "Access denied"):
             self.file_manager.check_access_permission(self.storage_path("../escape"))
+
+    def test_validate_name_refuses_a_name_that_is_not_one_path_segment(self):
+        bad_names = ["", ".", "..", "../escape.sql", "sub/dump.sql", "sub\\dump.sql", "dump\x00.sql"]
+        for name in bad_names:
+            with self.subTest(name=name):
+                with self.assertRaisesMessage(ValueError, "Invalid file or directory name."):
+                    self.file_manager.validate_name(name)
+
+    def test_validate_name_accepts_an_ordinary_name(self):
+        for name in ["dump.sql", "my backup.sql", ".hidden", "dump..sql"]:
+            with self.subTest(name=name):
+                self.assertIsNone(self.file_manager.validate_name(name))
 
     def test_create_makes_a_file_in_the_root_directory(self):
         self.file_manager.create("/", "dump.sql", "file")
@@ -457,18 +478,20 @@ class FileManagerTests(SimpleTestCase):
         self.make_file("dump.sql")
 
         with self.assertRaisesMessage(
-            FileExistsError, "File or directory with given name already exists."
+            FileManagerError, "File or directory with given name already exists."
         ):
             self.file_manager.create("/", "dump.sql", "file")
 
     def test_create_refuses_a_name_that_goes_outside_the_storage_directory(self):
-        with self.assertRaisesMessage(PermissionError, "Access denied"):
+        # validate_name stops a name that holds a path separator before the
+        # storage directory check gets a chance to.
+        with self.assertRaisesMessage(ValueError, "Invalid file or directory name."):
             self.file_manager.create("/", "../escape.sql", "file")
 
         self.assertFalse(os.path.exists(os.path.join(self.home_dir, "storage", "escape.sql")))
 
     def test_create_refuses_a_path_that_goes_outside_the_storage_directory(self):
-        with self.assertRaisesMessage(PermissionError, "Access denied"):
+        with self.assertRaisesMessage(FileManagerError, "Access denied"):
             self.file_manager.create("/../..", "escape", "dir")
 
     def test_get_directory_content_lists_the_root_directory(self):
@@ -536,7 +559,7 @@ class FileManagerTests(SimpleTestCase):
         self.assertEqual(data["current_path"], "/empty")
 
     def test_get_directory_content_refuses_a_path_outside_the_storage_directory(self):
-        with self.assertRaisesMessage(PermissionError, "Access denied"):
+        with self.assertRaisesMessage(FileManagerError, "Access denied"):
             self.file_manager.get_directory_content("/../..")
 
     def test_get_parent_directory_content_lists_the_parent_of_a_file(self):
@@ -564,7 +587,7 @@ class FileManagerTests(SimpleTestCase):
         self.assertTrue(os.path.isdir(self.storage_path("new")))
 
     def test_rename_refuses_a_source_that_does_not_exist(self):
-        with self.assertRaisesMessage(FileNotFoundError, "Invalid file or directory path."):
+        with self.assertRaisesMessage(FileManagerError, "Invalid file or directory path."):
             self.file_manager.rename("missing.sql", "new.sql")
 
     def test_rename_refuses_a_name_that_exists(self):
@@ -572,7 +595,7 @@ class FileManagerTests(SimpleTestCase):
         self.make_file("second.sql")
 
         with self.assertRaisesMessage(
-            FileExistsError, "File or directory with given name already exists."
+            FileManagerError, "File or directory with given name already exists."
         ):
             self.file_manager.rename("first.sql", "second.sql")
 
@@ -581,13 +604,13 @@ class FileManagerTests(SimpleTestCase):
     def test_rename_refuses_a_new_name_that_goes_outside_the_storage_directory(self):
         self.make_file("dump.sql")
 
-        with self.assertRaisesMessage(PermissionError, "Access denied"):
+        with self.assertRaisesMessage(ValueError, "Invalid file or directory name."):
             self.file_manager.rename("dump.sql", "../escape.sql")
 
         self.assertTrue(os.path.isfile(self.storage_path("dump.sql")))
 
     def test_rename_refuses_a_source_outside_the_storage_directory(self):
-        with self.assertRaisesMessage(PermissionError, "Access denied"):
+        with self.assertRaisesMessage(FileManagerError, "Access denied"):
             self.file_manager.rename("../../etc/passwd", "dump.sql")
 
     def test_delete_removes_a_file(self):
@@ -605,7 +628,7 @@ class FileManagerTests(SimpleTestCase):
         self.assertFalse(os.path.exists(self.storage_path("empty")))
 
     def test_delete_refuses_a_path_that_does_not_exist(self):
-        with self.assertRaisesMessage(FileNotFoundError, "Invalid file or directory path."):
+        with self.assertRaisesMessage(FileManagerError, "Invalid file or directory path."):
             self.file_manager.delete("missing.sql")
 
     def test_delete_refuses_a_directory_that_is_not_empty(self):
@@ -618,7 +641,7 @@ class FileManagerTests(SimpleTestCase):
         self.assertTrue(os.path.isdir(self.storage_path("backups")))
 
     def test_delete_refuses_a_path_outside_the_storage_directory(self):
-        with self.assertRaisesMessage(PermissionError, "Access denied"):
+        with self.assertRaisesMessage(FileManagerError, "Access denied"):
             self.file_manager.delete("../../etc")
 
     def test_desktop_mode_makes_no_storage_directory(self):

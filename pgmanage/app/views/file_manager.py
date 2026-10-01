@@ -1,10 +1,16 @@
 import os
 
-from app.file_manager.file_manager import FileManager
+from app.file_manager.file_manager import FileManager, FileManagerError
 from app.utils.decorators import user_authenticated
 from django.http import FileResponse, HttpResponse, JsonResponse
 from django.views.decorators.http import require_GET
 from django.conf import settings
+
+SAFE_EXCEPTIONS = (FileManagerError, ValueError)
+
+def _error_response(exc, status=400):
+    message = str(exc) if isinstance(exc, SAFE_EXCEPTIONS) else "An error occurred while processing the request."
+    return JsonResponse({"data": message}, status=status)
 
 
 @user_authenticated
@@ -17,7 +23,7 @@ def create(request):
         file_manager.create(data.get("path"), data.get("name"), data.get("type"))
         return JsonResponse({"data": "created"}, status=201)
     except Exception as exc:
-        return JsonResponse({"data": str(exc)}, status=400)
+        return _error_response(exc)
 
 
 @user_authenticated
@@ -32,7 +38,7 @@ def get_directory(request):
             files = file_manager.get_directory_content(data.get("current_path"))
         return JsonResponse(files)
     except Exception as exc:
-        return JsonResponse({"data": str(exc)}, status=400)
+        return _error_response(exc)
 
 
 @user_authenticated
@@ -45,7 +51,7 @@ def rename(request):
         file_manager.rename(data.get("path"), data.get("name"))
         return JsonResponse({"data": "success"})
     except Exception as exc:
-        return JsonResponse({"data": str(exc)}, status=400)
+        return _error_response(exc)
 
 
 @user_authenticated
@@ -56,7 +62,7 @@ def delete(request):
         file_manager.delete(request.data.get("path"))
         return HttpResponse(status=204)
     except Exception as exc:
-        return JsonResponse({"data": str(exc)}, status=400)
+        return _error_response(exc)
 
 
 @require_GET
@@ -81,7 +87,7 @@ def download(request):
             filename=os.path.basename(abs_path),
         )
     except Exception as exc:
-        return JsonResponse({"data": str(exc)}, status=400)
+        return _error_response(exc)
 
 
 @user_authenticated
@@ -108,6 +114,7 @@ def upload(request):
             status=400,
         )
     try:
+        file_manager.validate_name(upload_file.name)
 
         normalized_path = (
             "." if rel_path == "/" else os.path.normpath(rel_path.lstrip("/"))
@@ -139,4 +146,4 @@ def upload(request):
             }, status=201)
 
     except Exception as exc:
-        return JsonResponse({"data": str(exc)}, status=400)
+        return _error_response(exc)
