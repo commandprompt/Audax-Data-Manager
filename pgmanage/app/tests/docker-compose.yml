@@ -1,5 +1,7 @@
 # Requires the sample-database fixtures fetched by ./fetch-test-data.sh (not
 # committed to git due to their size) before running `docker compose up`.
+# The fixture mounts refuse to start when a file is absent, because Docker
+# otherwise puts an empty directory in its place and the database starts empty.
 services:
 
   postgres_test_db:
@@ -11,7 +13,11 @@ services:
     ports:
       - 5433:5432
     volumes:
-      - ./dellstore2-normal-1.0.sql:/docker-entrypoint-initdb.d/db.sql
+      - type: bind
+        source: ./dellstore2-normal-1.0.sql
+        target: /docker-entrypoint-initdb.d/db.sql
+        bind:
+          create_host_path: false
       - ./test-db.sh:/docker-entrypoint-initdb.d/initdb.sh
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d dellstore"]
@@ -27,7 +33,11 @@ services:
     ports:
       - 3307:3306
     volumes:
-      - ./mysqlsampledatabase.sql:/docker-entrypoint-initdb.d/db.sql
+      - type: bind
+        source: ./mysqlsampledatabase.sql
+        target: /docker-entrypoint-initdb.d/db.sql
+        bind:
+          create_host_path: false
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p$$MYSQL_ROOT_PASSWORD --silent"]
       interval: 2s
@@ -41,7 +51,11 @@ services:
     ports:
       - 3308:3306
     volumes:
-      - ./mysqlsampledatabase.sql:/docker-entrypoint-initdb.d/db.sql
+      - type: bind
+        source: ./mysqlsampledatabase.sql
+        target: /docker-entrypoint-initdb.d/db.sql
+        bind:
+          create_host_path: false
     healthcheck:
       test: ["CMD-SHELL", "healthcheck.sh --connect --innodb_initialized"]
       interval: 2s
@@ -55,7 +69,12 @@ services:
     ports:
       - 1522:1521
     volumes:
-      - ./hr:/tmp/hr:ro
+      - type: bind
+        source: ./hr
+        target: /tmp/hr
+        read_only: true
+        bind:
+          create_host_path: false
       - ./init-oracle.sh:/opt/oracle/scripts/startup/init-oracle.sh:ro
     healthcheck:
       test: ["CMD-SHELL", "echo \"select 'PGM_READY' from all_objects where owner='HR' and rownum=1;\" | sqlplus -s system/$$ORACLE_PWD@localhost:1521/FREEPDB1 | grep -q PGM_READY"]
@@ -88,6 +107,11 @@ services:
     environment:
       MSSQL_SA_PASSWORD: "Audax_2026!"
     volumes:
-      - ./instnwnd.sql:/tmp/instnwnd.sql:ro
+      - type: bind
+        source: ./instnwnd.sql
+        target: /tmp/instnwnd.sql
+        read_only: true
+        bind:
+          create_host_path: false
       - ./init-mssql.sh:/tmp/init-mssql.sh:ro
     entrypoint: ["/bin/bash", "/tmp/init-mssql.sh"]
